@@ -137,6 +137,16 @@ class Live:
         self.clients: set[WebSocket] = set()
         self.result = ClusterResult(camps=[], points=[])
         self.bridges: list[Statement] = []
+        # proposal rounds (api/proposals.py): one mediate run at a time
+        self.round_running = False
+        self.round_error: str | None = None
+        # support counts are computed + broadcast one at a time, so they never go back
+        self.support_lock = asyncio.Lock()
+
+    def track(self, job: asyncio.Task[None]) -> None:
+        """Keep a background job alive until it ends; cancelled on shutdown."""
+        self._jobs.add(job)
+        job.add_done_callback(self._jobs.discard)
 
     def notify(self) -> None:
         """Data changed (vote, finished intake): rebuild the map soon."""

@@ -71,8 +71,30 @@ if (!res.ok) throw new Error(`answer failed: ${res.status}`);
 
 **Timing:** an answer takes a few seconds to become statements (Gemini runs in the background). Don't wait on the POST; show "Mulțumim!" and move to screen 2. If `/statements` is empty, retry after ~3 s.
 
+## Screen 4 + organizer: proposal rounds (real API)
+
+| Who | Call | Request | Response |
+|---|---|---|---|
+| screen 4 | `GET /proposal` | — | `Proposal` of the current round, or **`null`** before the first round (show "Mediatorul pregătește propunerea") |
+| screen 4 | `POST /proposal-votes` | JSON `{participant_id, proposal_id, support: boolean, critique?: string}` (critique ≤ 1000 chars) | `204`. Voting again overwrites. `409` = round closed (a newer one exists), `404` = unknown proposal |
+| board / report | `GET /support` | — | `SupportRound[]`, real citizens only (`seed-*` demo participants never counted) |
+| organizer | `POST /proposals` | header `X-Organizer-Token: <token>` | `202 {state: "running"}`. `409` if a round is already running, `401` without the token |
+| organizer | `GET /proposals/status` | — | `{state: "idle" \| "running" \| "failed", error}`. Poll every ~2 s after starting: mediate takes 25–60 s |
+
+- Map `ProposalVoteInput` to the body: `proposalId` → `proposal_id`, add `participant_id: getParticipantId()`.
+- `getProposal()` should return `Proposal | null`.
+- `Proposal` now also has an optional `verdict: Verdict | null`: the critic agent's check. Label it as AI if you show it.
+- WebSocket: `proposal_published` (when a round is ready) and `support_updated` (after every proposal vote) are sent now.
+- Organizer needs a "Generează propunerea" button calling `POST /proposals`. The token is `ORGANIZER_TOKEN` from the server's `.env` (empty locally = no token needed). Ask Rares for it on the deployed server; never commit it.
+- `POST /proposals` with no camps on the map → status `failed` with `"mediate needs at least one camp"`. Get a few people to answer and vote first.
+
+## Answers to PR #14 questions
+
+- **"After `POST /votes` no `map_updated` within 4 s":** that was a real bug. Slow Gemini intake blocked map updates. Fixed in PR #13: votes now reach the map in about 1 s, even while answers are still processing.
+- **Double-tap → duplicate statements:** not handled yet on the backend. Please disable the submit button after the first tap. Server-side dedup is on Rares's list.
+
 ## Still mock-only (no backend endpoint yet)
 
-`getConsultation` / `createConsultation`, `getProposal` / `submitProposalVote`, `getSupport`, moderation, `getKpis`, `getAnalytics`. Events `proposal_published` and `support_updated` aren't sent yet. Keep the mocks for these; ask Rares before wiring them.
+`getConsultation` / `createConsultation`, moderation, `getKpis`, `getAnalytics`. Keep the mocks for these; ask Rares before wiring them.
 
 `Analytics` (DAU/WAU/MAU, cohorts…) is a lot of backend for 48h. Proposal: keep it mock unless the core flow (answer → live map → voted compromise) is done.
