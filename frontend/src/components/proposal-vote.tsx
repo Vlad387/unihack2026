@@ -9,14 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { type ConsultationState, useConsultation } from "@/hooks/use-consultation";
-import { getMyPosition, submitProposalVote } from "@/lib/api";
+import { VerdictView } from "@/components/verdict";
+import { ApiError, getMyPosition, submitProposalVote } from "@/lib/api";
 
 export function ProposalVote({ initial }: { initial: ConsultationState }) {
   const { clusters, proposal } = useConsultation(initial);
   const [myCamp, setMyCamp] = useState<string | null>(null);
   const [critique, setCritique] = useState("");
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   // keyed by round: a newly published proposal reopens the vote without an effect
   const [votedRound, setVotedRound] = useState<number | null>(null);
 
@@ -27,7 +28,7 @@ export function ProposalVote({ initial }: { initial: ConsultationState }) {
   }, []);
 
   if (!proposal) {
-    return <p className="text-center text-muted-foreground">Mediatorul pregătește propunerea. Revino în câteva minute.</p>;
+    return <p className="text-center text-muted-foreground">Mediatorul pregătește propunerea. Apare aici automat, nu trebuie să reîncarci pagina.</p>;
   }
 
   const color = campColor(clusters.camps);
@@ -36,7 +37,7 @@ export function ProposalVote({ initial }: { initial: ConsultationState }) {
   async function vote(support: boolean) {
     if (!proposal) return;
     setSending(true);
-    setError(false);
+    setError(null);
     try {
       await submitProposalVote({ proposalId: proposal.id, support, critique: critique.trim() || null });
       setVotedRound(proposal.round);
@@ -44,7 +45,12 @@ export function ProposalVote({ initial }: { initial: ConsultationState }) {
     } catch (err) {
       // keep the critique text so the citizen can retry
       console.error("submitProposalVote failed", err);
-      setError(true);
+      // 409: a newer round was published meanwhile; it arrives over the WebSocket and replaces this one
+      setError(
+        err instanceof ApiError && err.status === 409
+          ? "Runda aceasta s-a încheiat. Propunerea nouă apare imediat aici."
+          : "Nu am putut trimite votul. Încearcă din nou.",
+      );
     } finally {
       setSending(false);
     }
@@ -59,8 +65,9 @@ export function ProposalVote({ initial }: { initial: ConsultationState }) {
             Generat de AI
           </Badge>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
           <p className="text-lg">{proposal.text}</p>
+          {proposal.verdict && <VerdictView verdict={proposal.verdict} />}
         </CardContent>
       </Card>
 
@@ -106,7 +113,7 @@ export function ProposalVote({ initial }: { initial: ConsultationState }) {
               onChange={(e) => setCritique(e.target.value)}
             />
           </div>
-          {error && <p className="text-sm text-destructive">Nu am putut trimite votul. Încearcă din nou.</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="grid grid-cols-2 gap-3">
             <Button
               size="lg"

@@ -1,6 +1,7 @@
 "use client";
 
 import { Brand } from "@/components/brand";
+import { VerdictView } from "@/components/verdict";
 import { JoinQr } from "@/components/join-qr";
 import { OpinionMap } from "@/components/opinion-map";
 import { Badge } from "@/components/ui/badge";
@@ -92,6 +93,11 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
             </CardHeader>
             <CardContent>
               <p>{proposal.text}</p>
+              {proposal.verdict && (
+                <div className="mt-3">
+                  <VerdictView verdict={proposal.verdict} />
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -101,6 +107,7 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
             <CardTitle>Sprijin pe runde</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
+            {support.length === 0 && <p className="text-sm text-muted-foreground">Încă nu s-a votat nicio propunere.</p>}
             {support.map((r) => {
               const pct = r.total ? Math.round((r.agree / r.total) * 100) : 0;
               return (
