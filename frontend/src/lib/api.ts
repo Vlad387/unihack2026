@@ -8,8 +8,15 @@ export async function getQuestion(): Promise<string> {
   return mockQuestion;
 }
 
-export async function submitResponse(text: string | null, audio: Blob | null): Promise<void> {
-  console.log("submitResponse (mock)", { text, audioBytes: audio?.size });
+export interface ResponseInput {
+  text: string | null;
+  audio: Blob | null;
+  neighborhood: string | null;
+  age: number | null;
+}
+
+export async function submitResponse(input: ResponseInput): Promise<void> {
+  console.log("submitResponse (mock)", { ...input, audio: input.audio?.size });
 }
 
 export async function getStatementsToVote(): Promise<Statement[]> {
