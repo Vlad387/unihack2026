@@ -53,3 +53,12 @@ See `PITCH_NUMBERS.md` for measured results/limits and `HANDOFF_PITCH.md` for lo
 stable camp IDs, frontend colors, historical proposal labels and the PR #20
 review note. `pitch_metrics.json` contains reproducible fingerprints and all
 20 one-vote perturbation trials. No live Gemini calls are used in this evaluation.
+
+
+## Data checkpoint follow-up
+
+`DATA_CHECKPOINT.md` covers 3–5-person bridge thresholds, Rares's PR #33
+diagnostic command for the real zero-bridge case, and the pure display-alignment
+helper that the API owner can wire in. `PITCH_SLIDE.md` is the final slide copy.
+`layout_metrics.json` records the standalone 20-trial SYNTHETIC display experiment;
+it does not claim improved membership stability or an active frontend fix.

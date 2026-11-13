@@ -1,0 +1,240 @@
+{
+  "synthetic": true,
+  "cases": [
+    {
+      "participant_id": "seed-004",
+      "statement_id": "seed-statement-041",
+      "value": "disagree",
+      "anchors": 50,
+      "alignment_ms": 0.21558300068136305,
+      "raw_rms_before": 0.6822326972684528,
+      "raw_rms_after": 0.5771154562745113,
+      "viewbox_rms_before": 262.981191044943,
+      "viewbox_rms_after": 195.3911629459717
+    },
+    {
+      "participant_id": "seed-015",
+      "statement_id": "seed-statement-023",
+      "value": "disagree",
+      "anchors": 49,
+      "alignment_ms": 0.1658750043134205,
+      "raw_rms_before": 0.9848772404981716,
+      "raw_rms_after": 0.37773404458917464,
+      "viewbox_rms_before": 450.2755738119439,
+      "viewbox_rms_after": 193.9028371959076
+    },
+    {
+      "participant_id": "seed-034",
+      "statement_id": "seed-statement-009",
+      "value": "disagree",
+      "anchors": 50,
+      "alignment_ms": 0.14916700456524268,
+      "raw_rms_before": 1.2523746081270355,
+      "raw_rms_after": 0.2597427087924516,
+      "viewbox_rms_before": 515.8773136992984,
+      "viewbox_rms_after": 138.2387268553037
+    },
+    {
+      "participant_id": "seed-036",
+      "statement_id": "seed-statement-009",
+      "value": "agree",
+      "anchors": 49,
+      "alignment_ms": 0.1483329979237169,
+      "raw_rms_before": 0.4633407811185833,
+      "raw_rms_after": 0.3483944344427445,
+      "viewbox_rms_before": 129.76632160034572,
+      "viewbox_rms_after": 151.76434522272982
+    },
+    {
+      "participant_id": "seed-029",
+      "statement_id": "seed-statement-045",
+      "value": "agree",
+      "anchors": 50,
+      "alignment_ms": 0.13112500164425,
+      "raw_rms_before": 0.8077316182007604,
+      "raw_rms_after": 0.37291165076217503,
+      "viewbox_rms_before": 317.28576865974,
+      "viewbox_rms_after": 194.46321980172326
+    },
+    {
+      "participant_id": "seed-031",
+      "statement_id": "seed-statement-011",
+      "value": "disagree",
+      "anchors": 50,
+      "alignment_ms": 0.1387919983244501,
+      "raw_rms_before": 0.16704619875394933,
+      "raw_rms_after": 0.16675930756565358,
+      "viewbox_rms_before": 125.99763801285786,
+      "viewbox_rms_after": 122.27620498173768
+    },
+    {
+      "participant_id": "seed-046",
+      "statement_id": "seed-statement-035",
+      "value": "agree",
+      "anchors": 50,
+      "alignment_ms": 0.13337500422494486,
+      "raw_rms_before": 0.8350421091648477,
+      "raw_rms_after": 0.16717921807666808,
+      "viewbox_rms_before": 254.35049185328222,
+      "viewbox_rms_after": 134.48551132069042
+    },
+    {
+      "participant_id": "seed-008",
+      "statement_id": "seed-statement-034",
+      "value": "agree",
+      "anchors": 50,
+      "alignment_ms": 0.16320800204994157,
+      "raw_rms_before": 0.39376956728948415,
+      "raw_rms_after": 0.1716055534897133,
+      "viewbox_rms_before": 173.90765354026365,
+      "viewbox_rms_after": 124.56626912325592
+    },
+    {
+      "participant_id": "seed-030",
+      "statement_id": "seed-statement-036",
+      "value": "disagree",
+      "anchors": 50,
+      "alignment_ms": 0.1424999936716631,
+      "raw_rms_before": 0.0,
+      "raw_rms_after": 2.833543973051782e-16,
+      "viewbox_rms_before": 0.0,
+      "viewbox_rms_after": 5.821249018329138e-14
+    },
+    {
+      "participant_id": "seed-002",
+      "statement_id": "seed-statement-024",
+      "value": "agree",
+      "anchors": 50,
+      "alignment_ms": 0.13916700117988512,
+      "raw_rms_before": 0.7640794477453265,
+      "raw_rms_after": 0.4415742360508768,
+      "viewbox_rms_before": 275.2703903846724,
+      "viewbox_rms_after": 186.8015889825895
+    },
+    {
+      "participant_id": "seed-027",
+      "statement_id": "seed-statement-009",
+      "value": "disagree",
+      "anchors": 50,
+      "alignment_ms": 0.13025000225752592,
+      "raw_rms_before": 0.6290094982974961,
+      "raw_rms_after": 0.2618255409177857,
+      "viewbox_rms_before": 258.2648341754753,
+      "viewbox_rms_after": 138.26394747663798
+    },
+    {
+      "participant_id": "seed-047",
+      "statement_id": "seed-statement-041",
+      "value": "disagree",
+      "anchors": 49,
+      "alignment_ms": 0.13658299576491117,
+      "raw_rms_before": 0.34678578526154796,
+      "raw_rms_after": 0.17851793417093917,
+      "viewbox_rms_before": 235.73233339191754,
+      "viewbox_rms_after": 99.4327399734672
+    },
+    {
+      "participant_id": "seed-015",
+      "statement_id": "seed-statement-007",
+      "value": "disagree",
+      "anchors": 49,
+      "alignment_ms": 0.1369579986203462,
+      "raw_rms_before": 0.9848772404981716,
+      "raw_rms_after": 0.37773404458917464,
+      "viewbox_rms_before": 450.2755738119439,
+      "viewbox_rms_after": 193.9028371959076
+    },
+    {
+      "participant_id": "seed-026",
+      "statement_id": "seed-statement-034",
+      "value": "agree",
+      "anchors": 50,
+      "alignment_ms": 0.12966700160177425,
+      "raw_rms_before": 0.5925835125442411,
+      "raw_rms_after": 0.2589659616857034,
+      "viewbox_rms_before": 233.40635282233552,
+      "viewbox_rms_after": 139.78859855632203
+    },
+    {
+      "participant_id": "seed-045",
+      "statement_id": "seed-statement-013",
+      "value": "agree",
+      "anchors": 50,
+      "alignment_ms": 0.12604200310306624,
+      "raw_rms_before": 0.2889355993372071,
+      "raw_rms_after": 0.18059367330556736,
+      "viewbox_rms_before": 213.25509730001045,
+      "viewbox_rms_after": 135.43639942256485
+    },
+    {
+      "participant_id": "seed-010",
+      "statement_id": "seed-statement-011",
+      "value": "disagree",
+      "anchors": 50,
+      "alignment_ms": 0.13145800039637834,
+      "raw_rms_before": 0.6497168129975927,
+      "raw_rms_after": 0.33241525664513055,
+      "viewbox_rms_before": 253.9635898209007,
+      "viewbox_rms_after": 142.99713143752825
+    },
+    {
+      "participant_id": "seed-002",
+      "statement_id": "seed-statement-030",
+      "value": "agree",
+      "anchors": 50,
+      "alignment_ms": 0.13912499707657844,
+      "raw_rms_before": 0.49388492108425075,
+      "raw_rms_after": 0.23285754907993733,
+      "viewbox_rms_before": 161.21176963419424,
+      "viewbox_rms_after": 151.22920596356502
+    },
+    {
+      "participant_id": "seed-026",
+      "statement_id": "seed-statement-009",
+      "value": "disagree",
+      "anchors": 50,
+      "alignment_ms": 0.14804200327489525,
+      "raw_rms_before": 0.5925835125442411,
+      "raw_rms_after": 0.2589659616857034,
+      "viewbox_rms_before": 233.40635282233552,
+      "viewbox_rms_after": 139.78859855632203
+    },
+    {
+      "participant_id": "seed-050",
+      "statement_id": "seed-statement-035",
+      "value": "disagree",
+      "anchors": 50,
+      "alignment_ms": 0.13508299889508635,
+      "raw_rms_before": 1.230980219234506,
+      "raw_rms_after": 0.2472702428811575,
+      "viewbox_rms_before": 511.91076151303537,
+      "viewbox_rms_after": 148.63957084245868
+    },
+    {
+      "participant_id": "seed-037",
+      "statement_id": "seed-statement-035",
+      "value": "agree",
+      "anchors": 49,
+      "alignment_ms": 0.16020900511648506,
+      "raw_rms_before": 0.26141791655944246,
+      "raw_rms_after": 0.14964857217918603,
+      "viewbox_rms_before": 165.32079796814327,
+      "viewbox_rms_after": 119.36991360978904
+    }
+  ],
+  "source_report_sha256": "75a9b9667ffcfd6bb747347e645378327c786d9964a7a4c70a7a9486bf4d22a1",
+  "trials": 20,
+  "median_raw_rms_before": 0.6107965054208686,
+  "median_raw_rms_after": 0.2589659616857034,
+  "median_viewbox_rms_before": 244.84796160640911,
+  "median_viewbox_rms_after": 139.78859855632203,
+  "viewbox_improved_or_equal_trials": 19,
+  "max_alignment_ms": 0.21558300068136305,
+  "limitations": [
+    "Standalone experiment; API integration belongs to Rares and is not active yet.",
+    "Rigid alignment preserves the fresh partition and pairwise distances; it does not improve ARI or stop real membership changes.",
+    "ViewBox units use current D3 scaling, not physical pixels; stack fan-out, animation and phone scaling are excluded.",
+    "Per-axis autoscaling and changing extents can still move the map.",
+    "20 independent one-vote additions to one synthetic baseline; not a live-sequence or population validation."
+  ]
+}
