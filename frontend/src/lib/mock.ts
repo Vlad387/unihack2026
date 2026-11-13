@@ -1,6 +1,27 @@
-import type { ClusterResult, ConsultationEvent, Proposal, Statement, SupportRound } from "./types";
+import type {
+  ClusterResult,
+  Consultation,
+  ConsultationEvent,
+  ModerationItem,
+  Proposal,
+  Statement,
+  SupportRound,
+} from "./types";
 
 export const mockQuestion = "Ce facem cu viața de noapte din centru?";
+
+export const mockConsultation: Consultation = {
+  id: "demo",
+  question: mockQuestion,
+  context: "Primăria analizează programul teraselor și barurilor din centrul istoric.",
+  threshold: 0.6,
+};
+
+export const mockModeration: ModerationItem[] = [
+  { statement: { id: "m1", text: "Patronii de baruri sunt toți niște hoți.", author_id: null }, reason: "abuse" },
+  { statement: { id: "m2", text: "Sunați-mă la 07xx xxx xxx să vă zic tot.", author_id: null }, reason: "personal_data" },
+  { statement: { id: "m3", text: "Ar trebui să reparăm și drumul spre aeroport.", author_id: null }, reason: "off_topic" },
+];
 
 export const mockStatements: Statement[] = [
   { id: "s1", text: "Terasele ar trebui să închidă la miezul nopții în zilele lucrătoare.", author_id: null },

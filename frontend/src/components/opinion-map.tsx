@@ -2,18 +2,12 @@
 
 import * as d3 from "d3";
 import { useEffect, useRef } from "react";
-import type { Camp, ClusterResult, Point } from "@/lib/types";
+import { campColor } from "@/lib/colors";
+import type { ClusterResult, Point } from "@/lib/types";
 
 const W = 800;
 const H = 560;
 const PAD = 48;
-const UNASSIGNED = "#a1a1aa";
-
-// Same camp order → same color everywhere (map, legend, screen 3).
-export function campColor(camps: Camp[]): (id: string | null) => string {
-  const scale = d3.scaleOrdinal<string, string>(d3.schemeTableau10).domain(camps.map((c) => c.id));
-  return (id) => (id ? scale(id) : UNASSIGNED);
-}
 
 function domain(values: number[]): [number, number] {
   const [lo, hi] = d3.extent(values);

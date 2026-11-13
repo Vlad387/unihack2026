@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { campColor, OpinionMap } from "@/components/opinion-map";
+import { OpinionMap } from "@/components/opinion-map";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { campColor } from "@/lib/colors";
 import { type ConsultationState, useConsultation } from "@/hooks/use-consultation";
 import { getMyPosition } from "@/lib/api";
 import type { Point } from "@/lib/types";
@@ -68,10 +70,9 @@ export function WhereYouAre({ initial }: { initial: ConsultationState }) {
         </section>
       )}
 
-      {/* screen 4 comes next */}
-      <Button size="lg" className="w-full" disabled>
+      <Link href="/proposal" className={buttonVariants({ size: "lg", className: "w-full" })}>
         Votează compromisul
-      </Button>
+      </Link>
     </div>
   );
 }
