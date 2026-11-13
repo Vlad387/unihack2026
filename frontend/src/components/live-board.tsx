@@ -58,6 +58,9 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
             <AiBadge />
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
+            {clusters.camps.length === 0 && (
+              <p className="text-sm text-muted-foreground">Taberele apar când votează mai mulți oameni.</p>
+            )}
             {clusters.camps.map((c) => (
               <div key={c.id} className="flex items-start gap-3">
                 <span className="mt-1.5 size-3 shrink-0 rounded-full" style={{ background: color(c.id) }} />
