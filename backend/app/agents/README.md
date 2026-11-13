@@ -6,10 +6,11 @@ Ce s-a făcut în `backend/app/agents/`, pe scurt, pentru toată echipa.
 |---|---|---|
 | `intake` | împarte și filtrează răspunsurile cetățenilor | ✅ gata, în `dev` (PR #9) |
 | `mediate` | scrie compromisul între tabere | ✅ gata, în `dev` (PR #15) |
-| `critic` | verifică dacă compromisul e corect și echilibrat | ⏳ încă stub (date false) |
+| `critic` | verifică dacă compromisul e corect și echilibrat | ✅ gata, în `dev` (PR #22) |
 | `proxy` | simulează vocea unui grup care lipsește (opțional) | ❌ neînceput |
 
-Secțiunile 1–7 sunt despre `intake`; secțiunile 8–10 sunt despre `mediate`.
+Secțiunile 1–7 sunt despre `intake`; 8–10 despre `mediate`; 11–13 despre `critic`.
+**Modele și cota gratuită: secțiunea 5.**
 
 ---
 
@@ -74,7 +75,7 @@ except AgentError:
 
 ## 3. Tech stack
 
-- **Python 3.12** + **Gemini Flash** (`gemini-3.5-flash`) prin SDK-ul `google-genai`.
+- **Python 3.12** + **Gemini Flash-Lite** (`gemini-3.5-flash-lite`, vezi secțiunea 5) prin SDK-ul `google-genai`.
 - **Structured output**: Gemini e obligat să răspundă în JSON cu formă fixă
   (`response_schema`), apoi rezultatul devine `Statement` din `schemas.py` (Pydantic v2).
 - **Prompt** separat de cod: [`prompts/intake.md`](prompts/intake.md) (metodologia e publică).
@@ -104,12 +105,21 @@ cu funcția `intake` exportată din `__init__.py`. La fel vor fi `mediate_agent.
 
 ## 5. Modele Gemini – IMPORTANT pentru toți
 
-- **Cheia API e bună.** Problema e doar numele modelului.
-- `gemini-2.5-flash` (cel din RULES.md) și `gemini-2.5-pro` **nu mai merg pentru chei noi** (404).
-- Folosiți **`gemini-3.5-flash`**.
-- Niciun model **Pro** nu merge pe cheia noastră → și `mediate` va folosi Flash.
-- Se pot schimba fără cod, din `.env`: `GEMINI_FLASH_MODEL=...`, `GEMINI_PRO_MODEL=...`.
-- Modelele de **embeddings** (pentru clustering) nu au fost testate.
+- **Cheia API e bună.** `gemini-2.5-*` și modelele **Pro** nu merg pe cheia noastră (404).
+- **Cota gratuită e pe model și pe zi** (~20 cereri/zi la `gemini-3.5-flash`). Când se
+  termină: eroare **429**. Fiecare model are cota lui, deci împărțim agenții pe modele:
+
+| Agent | Model implicit | De ce | Schimbi din `.env` |
+|---|---|---|---|
+| `intake` | `gemini-3.5-flash-lite` | 1 apel la **fiecare** răspuns → cele mai multe apeluri | `GEMINI_INTAKE_MODEL` |
+| `mediate` | `gemini-3.5-flash` | 1 apel pe rundă, sarcina cea mai grea | `GEMINI_MEDIATE_MODEL` |
+| `critic` | `gemini-3.5-flash-lite` | 1 apel pe rundă, verificare | `GEMINI_CRITIC_MODEL` |
+| rezervă | `gemini-3.1-flash-lite` | folosit **automat** când un model dă 429 | `GEMINI_FALLBACK_MODEL` |
+
+- Dacă modelul agentului dă **429**, se încearcă o dată modelul de rezervă. Dacă și
+  acela dă 429 → `AgentError`. Erorile 5xx („high demand") se reîncearcă de 4 ori.
+- **Pentru demo:** cu billing activat pe cheie (Google AI Studio → Billing) limitele cresc mult.
+- **Embeddings** merg pe cheie: `gemini-embedding-001` și `gemini-embedding-2` (3072 dimensiuni).
 
 ---
 
@@ -268,7 +278,7 @@ except AgentError:
 - `proposal.round` e mereu 1 → **API-ul îl suprascrie** cu runda reală.
 - `critiques` = textele criticilor din runda trecută (listă de `str`).
 - Durează **25–60 s** → rulează-l **în fundal**.
-- Model: `GEMINI_PRO_MODEL`, momentan = `gemini-3.5-flash` (Pro nu merge pe cheia noastră).
+- Model: `gemini-3.5-flash` (`GEMINI_MEDIATE_MODEL`, vezi secțiunea 5).
 
 **Fișiere:** `mediate_agent.py`, `prompts/mediate.md`, `demo_mediate.py`, `../../tests/test_mediate.py`.
 
@@ -281,3 +291,142 @@ uv run python -m app.agents.demo_mediate 2    # runda 2, cu critici
 
 **Probleme cunoscute:** uneori în „cedează" adaugă un detaliu care nu e în textul propunerii
 (ex. „autobuzele doar pe arterele principale"). Asta trebuie să prindă `critic` (următorul agent).
+
+---
+
+## 11. `critic` – ce face
+
+Este **„al doilea cititor"** al propunerii. După ce `mediate` scrie compromisul, `critic`
+îl citește **strict și corect**, înainte să-l vadă oamenii, și verifică dacă e bun.
+E ca un profesor care corectează lucrarea mediatorului.
+
+Răspunde la **3 întrebări cu da / nu** + o **notă scurtă** pentru cetățeni:
+
+| Întrebare | Ce verifică, simplu |
+|---|---|
+| **fidelă?** (`faithful`) | spune propunerea ce au zis **de fapt** oamenii? câștigurile/cedările nu **inventează** detalii care nu sunt în text? |
+| **echilibrată?** (`balanced`) | **fiecare** tabără câștigă ceva **și** cedează ceva? nu plătește o tabără pentru toți? |
+| **realizabilă?** (`feasible`) | poate primăria chiar s-o facă, legal și practic? nu se contrazice? |
+| **notă** (`notes`) | 1–3 propoziții în română, cu numele taberelor; dacă ceva e greșit, spune **concret ce** |
+
+Verdictul apare **lângă propunere** în aplicație, ca verificare AI, iar oamenii votează
+știind ce a găsit `critic`.
+
+**De ce e nevoie de el?** Pentru că și AI-ul greșește. `mediate` a scris o dată la o tabără
+„cedează: autobuzele vor circula doar pe arterele principale" – dar propunerea **nu spunea asta**.
+Fără `critic`, oamenii ar fi votat pe o informație inventată.
+
+**Exemplu real – `critic` prinde exact greșeala asta:**
+
+> ❌ fidelă: **nu** · ✅ echilibrată · ✅ realizabilă
+>
+> Notă: „Propunerea este echilibrată și realizabilă, însă tabăra Siguranță și transport
+> menționează că autobuzele vor circula doar pe arterele principale, un detaliu care
+> nu apare în textul propunerii."
+
+**Exemplu real – o propunere părtinitoare** („toate localurile închid la 22, muzica interzisă complet"):
+
+> ❌ fidelă · ❌ echilibrată · ❌ realizabilă
+>
+> Notă: „…ignoră total nevoile taberelor «Centru viu» și «Siguranță și transport»,
+> nefiind o soluție echilibrată sau viabilă."
+
+**Unde e în fluxul aplicației:**
+
+```
+cetățean răspunde → intake → alții votează → clustering face taberele
+  → mediate scrie compromisul → critic îl verifică → oamenii votează → runda 2
+```
+
+---
+
+## 12. `critic` – cum funcționează (pe 4 pași)
+
+**Aceeași rețetă ca `intake` și `mediate`**, alte date:
+
+```
+1. strânge datele → 2. le trimite la Gemini cu instrucțiuni → 3. primește răspuns în format fix → 4. verifică
+```
+
+**Pasul 1 – strânge datele.** Pune într-un „dosar" JSON propunerea și argumentele taberelor.
+La propunere folosește **numele** taberelor (nu `c1`, `c2`), ca nota să fie pe înțelesul oamenilor:
+
+```json
+{
+  "proposal": {
+    "text": "Propunem ca muzica pe terase să înceteze la 23...",
+    "tradeoffs": [
+      {"camp": "Liniște pentru locuitori", "gains": "...", "gives_up": "..."}
+    ]
+  },
+  "camps": [
+    {"id": "c1", "name": "Liniște pentru locuitori", "size": 8,
+     "arguments": ["Terasele să închidă la 23...", "Am copil mic..."]}
+  ]
+}
+```
+
+Argumentele trec prin **aceleași filtre ca la `mediate`**: doar ce au scris membrii taberei,
+fără afirmațiile marcate, maxim 20 pe tabără.
+
+**Pasul 2 – instrucțiunile** ([`prompts/critic.md`](prompts/critic.md)), „fișa de post":
+cum se verifică fiecare din cele 3 întrebări, ce înseamnă „detaliu inventat",
+cum se scrie nota (scurt, calm, cu numele taberelor, fără termeni tehnici).
+
+**Pasul 3 – răspuns în format fix.** Gemini răspunde direct în forma `Verdict` din `schemas.py`:
+
+```json
+{"faithful": false, "balanced": true, "feasible": true, "notes": "..."}
+```
+
+**Pasul 4 – verificarea în cod.** Dacă o tabără **nu are deloc** câștig/cedare în propunere,
+codul pune singur `balanced = false` și scrie în notă ce tabără lipsește – **nu ne bazăm pe AI**
+pentru o regulă atât de clară.
+
+**Cei 3 agenți, comparați:**
+
+| | `intake` | `mediate` | `critic` |
+|---|---|---|---|
+| Primește | un răspuns de cetățean | tabere + puncte comune + critici | propunerea + taberele |
+| Gemini răspunde | listă de afirmații | propunere + câștig/cedare pe tabără | 3 × da/nu + notă |
+| Verificare în cod | scoate afirmațiile goale | fiecare tabără trebuie să apară | tabără lipsă → nu e echilibrată |
+| Model | `gemini-3.5-flash-lite` | `gemini-3.5-flash` | `gemini-3.5-flash-lite` |
+| Durează | 5–30 s | 25–60 s | 5–10 s |
+
+---
+
+## 13. `critic` – pentru Rares (API) și testare
+
+```python
+from app.agents import critic, AgentError
+
+try:
+    verdict = critic(proposal, camps)  # -> Verdict
+except AgentError:
+    # nicio tabără / Gemini a picat → publică propunerea fără verdict
+    verdict = None
+```
+
+- Semnătura e cea din contract: `critic(proposal: Proposal, camps: list[Camp]) -> Verdict`.
+- API-ul pune rezultatul în `Proposal.verdict` (deja făcut de Rares în `api/proposals.py`).
+- Durează **5–10 s**.
+
+**Test live** pe 3 propuneri salvate (nu consumă cota lui `mediate`), din `backend/`:
+
+```bash
+uv run python -m app.agents.demo_critic
+```
+
+| Caz | Rezultat (rulat de 3 ori, pe 2 modele) |
+|---|---|
+| propunere bună | ✅ fidelă, echilibrată, realizabilă – de fiecare dată |
+| „cedează" cu detaliu inventat („autobuze doar pe arterele principale") | ❌ fidelă = nu, nota spune exact ce rând e greșit – de fiecare dată |
+| propunere părtinitoare (totul închis la 22, muzică interzisă) | ❌ picată la toate 3 – de fiecare dată |
+
+**Teste fără internet:** `../../tests/test_critic.py` (agentul) și `../../tests/test_gemini.py`
+(modelele de rezervă la 429). `tests/conftest.py` înlocuiește Gemini și pentru `critic`.
+
+**Probleme cunoscute:** o singură dată (din 9 rulări) nota a avut diacritice stricate
+(„Siguranșă"). Nota are uneori puțin peste 60 de cuvinte.
+
+**Fișiere:** `critic_agent.py`, `prompts/critic.md`, `demo_critic.py`.

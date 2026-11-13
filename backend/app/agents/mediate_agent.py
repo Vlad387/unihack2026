@@ -5,7 +5,7 @@ import uuid
 
 from pydantic import BaseModel
 
-from app.agents.gemini import PRO_MODEL, AgentError, generate, load_prompt
+from app.agents.gemini import MEDIATE_MODEL, AgentError, generate, load_prompt
 from app.schemas import Camp, CampTradeoff, Proposal, ProxyOpinion, Statement
 
 # keeps the prompt small and the latency stable with hundreds of participants
@@ -23,7 +23,7 @@ class _MediateOutput(BaseModel):
     tradeoffs: list[_Tradeoff]
 
 
-def _arguments(camp: Camp) -> list[str]:
+def camp_arguments(camp: Camp) -> list[str]:
     # A camp's own arguments are what its members wrote, not everything they voted on.
     members = set(camp.member_ids)
     own = [s for s in camp.statements if s.author_id in members and not s.flag]
@@ -43,7 +43,7 @@ def _payload(
                 "name": c.name,
                 "description": c.description,
                 "size": c.size,
-                "arguments": _arguments(c),
+                "arguments": camp_arguments(c),
             }
             for c in camps
         ],
@@ -65,7 +65,7 @@ def mediate(
         raise AgentError("mediate needs at least one camp")
 
     output = generate(
-        PRO_MODEL,
+        MEDIATE_MODEL,
         load_prompt("mediate"),
         [_payload(camps, bridges, critiques, proxies)],
         _MediateOutput,
