@@ -6,15 +6,11 @@ Written by Rares (D) after checking `origin/bordos` on 2026-11-14. Edit freely.
 
 Your real `intake` looks good and follows the contract: unique ids, `author_id=None`, flags mapped, no DB/FastAPI, and `AgentError` on failure.
 
-Checked by merging `dev` + `bordos` + `rares` (PR #7) in a scratch copy:
-- no merge conflicts
-- `ruff check` / `ruff format --check` ✅
-- `pytest`: 26 passed
-- the API starts and `/health/db` is ok
+✅ Merged in PR #9. On `rares` (PR #7) your intake runs behind the real API:
+- `pytest`: 33 passed. Includes the API tests that send answers through your `intake`, with Gemini faked by your conftest.
+- No merge conflicts with `dev`.
 
-**Not checked:** a live Gemini call (Rares has no key yet). Run `uv run python -m app.agents.demo_intake` yourself before the PR.
-
-👉 **Open your PR into `dev`.** Nobody can use the real intake until it's merged.
+**Not checked:** a live Gemini call (Rares has no key yet). Run `uv run python -m app.agents.demo_intake` once Gemini is reachable, then try a real answer through `POST /responses` at http://localhost:8000/docs.
 
 ## How the API calls your functions (PR #7)
 
