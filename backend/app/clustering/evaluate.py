@@ -25,10 +25,11 @@ SEED = Path(__file__).resolve().parents[3] / "seed"
 def load_seed() -> tuple[list[Statement], list[Vote]]:
     statements = [
         Statement.model_validate(r)
-        for r in json.loads((SEED / "statements.json").read_text())
+        for r in json.loads((SEED / "statements.json").read_text(encoding="utf-8"))
     ]
     votes = [
-        Vote.model_validate(r) for r in json.loads((SEED / "votes.json").read_text())
+        Vote.model_validate(r)
+        for r in json.loads((SEED / "votes.json").read_text(encoding="utf-8"))
     ]
     return statements, votes
 
@@ -139,7 +140,8 @@ def evaluate() -> dict:
         )
     nonzero_cases = [c for c in cases if c["value"] != "pass"]
     groups = Counter(
-        r["group"] for r in json.loads((SEED / "responses.json").read_text())
+        r["group"]
+        for r in json.loads((SEED / "responses.json").read_text(encoding="utf-8"))
     )
     fingerprints = {
         name: hashlib.sha256((SEED / name).read_bytes()).hexdigest()
@@ -204,7 +206,7 @@ def main() -> None:
     report = evaluate()
     text = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     if args.output:
-        args.output.write_text(text)
+        args.output.write_text(text, encoding="utf-8")
     summary = {
         k: v for k, v in report.items() if k not in ("environment", "dataset_sha256")
     }

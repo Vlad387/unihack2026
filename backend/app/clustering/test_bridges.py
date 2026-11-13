@@ -69,7 +69,7 @@ def test_flagged_statements_are_excluded() -> None:
 
 def test_seed_replay_with_explicitly_synthetic_votes() -> None:
     seed_path = Path(__file__).resolve().parents[3] / "seed" / "responses.json"
-    rows = json.loads(seed_path.read_text())
+    rows = json.loads(seed_path.read_text(encoding="utf-8"))
     statement = Statement(id="seed-034", text=rows[33]["text"], author_id="seed-034")
     # Test-only memberships/votes: neither inferred camps nor measured consensus.
     camps = [
