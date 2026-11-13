@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { MicButton } from "@/components/mic-button";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,10 +41,9 @@ export function AnswerForm() {
       <div className="flex flex-col items-center gap-4 text-center">
         <p className="text-2xl font-semibold">Mulțumim! 🙌</p>
         <p className="text-muted-foreground">Răspunsul tău a fost trimis. Acum vezi ce cred ceilalți.</p>
-        {/* screen 2 comes next */}
-        <Button size="lg" className="w-full" disabled>
+        <Link href="/vote" className={buttonVariants({ size: "lg", className: "w-full" })}>
           Votează afirmațiile celorlalți
-        </Button>
+        </Link>
       </div>
     );
   }
