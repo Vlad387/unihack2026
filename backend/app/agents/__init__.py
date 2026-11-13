@@ -1,23 +1,16 @@
 """AI agents (owner: Bordos, role A). Pure functions: no DB, no FastAPI, no imports from clustering/.
 
-STUBS: fake data with the contract signatures so api/ and frontend/ can be built in parallel.
-Bordos replaces the bodies, never the signatures.
+intake is real (Gemini). mediate and critic are still STUBS with the contract signatures.
+Every real agent raises app.agents.gemini.AgentError when Gemini fails.
 """
 
 import uuid
 
+from app.agents.gemini import AgentError
+from app.agents.intake_agent import intake
 from app.schemas import Camp, CampTradeoff, Proposal, ProxyOpinion, Statement, Verdict
 
-
-def intake(text: str | None, audio: bytes | None) -> list[Statement]:
-    if not text and not audio:
-        return []
-    source = (
-        text
-        or "Răspuns audio (transcriere simulată): zgomotul de noapte ne deranjează."
-    )
-    parts = [p.strip() for p in source.replace("!", ".").split(".") if p.strip()]
-    return [Statement(id=f"s-{uuid.uuid4().hex[:8]}", text=p + ".") for p in parts[:3]]
+__all__ = ["AgentError", "critic", "intake", "mediate"]
 
 
 def mediate(
