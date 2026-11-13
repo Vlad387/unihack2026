@@ -107,7 +107,7 @@ def cluster(statements: list[Statement], votes: list[Vote]) -> ClusterResult:
                     id=cid,
                     name=f"Tabăra {len(camps) + 1}",
                     description=(
-                        authored[0][:200]
+                        f"Exemplu de opinie: {authored[0][:200]}"
                         if authored
                         else "Participanți cu poziții de vot similare."
                     ),

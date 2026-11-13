@@ -102,3 +102,53 @@ def test_candidate_must_be_available_in_every_camp() -> None:
     camps, votes = fixtures()
     camps[1].statements = []
     assert bridges(votes, camps) == []
+
+
+def test_authors_support_their_statement_without_a_self_vote() -> None:
+    statement = Statement(id="bus", text="Vrem autobuze de noapte.", author_id="a0")
+    camps = [
+        Camp(
+            id=cid,
+            name=cid,
+            description="",
+            size=3,
+            member_ids=[f"{cid}{i}" for i in range(3)],
+            statements=[statement],
+        )
+        for cid in ("a", "b")
+    ]
+    votes = [
+        Vote(participant_id=pid, statement_id=statement.id, value="agree")
+        for camp in camps
+        for pid in camp.member_ids
+        if pid != statement.author_id
+    ]
+    assert bridges(votes, camps) == [statement]
+    # An explicit self-vote replaces inferred authorship support, never adds to it.
+    self_agree = Vote(participant_id="a0", statement_id="bus", value="agree")
+    assert bridges(votes + [self_agree], camps) == [statement]
+    for value in ("disagree", "pass"):
+        assert (
+            bridges(votes + [self_agree.model_copy(update={"value": value})], camps)
+            == []
+        )
+
+
+def test_an_author_self_vote_does_not_count_twice() -> None:
+    statement = Statement(id="bus", text="Vrem autobuze de noapte.", author_id="a0")
+    camps = [
+        Camp(
+            id=cid,
+            name=cid,
+            description="",
+            size=3,
+            member_ids=[f"{cid}{i}" for i in range(3)],
+            statements=[statement],
+        )
+        for cid in ("a", "b")
+    ]
+    votes = [
+        Vote(participant_id=pid, statement_id="bus", value="agree")
+        for pid in ("a0", "a1", "b0", "b1", "b2")
+    ]
+    assert bridges(votes, camps) == []

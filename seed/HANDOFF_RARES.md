@@ -4,7 +4,7 @@
 > B now clusters votes directly, with no embedding requirement. See
 > backend/app/clustering/README.md and run the demo from backend/.
 > PR #11 contains clustering + bridges; API startup warms UMAP automatically.
-> Please include app/clustering in shared pytest discovery (pyproject.toml).
+> PR #11 now includes app/clustering in default pytest discovery (user-authorized fix).
 > The remaining text records the original handoff, not outstanding blockers.
 
 Read `RULES.md` and `PLAN.md` first. Work on `rares`; integrate through a PR into

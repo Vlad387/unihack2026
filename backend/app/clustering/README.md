@@ -24,7 +24,8 @@ also preserved. Coordinates are centered/scaled to [-1,1]; unplaced points=(0,0)
 Point.text remains None for the API to fill.
 
 Camp IDs hash sorted membership; names are neutral Romanian numbered labels.
-Descriptions quote one authored argument, not an inferred consensus summary.
+Descriptions explicitly label one authored argument as an example, not a
+consensus summary.
 Camp.statements contains every statement members authored OR voted on.
 
 Sorted identical inputs give identical output. A fixed random seed does NOT
@@ -54,7 +55,9 @@ the matrix and can affect inferred similarity; validate against real usage.
 ## Bridges
 
 At least 70% of ALL members in EACH of at least two nonempty, nonoverlapping
-camps must explicitly agree. Pass and missing votes do not supply support;
+camps must endorse a statement. Authorship supplies support unless an explicit
+vote overrides it; a self-vote never counts twice. Other pass and missing votes
+do not supply support;
 noise votes do not count for a camp. Candidates must exist in every camp's
 internal statements and be unflagged. This is a demo policy, not measured consensus.
 
@@ -69,7 +72,7 @@ uv run ruff check .
 uv run python -m app.clustering.demo
 ```
 
-Shared pytest discovery currently includes tests/ only. Include app/clustering
-explicitly to run B's new tests; Rares owns test discovery in pyproject.toml.
+Default pytest discovery includes tests/ and app/clustering, so the standard
+pre-push command runs the clustering and bridge regression tests too.
 The existing stub pipeline test was previously updated to expect noise rather
 than fabricated camps; its uniform-vote fixture still contains no camp contrast.

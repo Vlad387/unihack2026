@@ -52,7 +52,7 @@ produse de `intake` și din voturi.
 from app.agents import intake, AgentError
 
 try:
-    statements = intake(text="...", audio=None)   # sau audio=bytes, sau ambele
+    statements = intake(text="...", audio=None)  # sau audio=bytes, sau ambele
 except AgentError:
     # Gemini a picat: păstrează răspunsul brut în DB și reîncearcă mai târziu.
     # Nu pierde niciodată răspunsul cetățeanului.

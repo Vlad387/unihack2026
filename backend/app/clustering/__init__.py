@@ -7,9 +7,10 @@ __all__ = ["bridges", "cluster", "warmup"]
 
 
 def bridges(votes: list[Vote], camps: list[Camp]) -> list[Statement]:
-    """Return statements supported by at least 70% of members in every camp.
+    """Return statements endorsed by at least 70% of members in every camp.
 
-    Passes and missing votes do not provide support. Using the full membership
+    Authorship implies support; an explicit vote overrides it.
+    Other passes and missing votes do not provide support. Using the full membership
     as denominator prevents a few votes from looking like camp-wide agreement.
     """
     if len(camps) < 2 or any(not c.member_ids for c in camps):
@@ -35,16 +36,24 @@ def bridges(votes: list[Vote], camps: list[Camp]) -> list[Statement]:
             by_id[statement.id] = statement
 
     seen: set[tuple[str, str]] = set()
-    support: dict[tuple[str, str], int] = {}
+    endorsements = {
+        (s.author_id, s.id) for s in by_id.values() if s.author_id in membership
+    }
     for vote in votes:
         key = (vote.participant_id, vote.statement_id)
         if key in seen:
             raise ValueError("Expected one latest vote per participant and statement")
         seen.add(key)
-        cid = membership.get(vote.participant_id)
-        if cid is not None and vote.value == "agree":
-            count_key = (cid, vote.statement_id)
-            support[count_key] = support.get(count_key, 0) + 1
+        if vote.participant_id in membership:
+            if vote.value == "agree":
+                endorsements.add(key)
+            else:
+                endorsements.discard(key)
+
+    support: dict[tuple[str, str], int] = {}
+    for pid, sid in endorsements:
+        count_key = (membership[pid], sid)
+        support[count_key] = support.get(count_key, 0) + 1
 
     return [
         by_id[sid]
