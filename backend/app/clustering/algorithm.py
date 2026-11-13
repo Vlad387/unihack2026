@@ -5,7 +5,6 @@ import hashlib
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.cluster import HDBSCAN
-from umap import UMAP
 
 from app.schemas import Camp, ClusterResult, Point, Statement, Vote
 
@@ -85,6 +84,9 @@ def cluster(statements: list[Statement], votes: list[Vote]) -> ClusterResult:
     camps: list[Camp] = []
     # Two camps of at least three people need six evidenced participants.
     if len(active) >= 6 and len(np.unique(features, axis=0)) > 1:
+        # Avoid UMAP/Numba compilation when the API has no usable embeddings yet.
+        from umap import UMAP
+
         layout = UMAP(
             n_components=2,
             n_neighbors=min(10, len(active) - 1),
