@@ -52,6 +52,9 @@ class Point(BaseModel):
     y: FiniteFloat
     # None = noise / not assigned to any camp
     camp_id: str | None = None
+    # what this participant said (approved statements), shown on hover in the UI.
+    # Filled by the API after cluster(); clustering leaves it None.
+    text: str | None = None
 
 
 class Camp(BaseModel):
