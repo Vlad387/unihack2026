@@ -18,12 +18,11 @@ log = logging.getLogger(__name__)
 
 PROMPTS = Path(__file__).parent / "prompts"
 
-# Free tier quotas are per model and per day (about 20 requests/day for Flash), so the
-# agent with the most calls (intake: one per answer) uses Flash-Lite, and the rare,
-# harder calls (mediate: one per round) use Flash. gemini-2.5-* and Pro are not
-# available on our key. Every name can be overridden in .env.
+# Free tier quotas are per model and per day; Flash's (~20/day) ran out during testing,
+# and the team decided to stay on the free tier, so every agent uses Flash-Lite.
+# gemini-2.5-* and Pro are not available on our key. Every name can be overridden in .env.
 INTAKE_MODEL = os.getenv("GEMINI_INTAKE_MODEL", "gemini-3.5-flash-lite")
-MEDIATE_MODEL = os.getenv("GEMINI_MEDIATE_MODEL", "gemini-3.5-flash")
+MEDIATE_MODEL = os.getenv("GEMINI_MEDIATE_MODEL", "gemini-3.5-flash-lite")
 CRITIC_MODEL = os.getenv("GEMINI_CRITIC_MODEL", "gemini-3.5-flash-lite")
 # used once when the agent's own model answers 429 (daily quota exhausted)
 FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.1-flash-lite")

@@ -6,7 +6,9 @@ from pathlib import Path
 
 
 def main() -> None:
-    responses = json.loads(Path(__file__).with_name("responses.json").read_text())
+    responses = json.loads(
+        Path(__file__).with_name("responses.json").read_text(encoding="utf-8")
+    )
     assert isinstance(responses, list) and 40 <= len(responses) <= 60
     assert all(isinstance(row, dict) for row in responses)
     assert all(set(row) == {"id", "group", "text"} for row in responses)

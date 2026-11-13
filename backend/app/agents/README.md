@@ -108,11 +108,12 @@ cu funcția `intake` exportată din `__init__.py`. La fel vor fi `mediate_agent.
 - **Cheia API e bună.** `gemini-2.5-*` și modelele **Pro** nu merg pe cheia noastră (404).
 - **Cota gratuită e pe model și pe zi** (~20 cereri/zi la `gemini-3.5-flash`). Când se
   termină: eroare **429**. Fiecare model are cota lui, deci împărțim agenții pe modele:
+- **Decizia echipei: fără billing → toți agenții pe Flash-Lite** (Flash a rămas fără cotă la teste).
 
 | Agent | Model implicit | De ce | Schimbi din `.env` |
 |---|---|---|---|
 | `intake` | `gemini-3.5-flash-lite` | 1 apel la **fiecare** răspuns → cele mai multe apeluri | `GEMINI_INTAKE_MODEL` |
-| `mediate` | `gemini-3.5-flash` | 1 apel pe rundă, sarcina cea mai grea | `GEMINI_MEDIATE_MODEL` |
+| `mediate` | `gemini-3.5-flash-lite` | 1 apel pe rundă (testat: propuneri bune, 5–10 s) | `GEMINI_MEDIATE_MODEL` |
 | `critic` | `gemini-3.5-flash-lite` | 1 apel pe rundă, verificare | `GEMINI_CRITIC_MODEL` |
 | rezervă | `gemini-3.1-flash-lite` | folosit **automat** când un model dă 429 | `GEMINI_FALLBACK_MODEL` |
 
@@ -258,7 +259,7 @@ tabără → eroare (`AgentError`), API-ul reîncearcă. Altfel devine un `Propo
 | Instrucțiuni | „împarte în idei, marchează insultele" | „scrie un compromis corect" |
 | Gemini răspunde | listă de afirmații | propunere + câștig/cedare pe tabără |
 | Verificare | scoate afirmațiile goale | fiecare tabără trebuie să apară |
-| Gândire | `low` → rapid (5–30 s) | `high` → mai lent (25–60 s) |
+| Gândire | `low` → rapid (5–30 s) | `high` → 5–10 s pe flash-lite |
 
 ---
 
@@ -277,8 +278,8 @@ except AgentError:
 - `proposal.tradeoffs` are **exact câte unul per tabără**, în ordinea taberelor.
 - `proposal.round` e mereu 1 → **API-ul îl suprascrie** cu runda reală.
 - `critiques` = textele criticilor din runda trecută (listă de `str`).
-- Durează **25–60 s** → rulează-l **în fundal**.
-- Model: `gemini-3.5-flash` (`GEMINI_MEDIATE_MODEL`, vezi secțiunea 5).
+- Durează **5–10 s (pe flash-lite; până la ~60 s când Google e aglomerat)** → rulează-l **în fundal**.
+- Model: `gemini-3.5-flash-lite` (`GEMINI_MEDIATE_MODEL`, vezi secțiunea 5).
 
 **Fișiere:** `mediate_agent.py`, `prompts/mediate.md`, `demo_mediate.py`, `../../tests/test_mediate.py`.
 
@@ -390,8 +391,8 @@ pentru o regulă atât de clară.
 | Primește | un răspuns de cetățean | tabere + puncte comune + critici | propunerea + taberele |
 | Gemini răspunde | listă de afirmații | propunere + câștig/cedare pe tabără | 3 × da/nu + notă |
 | Verificare în cod | scoate afirmațiile goale | fiecare tabără trebuie să apară | tabără lipsă → nu e echilibrată |
-| Model | `gemini-3.5-flash-lite` | `gemini-3.5-flash` | `gemini-3.5-flash-lite` |
-| Durează | 5–30 s | 25–60 s | 5–10 s |
+| Model | `gemini-3.5-flash-lite` | `gemini-3.5-flash-lite` | `gemini-3.5-flash-lite` |
+| Durează | 5–30 s | 5–10 s | 5–10 s |
 
 ---
 
