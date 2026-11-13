@@ -16,10 +16,12 @@ from sqlalchemy import select
 
 from app import db
 from app.agents import intake
+from app.api import camp_ids
 from app.api.models import ResponseRow, StatementRow, VoteRow
 from app.clustering import bridges, cluster
 from app.schemas import (
     BridgesUpdated,
+    Camp,
     ClusterResult,
     ConsultationEvent,
     MapUpdated,
@@ -29,10 +31,16 @@ from app.schemas import (
 
 log = logging.getLogger(__name__)
 
-MAX_ATTEMPTS = 5
-# a failed intake (e.g. Gemini down) waits this long before its next attempt
+# A failed intake (Gemini down, daily quota 429) is retried after RETRY_EVERY_S, then
+# twice as long each time up to RETRY_MAX_S, forever: an answer is never given up on,
+# because a daily quota can come back hours later (billing enabled, new day).
 RETRY_EVERY_S = 15.0
+RETRY_MAX_S = 600.0
 INTAKE_PARALLEL = 8
+
+
+def retry_delay(failures: int) -> float:
+    return min(RETRY_EVERY_S * 2 ** (failures - 1), RETRY_MAX_S)
 
 
 def pending_response_ids() -> list[str]:
@@ -41,7 +49,6 @@ def pending_response_ids() -> list[str]:
             s.scalars(
                 select(ResponseRow.id)
                 .where(ResponseRow.status.in_(["pending", "failed"]))
-                .where(ResponseRow.attempts < MAX_ATTEMPTS)
                 .order_by(ResponseRow.created_at)
             )
         )
@@ -133,6 +140,9 @@ class Live:
         self._slots = asyncio.Semaphore(INTAKE_PARALLEL)
         self._in_flight: set[str] = set()
         self._retry_after: dict[str, float] = {}
+        self._failures: dict[str, int] = {}
+        # the app's event loop, set by run(); signals from worker threads go through it
+        self._loop: asyncio.AbstractEventLoop | None = None
         self._jobs: set[asyncio.Task[None]] = set()
         self.clients: set[WebSocket] = set()
         self.result = ClusterResult(camps=[], points=[])
@@ -140,6 +150,8 @@ class Live:
         # set after the first map since startup: until then `result` is empty even if
         # the DB is full (real clustering takes a while on a cold start)
         self.map_ready = asyncio.Event()
+        # last non-empty camps, to keep their ids stable (None = not loaded from DB yet)
+        self._known_camps: list[Camp] | None = None
         # proposal rounds (api/proposals.py): one mediate run at a time
         self.round_running = False
         self.round_error: str | None = None
@@ -151,12 +163,25 @@ class Live:
         self._jobs.add(job)
         job.add_done_callback(self._jobs.discard)
 
+    def _signal(self, event: asyncio.Event) -> None:
+        # Plain `def` endpoints (e.g. POST /votes) run in worker threads, and asyncio
+        # Events are not thread-safe: hand the signal to the event loop from there.
+        loop = self._loop
+        try:
+            on_loop = asyncio.get_running_loop() is loop
+        except RuntimeError:
+            on_loop = False
+        if loop is None or on_loop:
+            event.set()
+        else:
+            loop.call_soon_threadsafe(event.set)
+
     def notify(self) -> None:
         """Data changed (vote, finished intake): rebuild the map soon."""
-        self._map_wake.set()
+        self._signal(self._map_wake)
 
     def new_response(self) -> None:
-        self._intake_wake.set()
+        self._signal(self._intake_wake)
 
     async def connect(self, ws: WebSocket) -> None:
         await ws.accept()
@@ -183,15 +208,23 @@ class Live:
                 ok = await asyncio.to_thread(process_response, response_id)
             if ok:
                 self._retry_after.pop(response_id, None)
+                self._failures.pop(response_id, None)
                 self.notify()
             else:
-                self._retry_after[response_id] = time.monotonic() + RETRY_EVERY_S
+                failures = self._failures.get(response_id, 0) + 1
+                self._failures[response_id] = failures
+                delay = retry_delay(failures)
+                self._retry_after[response_id] = time.monotonic() + delay
                 # wake the intake loop exactly when the retry is due, not on its next lap
-                asyncio.get_running_loop().call_later(
-                    RETRY_EVERY_S, self._intake_wake.set
-                )
+                asyncio.get_running_loop().call_later(delay, self._intake_wake.set)
         finally:
             self._in_flight.discard(response_id)
+
+    def retry_failed_now(self) -> None:
+        """Organizer: Gemini works again (billing on, new day) -> retry everything now."""
+        self._retry_after.clear()
+        self._failures.clear()
+        self._signal(self._intake_wake)
 
     async def start_intakes(
         self, ignore_backoff: bool = False
@@ -215,6 +248,12 @@ class Live:
     async def recompute(self) -> None:
         statements, votes = await asyncio.to_thread(load_inputs)
         result = await asyncio.to_thread(cluster, statements, votes)
+        if self._known_camps is None:  # first map since startup: ids from the DB
+            self._known_camps = await asyncio.to_thread(camp_ids.load_previous)
+        result = camp_ids.stabilize(result, self._known_camps)
+        if result.camps:
+            self._known_camps = result.camps
+            await asyncio.to_thread(camp_ids.save, result.camps)
         common = await asyncio.to_thread(bridges, votes, result.camps)
         self.result, self.bridges = with_texts(result, statements), common
         self.map_ready.set()
@@ -246,6 +285,7 @@ class Live:
             self._map_wake.clear()
 
     async def run(self) -> None:
+        self._loop = asyncio.get_running_loop()
         try:
             await asyncio.gather(self._intake_loop(), self._map_loop())
         finally:
