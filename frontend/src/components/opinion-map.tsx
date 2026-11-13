@@ -20,7 +20,14 @@ function domain(values: number[]): [number, number] {
   return lo === undefined || hi === undefined || lo === hi ? [-1, 1] : [lo, hi];
 }
 
-export function OpinionMap({ clusters }: { clusters: ClusterResult }) {
+interface Props {
+  clusters: ClusterResult;
+  me?: Point | null;
+  // phones shrink the 800px viewBox ~2.3x, so dots and labels need scaling up
+  scale?: number;
+}
+
+export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
   const ref = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -46,13 +53,14 @@ export function OpinionMap({ clusters }: { clusters: ClusterResult }) {
             .attr("r", 0)
             .attr("fill", (d) => color(d.camp_id))
             .attr("fill-opacity", 0.85)
-            .call((e) => e.transition(t).attr("r", 8)),
+            .call((e) => e.transition(t).attr("r", 8 * scale)),
         (update) =>
           update.call((u) =>
             u
               .transition(t)
               .attr("cx", (d) => x(d.x))
               .attr("cy", (d) => y(d.y))
+              .attr("r", 8 * scale)
               .attr("fill", (d) => color(d.camp_id)),
           ),
         (exit) => exit.call((e) => e.transition(t).attr("r", 0).remove()),
@@ -71,10 +79,38 @@ export function OpinionMap({ clusters }: { clusters: ClusterResult }) {
       .text((d) => d.name)
       .attr("text-anchor", "middle")
       .attr("fill", (d) => color(d.id))
+      .attr("font-size", 18 * scale)
+      .attr("stroke-width", 4 * scale)
       .transition(t)
-      .attr("x", (d) => d.cx)
-      .attr("y", (d) => d.cy - 18);
-  }, [clusters]);
+      // keep long camp names inside the map edges
+      .attr("x", function (d) {
+        const half = this.getComputedTextLength() / 2 + 4;
+        return Math.min(Math.max(d.cx, half), W - half);
+      })
+      .attr("y", (d) => Math.max(d.cy - 18 * scale, 20 * scale));
+
+    // "you" marker: the backend's latest position for this participant wins over the initial one
+    const mine = me && (points.find((p) => p.participant_id === me.participant_id) ?? me);
+    const marker = svg
+      .select<SVGGElement>("g.me")
+      .selectAll<SVGGElement, Point>("g")
+      .data(mine ? [mine] : [], (d) => d.participant_id)
+      .join((enter) => {
+        const g = enter.append("g").attr("transform", (d) => `translate(${x(d.x)},${y(d.y)})`);
+        g.append("circle").attr("fill", "none").attr("class", "stroke-foreground animate-pulse");
+        g.append("text").text("Tu").attr("text-anchor", "middle").attr("class", "fill-foreground font-bold");
+        return g;
+      });
+    marker
+      .select("circle")
+      .attr("r", 16 * scale)
+      .attr("stroke-width", 3 * scale);
+    marker
+      .select("text")
+      .attr("font-size", 16 * scale)
+      .attr("dy", 34 * scale);
+    marker.transition(t).attr("transform", (d) => `translate(${x(d.x)},${y(d.y)})`);
+  }, [clusters, me, scale]);
 
   return (
     <svg
@@ -85,7 +121,8 @@ export function OpinionMap({ clusters }: { clusters: ClusterResult }) {
       className="h-auto w-full"
     >
       <g className="points" />
-      <g className="labels text-lg font-semibold [paint-order:stroke] [&_text]:stroke-background [&_text]:stroke-[4px]" />
+      <g className="labels font-semibold [paint-order:stroke] [&_text]:stroke-background" />
+      <g className="me [paint-order:stroke] [&_text]:stroke-background [&_text]:stroke-[6px]" />
     </svg>
   );
 }

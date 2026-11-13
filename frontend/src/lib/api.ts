@@ -1,6 +1,7 @@
 // The ONLY place that calls the REST API. shortcut: returns mock data until Rares's endpoints are up.
 import { mockBridges, mockClusters, mockProposal, mockQuestion, mockStatements, mockSupport } from "./mock";
-import type { ClusterResult, Proposal, Statement, SupportRound, VoteValue } from "./types";
+import { getParticipantId } from "./participant";
+import type { ClusterResult, Point, Proposal, Statement, SupportRound, VoteValue } from "./types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -16,7 +17,7 @@ export interface ResponseInput {
 }
 
 export async function submitResponse(input: ResponseInput): Promise<void> {
-  console.log("submitResponse (mock)", { ...input, audio: input.audio?.size });
+  console.log("submitResponse (mock)", { participant_id: getParticipantId(), ...input, audio: input.audio?.size });
 }
 
 export async function getStatementsToVote(): Promise<Statement[]> {
@@ -24,7 +25,7 @@ export async function getStatementsToVote(): Promise<Statement[]> {
 }
 
 export async function submitVote(statementId: string, value: VoteValue): Promise<void> {
-  console.log("submitVote (mock)", { statementId, value });
+  console.log("submitVote (mock)", { participant_id: getParticipantId(), statementId, value });
 }
 
 export async function getClusters(): Promise<ClusterResult> {
@@ -41,4 +42,11 @@ export async function getProposal(): Promise<Proposal> {
 
 export async function getSupport(): Promise<SupportRound[]> {
   return mockSupport;
+}
+
+// Client-only: needs the participant id from localStorage.
+export async function getMyPosition(): Promise<Point | null> {
+  const id = getParticipantId();
+  // shortcut: mock puts you on an existing dot in camp c1
+  return { ...mockClusters.points[3], participant_id: id };
 }

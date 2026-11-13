@@ -1,8 +1,9 @@
 "use client";
 
 import { Check, HelpCircle, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { submitVote } from "@/lib/api";
 import type { Statement, VoteValue } from "@/lib/types";
 
@@ -37,10 +38,9 @@ export function VoteDeck({ statements }: { statements: Statement[] }) {
       <div className="flex flex-col items-center gap-4 text-center">
         <p className="text-2xl font-semibold">Gata, ai votat tot! 🎉</p>
         <p className="text-muted-foreground">Urmărește harta live ca să vezi unde te afli față de ceilalți.</p>
-        {/* screen 3 comes next */}
-        <Button size="lg" className="w-full" disabled>
+        <Link href="/me" className={buttonVariants({ size: "lg", className: "w-full" })}>
           Vezi unde te afli
-        </Button>
+        </Link>
       </div>
     );
   }
