@@ -1,9 +1,9 @@
 """Pure opinion clustering and cross-camp bridge detection."""
 
-from app.clustering.algorithm import cluster
+from app.clustering.algorithm import cluster, warmup
 from app.schemas import Camp, Statement, Vote
 
-__all__ = ["bridges", "cluster"]
+__all__ = ["bridges", "cluster", "warmup"]
 
 
 def bridges(votes: list[Vote], camps: list[Camp]) -> list[Statement]:
@@ -52,3 +52,7 @@ def bridges(votes: list[Vote], camps: list[Camp]) -> list[Statement]:
         if by_id[sid].flag is None
         and all(support.get((c.id, sid), 0) * 10 >= c.size * 7 for c in camps)
     ]
+
+
+# Startup cost belongs before the live worker receives its first vote.
+warmup()

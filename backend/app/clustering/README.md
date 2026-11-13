@@ -1,72 +1,75 @@
-# Opinion clustering and bridges
+# Vote-based clustering and bridges
 
-Both public functions use the shared Pydantic contract without DB, HTTP, Gemini
-calls, global state, or imports from agents. No dependencies or schemas changed.
+`cluster(statements, votes)` and `bridges(votes, camps)` implement Rares's
+`docs/tips/DATA_TIPS.md` contract. Embeddings are NOT required or used. Neither
+function accesses the network, DB, FastAPI, agents, or mutable application state.
+No packages, schemas, API routes or shared configuration were changed for this
+vote-based update.
 
 ## Clustering
 
-Supply approved statements with precomputed, finite, nonzero embeddings of one
-consistent dimension/model. Every participant gets one point. Missing embeddings
-are allowed: participants with no usable stance evidence remain noise at (0, 0).
-Malformed embeddings, duplicate statements/votes and unknown vote references raise
-ValueError rather than silently corrupting results.
+Sorted participant x statement matrix: agree=1, disagree=-1, pass/missing=0.
+Authorship supplies +1 unless an explicit vote overrides it. Every participant
+appears once, even with several statements. Pass-only participants stay noise.
+Duplicate statement/vote IDs, unknown vote references and flagged inputs raise
+ValueError rather than silently changing results.
 
-An authored statement implies agreement; an explicit vote overrides that stance.
-Agree = +1, disagree = -1, pass and missing = no directional evidence. Normalized
-statement vectors are summed with these signs for each participant, normalized,
-and concatenated with the normalized statement-stance vector. This gives semantic
-content and direct voting patterns equal block weight. Several answers from one
-participant still produce one feature vector.
+UMAP: 2D, random initialization, fixed random_state=42, at most 10 neighbors,
+100 epochs, low_memory=True, legacy compatibility layout. HDBSCAN: min_samples=3,
+min_cluster_size between 3 and 5, no forced single cluster. At least six active
+participants are needed for two camps of three. Identical or uniformly distant
+profiles (e.g. authorship-only identity matrices) have no camp evidence and stay
+noise instead of being split by projection artifacts. Other HDBSCAN noise is
+also preserved. Coordinates are centered/scaled to [-1,1]; unplaced points=(0,0).
+Point.text remains None for the API to fill.
 
-shortcut: negating an embedding approximates disagreement, not the language model's
-semantic opposite; calibrate against real voting data before reporting quality.
-The algorithm cannot distinguish missing/pass geometrically, though bridges retain
-those semantics. Authorship is assumed to express endorsement after intake.
+Camp IDs hash sorted membership; names are neutral Romanian numbered labels.
+Descriptions quote one authored argument, not an inferred consensus summary.
+Camp.statements contains every statement members authored OR voted on.
 
-UMAP projects evidenced participants into two dimensions with sorted inputs, seed
-42, random initialization, at most 10 neighbors and the legacy compatibility
-layout explicitly selected. HDBSCAN finds camps on that layout with min_samples=3,
-min_cluster_size between 3 and 5, and no forced single cluster. Fewer than six
-evidenced participants, or identical feature vectors, yield no camps. Noise is
-preserved; the result does not force three camps or assign every participant.
-Coordinates are centered/scaled into [-1, 1]. Identical input is reproducible;
-adding participants may change the layout and camp membership/IDs.
+Sorted identical inputs give identical output. A fixed random seed does NOT
+keep the map stationary when new votes/participants change its input.
 
-Camp IDs hash sorted membership. Names are neutral Romanian numbered labels;
-descriptions quote one authored argument, not an AI-generated consensus summary.
-Camp.statements includes statements members authored or voted on for bridge lookup.
+## Warm-up and performance
+
+Package import runs one tiny deterministic UMAP fit via warmup(), before the API
+accepts traffic. It warms Numba in the SAME process that serves clustering.
+Cold imports can take tens of seconds; start the API before the demo. A warm-up
+in a separate process is not a replacement for this startup warm-up. No fitted
+model or participant data is kept in global application state.
+
+Measured on this Apple Silicon Mac after startup, five runs of cluster+bridges:
+- 50 synthetic voters: median 0.015 s, maximum 0.016 s; camps 17/17/16, no noise.
+- 60 synthetic voters: median 0.018 s, maximum 0.019 s; camps 20/20/20, no noise.
+- Shared bridge: "Să păstrăm centrul curat."
+
+These fixtures deliberately encode three voting patterns over six demo policy
+statements and a shared bridge. They also include all 50 seed answer texts as
+individual authored statements; the 60-person fixture adds 10 clearly synthetic
+load-test answers. Patterns are unrelated to demographic groups or text meaning.
+Timings are local, not a deployment guarantee. No real-vote quality/consensus,
+Gemini cost, or latency is claimed. Sparse missing/pass votes are both zero in
+the matrix and can affect inferred similarity; validate against real usage.
 
 ## Bridges
 
-At least 70% of ALL members in EACH of at least two nonempty, nonoverlapping camps
-must explicitly agree. Pass and absent votes do not supply support. Noise votes
-do not count for a camp. Candidates must exist in every camp's internal statements
-and be unflagged. This is a demo policy, not measured consensus about the seed.
+At least 70% of ALL members in EACH of at least two nonempty, nonoverlapping
+camps must explicitly agree. Pass and missing votes do not supply support;
+noise votes do not count for a camp. Candidates must exist in every camp's
+internal statements and be unflagged. This is a demo policy, not measured consensus.
 
 ## Verification
 
 From backend/:
 
 ```sh
+uv run pytest
 uv run pytest tests app/clustering
 uv run ruff check .
-uv run ruff format --check app/clustering tests/test_stubs.py
+uv run python -m app.clustering.demo
 ```
 
-Tests use all 50 seed texts with clearly SYNTHETIC embeddings, unrelated to text
-meaning or demographic labels. The fixture recovers three deliberately separated
-geometric groups; this verifies plumbing, not Gemini quality or actual city opinion
-camps. Bridge replay votes/memberships are also synthetic. No real clustering
-quality, Gemini latency or cost measurements have been produced.
-
-The existing pytest config discovers tests/ only; include app/clustering explicitly
-until Rares includes it in shared test discovery. The old stub pipeline test now
-expects noise without embeddings rather than fabricated camps.
-
-## API handoff
-
-Rares/Bordos must agree and implement Gemini embedding generation and persistence,
-using Statement.embedding before calling cluster. That field is still marked as
-a proposal in schemas.py, and Rares's inspected API does not populate it. Until
-then the API safely gets unassigned points, not real opinion camps. The input must
-contain the latest vote per pair and approved statements from one consultation.
+Shared pytest discovery currently includes tests/ only. Include app/clustering
+explicitly to run B's new tests; Rares owns test discovery in pyproject.toml.
+The existing stub pipeline test was previously updated to expect noise rather
+than fabricated camps; its uniform-vote fixture still contains no camp contrast.

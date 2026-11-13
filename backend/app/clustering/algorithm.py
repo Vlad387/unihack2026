@@ -9,42 +9,23 @@ from sklearn.cluster import HDBSCAN
 from app.schemas import Camp, ClusterResult, Point, Statement, Vote
 
 
-def _unit(vector: NDArray[np.float64]) -> NDArray[np.float64]:
-    norm = np.linalg.norm(vector)
-    return vector / norm if norm else vector
-
-
 def _features(
     statements: list[Statement], votes: list[Vote]
 ) -> tuple[list[str], list[str], NDArray[np.float64]]:
-    by_id = {s.id: s for s in statements}
+    by_id = {s.id: i for i, s in enumerate(statements)}
     if len(by_id) != len(statements):
         raise ValueError("Statement ids must be unique")
     if any(s.flag is not None for s in statements):
         raise ValueError("Clustering accepts only approved statements")
-    vectors: dict[str, NDArray[np.float64]] = {}
-    dimensions: set[int] = set()
-    for statement in statements:
-        if statement.embedding is None:
-            continue
-        vector = np.asarray(statement.embedding, dtype=np.float64)
-        if vector.ndim != 1 or not vector.size or not np.isfinite(vector).all():
-            raise ValueError("Embeddings must be nonempty finite vectors")
-        norm = np.linalg.norm(vector)
-        if not np.isfinite(norm) or norm == 0:
-            raise ValueError("Embeddings must have a finite nonzero norm")
-        dimensions.add(vector.size)
-        vectors[statement.id] = vector / norm
-    if len(dimensions) > 1:
-        raise ValueError("Embedding dimensions must match")
     participants = sorted(
         {s.author_id for s in statements if s.author_id is not None}
         | {v.participant_id for v in votes}
     )
-    stances: dict[str, dict[str, int]] = {pid: {} for pid in participants}
+    rows = {pid: i for i, pid in enumerate(participants)}
+    matrix = np.zeros((len(participants), len(statements)), dtype=np.float64)
     for statement in statements:
         if statement.author_id is not None:
-            stances[statement.author_id][statement.id] = 1
+            matrix[rows[statement.author_id], by_id[statement.id]] = 1
     seen: set[tuple[str, str]] = set()
     for vote in votes:
         if vote.statement_id not in by_id:
@@ -53,50 +34,53 @@ def _features(
         if key in seen:
             raise ValueError("Expected one latest vote per participant and statement")
         seen.add(key)
-        stances[vote.participant_id][vote.statement_id] = {
+        matrix[rows[vote.participant_id], by_id[vote.statement_id]] = {
             "agree": 1,
             "disagree": -1,
             "pass": 0,
         }[vote.value]
-    embedded_ids = sorted(vectors)
-    active, features = [], []
-    for pid in participants:
-        signs = np.array([stances[pid].get(sid, 0) for sid in embedded_ids])
-        if not np.any(signs):
-            continue
-        semantic = sum(
-            (sign * vectors[sid] for sid, sign in zip(embedded_ids, signs)),
-            start=np.zeros(next(iter(dimensions))),
-        )
-        # Keep vote disagreement even when semantic vectors cancel each other.
-        feature = np.concatenate([_unit(semantic), _unit(signs.astype(float))])
-        active.append(pid)
-        features.append(_unit(feature))
-    return participants, active, np.asarray(features, dtype=np.float64)
+    active_mask = np.any(matrix != 0, axis=1)
+    active = [pid for pid, valid in zip(participants, active_mask) if valid]
+    return participants, active, matrix[active_mask]
+
+
+def _project(features: NDArray[np.float64]) -> NDArray[np.float64]:
+    from umap import UMAP
+
+    return UMAP(
+        n_components=2,
+        n_neighbors=min(10, len(features) - 1),
+        n_epochs=100,
+        min_dist=0.1,
+        metric="euclidean",
+        init="random",
+        random_state=42,
+        n_jobs=1,
+        low_memory=True,
+        compatibility_layout=True,
+    ).fit_transform(features)
+
+
+def warmup() -> None:
+    """Compile UMAP before the API starts accepting real responses and votes."""
+    _project(np.random.default_rng(42).normal(size=(12, 4)))
 
 
 def cluster(statements: list[Statement], votes: list[Vote]) -> ClusterResult:
-    """Use supplied embeddings only; missing evidence leaves participants unassigned."""
+    """Cluster the participant-by-statement vote matrix, without embeddings."""
     statements = sorted(statements, key=lambda s: s.id)
     participants, active, features = _features(statements, votes)
     positions = {pid: (0.0, 0.0) for pid in participants}
     assignments: dict[str, str] = {}
     camps: list[Camp] = []
-    # Two camps of at least three people need six evidenced participants.
-    if len(active) >= 6 and len(np.unique(features, axis=0)) > 1:
-        # Avoid UMAP/Numba compilation when the API has no usable embeddings yet.
-        from umap import UMAP
-
-        layout = UMAP(
-            n_components=2,
-            n_neighbors=min(10, len(active) - 1),
-            min_dist=0.1,
-            metric="euclidean",
-            init="random",
-            random_state=42,
-            n_jobs=1,
-            compatibility_layout=True,
-        ).fit_transform(features)
+    # Equal pairwise distances contain no evidence of camps (e.g. authorship only).
+    if len(active) >= 6:
+        distances = np.linalg.norm(features[:, None] - features[None, :], axis=2)
+        variation = np.ptp(distances[np.triu_indices(len(active), k=1)])
+    else:
+        variation = 0.0
+    if variation > 1e-12:
+        layout = _project(features)
         if not np.isfinite(layout).all():
             raise ValueError("UMAP produced nonfinite coordinates")
         labels = HDBSCAN(
