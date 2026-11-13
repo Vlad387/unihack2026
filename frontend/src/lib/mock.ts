@@ -23,18 +23,23 @@ export const mockModeration: ModerationItem[] = [
   { statement: { id: "m3", text: "Ar trebui să reparăm și drumul spre aeroport.", author_id: null }, reason: "off_topic" },
 ];
 
+// Statements are real sentences from seed/responses.json (Eidrien), ids point back to the seed entry.
 export const mockStatements: Statement[] = [
-  { id: "s1", text: "Terasele ar trebui să închidă la miezul nopții în zilele lucrătoare.", author_id: null },
-  { id: "s2", text: "Viața de noapte aduce turiști și locuri de muncă.", author_id: null },
-  { id: "s3", text: "Avem nevoie de mai multe patrule de poliție noaptea.", author_id: null },
-  { id: "s4", text: "Zgomotul după ora 1 face imposibil somnul locuitorilor.", author_id: null },
-  { id: "s5", text: "Transportul public ar trebui să circule și noaptea.", author_id: null },
+  { id: "seed-001", text: "Aș vrea ca terasele să închidă la 23, chiar dacă muzica din interior continuă.", author_id: null },
+  { id: "seed-014", text: "Vreau terase deschise până la unu vara. Centrul trăiește din terase.", author_id: null },
+  { id: "seed-022", text: "Dacă ar exista autobuze noaptea, nu am mai aștepta taxiul în grupuri gălăgioase lângă terase.", author_id: null },
+  { id: "seed-008", text: "Aș prefera să mutăm cluburile mari într-o zonă fără locuințe.", author_id: null },
+  { id: "seed-013", text: "Susțin sancțiuni pentru localurile care depășesc repetat limita de zgomot.", author_id: null },
+  { id: "seed-033", text: "Aș vrea patrule vizibile și lumină pe străzile laterale, fără să interzicem distracția.", author_id: null },
+  { id: "seed-047", text: "Coșurile, toaletele publice și curățenia ar trebui rezolvate indiferent de program.", author_id: null },
+  { id: "seed-026", text: "În timpul săptămânii aș închide mai devreme, iar în weekend aș lăsa cluburile până la trei.", author_id: null },
 ];
 
+// Sizes add up to the 50 seed answers.
 const camps = [
-  { id: "c1", name: "Liniște pentru locuitori", description: "Vor program redus și control al zgomotului.", size: 18 },
-  { id: "c2", name: "Centru viu", description: "Susțin barurile și evenimentele de noapte.", size: 15 },
-  { id: "c3", name: "Siguranță întâi", description: "Pun accent pe pază și transport.", size: 9 },
+  { id: "c1", name: "Liniște pentru locuitori", description: "Vor terase închise mai devreme și zgomot măsurat și sancționat.", size: 19 },
+  { id: "c2", name: "Centru viu", description: "Vor program târziu, terase vara și concerte, fără boxe pe stradă.", size: 18 },
+  { id: "c3", name: "Siguranță și transport", description: "Pun accent pe transport de noapte, patrule, lumină și curățenie.", size: 13 },
 ];
 
 const centers: Record<string, [number, number]> = { c1: [-0.6, 0.4], c2: [0.6, 0.3], c3: [0, -0.6] };
@@ -52,22 +57,22 @@ export const mockClusters: ClusterResult = {
   ),
 };
 
-export const mockBridges: Statement[] = [mockStatements[4]];
+export const mockBridges: Statement[] = [mockStatements[2], mockStatements[6]];
 
 export const mockProposal: Proposal = {
   id: "p1",
   round: 1,
-  text: "Terasele închid la 00:00 în zilele lucrătoare și la 02:00 în weekend, cu autobuze de noapte și patrule în weekend.",
+  text: "Terasele închid la 23:00, interiorul poate rămâne deschis până la 02:00 vinerea și sâmbăta doar cu izolare fonică verificată. Primăria introduce autobuze de noapte, măsurători de zgomot cu sancțiuni pentru abateri repetate și curățenie de noapte plătită dintr-o taxă proporțională cu mărimea localului.",
   tradeoffs: [
-    { camp_id: "c1", gains: "Liniște în timpul săptămânii", gives_up: "Program prelungit în weekend" },
-    { camp_id: "c2", gains: "Weekend până la 02:00", gives_up: "Seri lungi în zilele lucrătoare" },
-    { camp_id: "c3", gains: "Patrule și transport de noapte", gives_up: "Fără restricții totale" },
+    { camp_id: "c1", gains: "Terase închise la 23 și sancțiuni reale pentru zgomot", gives_up: "Interiorul rămâne deschis până la 02 în weekend" },
+    { camp_id: "c2", gains: "Program târziu în weekend, reguli stabile pentru toți", gives_up: "Terasele după 23 și o taxă de curățenie" },
+    { camp_id: "c3", gains: "Autobuze de noapte și curățenie dimineața", gives_up: "Fără patrule permanente în fiecare noapte" },
   ],
 };
 
 export const mockSupport: SupportRound[] = [
-  { round: 1, agree: 21, total: 38 },
-  { round: 2, agree: 29, total: 40 },
+  { round: 1, agree: 24, total: 46 },
+  { round: 2, agree: 33, total: 48 },
 ];
 
 // Fakes live WebSocket traffic so the board animates before the backend exists.
