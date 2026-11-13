@@ -35,53 +35,27 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
 
 
 def with_camps(client: TestClient) -> None:
-    """Two voting groups form real camps; authored answers alone are not camps."""
-    for i in range(20):
-        pid = f"p{i:02}"
-        res = client.post(
-            "/responses", data={"participant_id": pid, "text": f"Opinia lui {pid}."}
-        )
+    """Two opposed groups of 10 voters, so real clustering finds camps.
+
+    Real clustering never invents camps from answers alone: people must vote differently.
+    """
+    for pid, text in (
+        ("ana", "Terasele să închidă la 23."),
+        ("bogdan", "Barurile să rămână deschise noaptea."),
+    ):
+        res = client.post("/responses", data={"participant_id": pid, "text": text})
         assert res.status_code == 202
-    for _ in range(20):
-        asyncio.run(live.tick())
-        statements = client.get(
-            "/statements", params={"participant_id": "observer", "limit": 100}
-        ).json()
-        if len(statements) == 20:
-            break
-    else:
-        pytest.fail("intake did not process all fixture responses")
-    anchors = [
-        next(s for s in statements if s["author_id"] == pid) for pid in ("p00", "p10")
-    ]
-    for i in range(20):
-        pid = f"p{i:02}"
-        for j, statement in enumerate(anchors):
-            if statement["author_id"] == pid:
-                continue
-            value = "agree" if (i < 10) == (j == 0) else "disagree"
-            res = client.post(
-                "/votes",
-                json={
-                    "participant_id": pid,
-                    "statement_id": statement["id"],
-                    "value": value,
-                },
-            )
-            assert res.status_code == 204
     asyncio.run(live.tick())
-    assert live.result.camps
 
-
-def wait_for_camps(client: TestClient) -> list[dict]:
-    # Lifespan resets the snapshot before the first background recomputation.
-    deadline = time.monotonic() + 5
-    while time.monotonic() < deadline:
-        camps = client.get("/clusters").json()["camps"]
-        if camps:
-            return camps
-        time.sleep(0.05)
-    pytest.fail("the live map never produced camps")
+    statements = client.get("/statements", params={"participant_id": "v0"}).json()
+    assert len(statements) == 2
+    for i in range(20):
+        for j, st in enumerate(statements):
+            value = "agree" if (i < 10) == (j == 0) else "disagree"
+            vote = {"participant_id": f"v{i}", "statement_id": st["id"], "value": value}
+            assert client.post("/votes", json=vote).status_code == 204
+    asyncio.run(live.recompute())
+    assert len(live.result.camps) >= 2, "two opposed groups should form camps"
 
 
 def wait_for_round(client: TestClient) -> dict:
@@ -95,7 +69,6 @@ def wait_for_round(client: TestClient) -> dict:
 
 
 def run_round(client: TestClient) -> dict:
-    wait_for_camps(client)
     assert client.post("/proposals").status_code == 202
     assert wait_for_round(client) == {"state": "idle", "error": None}
     return client.get("/proposal").json()
@@ -128,9 +101,10 @@ def test_round_publishes_a_proposal_with_real_round_and_verdict(
 ) -> None:
     with_camps(client)
     with client, client.websocket_connect("/ws") as ws:
-        camps = wait_for_camps(client)
-        assert camps, "the map has camps"
+        # started right after startup, before the first map exists: must wait, not fail
         proposal = run_round(client)
+        camps = client.get("/clusters").json()["camps"]
+        assert camps, "the map has camps"
 
         for _ in range(20):
             event = ws.receive_json()
@@ -169,7 +143,11 @@ def test_votes_support_and_critiques_feed_the_next_round(
 
         second = run_round(client)
         assert second["round"] == 2
-        sent = json.loads(fake_gemini[-1]["contents"][0])
+        sent = next(
+            json.loads(call["contents"][0])
+            for call in reversed(fake_gemini)
+            if "Mediator agent" in call["system"]
+        )
         assert sent["critiques"] == ["Prea târziu pentru vecini."]
 
         assert vote(client, "dan", first, True).status_code == 409
@@ -195,7 +173,6 @@ def test_only_one_round_at_a_time(
     monkeypatch.setattr(proposals_module, "mediate", slow_mediate)
     try:
         with client:
-            wait_for_camps(client)
             assert client.post("/proposals").status_code == 202
             assert client.post("/proposals").status_code == 409
             released.set()

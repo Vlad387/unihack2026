@@ -34,6 +34,19 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
     const x = d3.scaleLinear().domain(domain(points.map((p) => p.x))).range([PAD, W - PAD]);
     const y = d3.scaleLinear().domain(domain(points.map((p) => p.y))).range([H - PAD, PAD]);
     const color = campColor(camps);
+    // Small data can put several people on the exact same spot (e.g. all at 0,0): fan them out in a ring so every dot shows.
+    const pos = new Map<string, [number, number]>();
+    const stacks = d3.group(points, (p) => `${p.x},${p.y}`);
+    for (const stack of stacks.values()) {
+      stack.forEach((p, i) => {
+        const r = i === 0 ? 0 : 36 * scale * Math.ceil(i / 6);
+        // start straight up and go clockwise, so the first neighbours stay clear of the "Tu" label below
+        const a = -Math.PI / 2 + ((i - 1) * Math.PI) / 3;
+        pos.set(p.participant_id, [x(p.x) + r * Math.cos(a), y(p.y) + r * Math.sin(a)]);
+      });
+    }
+    const px = (p: Point) => pos.get(p.participant_id)?.[0] ?? x(p.x);
+    const py = (p: Point) => pos.get(p.participant_id)?.[1] ?? y(p.y);
     // explicit transition object: d3 is marked side-effect-free, so selection.transition() alone gets tree-shaken
     const t = d3.transition().duration(800);
 
@@ -45,8 +58,8 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
         (enter) =>
           enter
             .append("circle")
-            .attr("cx", (d) => x(d.x))
-            .attr("cy", (d) => y(d.y))
+            .attr("cx", px)
+            .attr("cy", py)
             .attr("r", first.current ? 8 * scale : 0)
             .attr("fill-opacity", 0.85)
             // wide transparent stroke = ~24px hit area, so small dots are easy to hover or tap
@@ -59,15 +72,15 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
           update.call((u) =>
             u
               .transition(t)
-              .attr("cx", (d) => x(d.x))
-              .attr("cy", (d) => y(d.y))
+              .attr("cx", px)
+              .attr("cy", py)
               .attr("r", 8 * scale),
           ),
         (exit) => exit.call((e) => e.transition(t).attr("r", 0).remove()),
       )
       // CSS var colors can't be tweened, so they're set directly
       .style("fill", (d) => color(d.camp_id))
-      .on("pointerenter focus click", (_, d) => setHover({ point: d, left: x(d.x) / W, top: y(d.y) / H }))
+      .on("pointerenter focus click", (_, d) => setHover({ point: d, left: px(d) / W, top: py(d) / H }))
       .on("pointerleave", (e: PointerEvent) => e.pointerType === "mouse" && setHover(null))
       .on("blur", () => setHover(null));
     // tap on empty map closes the card on phones
@@ -75,7 +88,7 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
 
     const labels = camps.map((c) => {
       const mine = points.filter((p) => p.camp_id === c.id);
-      return { ...c, cx: d3.mean(mine, (p) => x(p.x)) ?? W / 2, cy: d3.min(mine, (p) => y(p.y)) ?? H / 2 };
+      return { ...c, cx: d3.mean(mine, px) ?? W / 2, cy: d3.min(mine, py) ?? H / 2 };
     });
 
     // keep long camp names inside the map edges
@@ -112,7 +125,7 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
       .selectAll<SVGGElement, Point>("g")
       .data(mine ? [mine] : [], (d) => d.participant_id)
       .join((enter) => {
-        const g = enter.append("g").attr("transform", (d) => `translate(${x(d.x)},${y(d.y)})`);
+        const g = enter.append("g").attr("transform", (d) => `translate(${px(d)},${py(d)})`);
         g.append("circle").attr("fill", "none").attr("class", "stroke-foreground animate-pulse");
         g.append("text").text("Tu").attr("text-anchor", "middle").attr("class", "fill-foreground font-bold");
         return g;
@@ -125,7 +138,7 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
       .select("text")
       .attr("font-size", 16 * scale)
       .attr("dy", 34 * scale);
-    marker.transition(t).attr("transform", (d) => `translate(${x(d.x)},${y(d.y)})`);
+    marker.transition(t).attr("transform", (d) => `translate(${px(d)},${py(d)})`);
     first.current = false;
   }, [clusters, me, scale]);
 

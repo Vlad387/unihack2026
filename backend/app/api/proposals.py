@@ -26,6 +26,7 @@ log = logging.getLogger(__name__)
 
 # seed/demo participants are never counted as real citizens (schemas.py contract)
 DEMO_PREFIX = "seed-"
+MAP_READY_TIMEOUT_S = 60.0
 
 
 class RoundStatus(BaseModel):
@@ -107,6 +108,8 @@ async def publish_support() -> None:
 async def run_round() -> None:
     """mediate (25-60 s) -> critic -> save with the real round -> broadcast."""
     try:
+        # right after a restart the map is still empty: wait for the first real one
+        await asyncio.wait_for(live.map_ready.wait(), MAP_READY_TIMEOUT_S)
         camps, common = live.result.camps, live.bridges
         critiques = await asyncio.to_thread(previous_critiques)
         proposal = await asyncio.to_thread(mediate, camps, common, critiques, [])
