@@ -9,6 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { campColor } from "@/lib/colors";
 import { type ConsultationState, useConsultation } from "@/hooks/use-consultation";
 
+// Romanian plural: 0 voturi, 1 vot, 2–19 voturi, 20+ "de voturi" (except when the last two digits are 01–19)
+const votes = (n: number) => (n === 1 ? "1 vot" : n === 0 || (n % 100 >= 1 && n % 100 <= 19) ? `${n} voturi` : `${n} de voturi`);
+
 function AiBadge() {
   return (
     <Badge variant="secondary" className="font-normal">
@@ -118,7 +121,7 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
                   <div className="flex justify-between text-sm">
                     <span>Runda {r.round}</span>
                     <span className="tabular-nums">
-                      <strong>{pct}%</strong> · {r.total} voturi
+                      <strong>{pct}%</strong> · {votes(r.total)}
                     </span>
                   </div>
                   <div className="h-3 overflow-hidden rounded-full bg-muted">
