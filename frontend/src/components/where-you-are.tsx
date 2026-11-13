@@ -44,7 +44,7 @@ export function WhereYouAre({ initial }: { initial: ConsultationState }) {
                 Generat de AI
               </Badge>
             </div>
-            <p className="text-xl font-bold" style={{ color: color(camp.id) }}>
+            <p className="text-xl font-bold">
               {camp.name}
             </p>
             <p className="text-muted-foreground">{camp.description}</p>

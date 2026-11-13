@@ -1,5 +1,6 @@
 "use client";
 
+import { Brand } from "@/components/brand";
 import { JoinQr } from "@/components/join-qr";
 import { OpinionMap } from "@/components/opinion-map";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +25,12 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
       <section className="flex flex-col gap-4">
         <header className="flex flex-wrap items-end justify-between gap-4 lg:flex-nowrap">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">CityMind · Live</p>
+            <p className="flex items-center gap-3 text-sm">
+              <Brand className="text-base" />
+              <span className="flex items-center gap-1.5 font-semibold uppercase tracking-wider text-brand-amber">
+                <span className="size-2 animate-pulse rounded-full bg-brand-amber" aria-hidden /> Live
+              </span>
+            </p>
             <h1 className="text-2xl font-bold lg:text-4xl">{question}</h1>
           </div>
           <div className="flex items-center gap-6">
