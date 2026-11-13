@@ -2,17 +2,18 @@ import json
 
 import pytest
 
-from app.agents import critic_agent, intake_agent, mediate_agent
+from app.agents import critic_agent, intake_agent, mediate_agent, naming_agent
 
 
 class GeminiCalls(list):
-    """intake and mediate calls, in order. critic calls go to `.critic` instead:
-    the API runs critic right after mediate, and tests read fake_gemini[-1] as the
-    mediate call (tests/test_proposals.py)."""
+    """intake and mediate calls, in order. critic and naming calls go to `.critic` /
+    `.naming` instead: the API runs them around mediate and on map updates, and tests
+    read fake_gemini[-1] as the mediate call (tests/test_proposals.py)."""
 
     def __init__(self) -> None:
         super().__init__()
         self.critic: list[dict] = []
+        self.naming: list[dict] = []
 
 
 @pytest.fixture(autouse=True)
@@ -52,7 +53,22 @@ def fake_gemini(monkeypatch: pytest.MonkeyPatch) -> GeminiCalls:
             faithful=True, balanced=True, feasible=True, notes="Verdict de test."
         )
 
+    def fake_naming(model, system, contents, schema, **_):
+        record(model, system, contents, into=calls.naming)
+        camps = json.loads(contents[0])["camps"]
+        return schema(
+            camps=[
+                {
+                    "camp_id": c["id"],
+                    "name": f"Nume {c['id']}",
+                    "description": "Descriere de test.",
+                }
+                for c in camps
+            ]
+        )
+
     monkeypatch.setattr(intake_agent, "generate", fake_intake)
     monkeypatch.setattr(mediate_agent, "generate", fake_mediate)
     monkeypatch.setattr(critic_agent, "generate", fake_critic)
+    monkeypatch.setattr(naming_agent, "generate", fake_naming)
     return calls
