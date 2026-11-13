@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { MicButton } from "@/components/mic-button";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,10 +16,14 @@ export function AnswerForm() {
   const [age, setAge] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
+  // state updates are async, so a fast double tap could slip through: this guard blocks it instantly
+  const inFlight = useRef(false);
   const canSend = (audio !== null || text.trim() !== "") && status !== "sending";
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
+    if (inFlight.current) return;
+    inFlight.current = true;
     setStatus("sending");
     try {
       await submitResponse({
@@ -32,6 +36,7 @@ export function AnswerForm() {
     } catch (err) {
       // keep the form filled so the citizen can retry without losing the answer
       console.error("submitResponse failed", err);
+      inFlight.current = false;
       setStatus("error");
     }
   }

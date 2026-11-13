@@ -49,6 +49,13 @@ export interface Proposal {
   round: number;
   text: string;
   tradeoffs: CampTradeoff[];
+  // critic agent's check of the proposal; null if the critic failed
+  verdict?: Verdict | null;
+}
+
+export interface RoundStatus {
+  state: "idle" | "running" | "failed";
+  error: string | null;
 }
 
 // Real citizen votes only: simulated proxy votes are never counted here.
