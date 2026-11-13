@@ -49,5 +49,5 @@ async def create_response(
     with db.SessionLocal() as s:
         s.add(row)
         s.commit()
-    live.notify()
+    live.new_response()
     return ResponseAccepted(id=row.id, status="pending")

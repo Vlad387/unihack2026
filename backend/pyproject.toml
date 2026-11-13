@@ -40,3 +40,7 @@ constraint-dependencies = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.ruff]
+# only format Python files; docs like agents/README.md keep their authors' style
+extend-exclude = ["*.md"]

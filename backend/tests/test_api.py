@@ -1,6 +1,9 @@
 """API tests on a throwaway SQLite file: no Docker or Gemini needed."""
 
 import asyncio
+import itertools
+import threading
+import time
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -130,3 +133,70 @@ def test_websocket_sends_snapshot_then_live_updates(client: TestClient) -> None:
                 break
         else:
             pytest.fail("no map_updated with the new answer")
+
+
+def test_slow_intake_does_not_freeze_the_map(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    answer(client, "ana", "Vrem autobuze de noapte.")
+    process()
+    [st] = client.get("/statements", params={"participant_id": "dan"}).json()
+
+    # Gemini "hangs" on the next answer until we release it (real calls take 5-60 s)
+    gemini_released = threading.Event()
+
+    def stuck_intake(text: str | None, audio: bytes | None) -> list:
+        gemini_released.wait(timeout=10)
+        return []
+
+    monkeypatch.setattr(live_module, "intake", stuck_intake)
+    try:
+        with client, client.websocket_connect("/ws") as ws:
+            answer(client, "bogdan", "Un răspuns care așteaptă după Gemini.")
+            vote = {"participant_id": "dan", "statement_id": st["id"], "value": "agree"}
+            assert client.post("/votes", json=vote).status_code == 204
+            voted_at = time.monotonic()
+
+            for _ in range(10):
+                event = ws.receive_json()
+                ids = (
+                    [p["participant_id"] for p in event["data"]["points"]]
+                    if (event["type"] == "map_updated")
+                    else []
+                )
+                if "dan" in ids:
+                    break
+            else:
+                pytest.fail("the vote never reached the map")
+
+            # the map moved on while Gemini was still stuck on bogdan's answer
+            assert not gemini_released.is_set()
+            assert time.monotonic() - voted_at < 5
+            gemini_released.set()
+    finally:
+        gemini_released.set()
+
+
+def test_failed_intake_is_retried_on_time(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(live_module, "RETRY_EVERY_S", 0.5)
+    calls: list[float] = []
+
+    def gemini_down(text: str | None, audio: bytes | None) -> list:
+        calls.append(time.monotonic())
+        raise RuntimeError("503 high demand")
+
+    monkeypatch.setattr(live_module, "intake", gemini_down)
+    with client:
+        rid = answer(client, "ana", "Vrem autobuze de noapte.")
+        deadline = time.monotonic() + 5
+        while len(calls) < 3 and time.monotonic() < deadline:
+            time.sleep(0.05)
+
+    assert len(calls) >= 3, f"only {len(calls)} attempts in 5 s"
+    gaps = [b - a for a, b in itertools.pairwise(calls)]
+    assert all(0.4 < g < 1.5 for g in gaps), gaps
+    with db.SessionLocal() as s:
+        row = s.get(ResponseRow, rid)
+        assert row.status == "failed" and row.text == "Vrem autobuze de noapte."
