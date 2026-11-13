@@ -50,3 +50,13 @@ export async function getMyPosition(): Promise<Point | null> {
   // shortcut: mock puts you on an existing dot in camp c1
   return { ...mockClusters.points[3], participant_id: id };
 }
+
+export interface ProposalVoteInput {
+  proposalId: string;
+  support: boolean;
+  critique: string | null;
+}
+
+export async function submitProposalVote(input: ProposalVoteInput): Promise<void> {
+  console.log("submitProposalVote (mock)", { participant_id: getParticipantId(), ...input });
+}
