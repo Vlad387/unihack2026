@@ -22,3 +22,11 @@ Validate without installing dependencies:
 ```sh
 python3 seed/validate.py
 ```
+
+## Vote-based live demo
+
+From `backend/`, run `uv run python -m app.clustering.demo`. It reads these 50
+answers, creates clearly synthetic demo policy votes, and prints camps, sizes,
+noise, bridges and five-run timings for 50/60 participants. The vote-based
+algorithm does not need Gemini embeddings. Startup performs a tiny UMAP warm-up;
+timing output measures live calls after warm-up, not cold startup.

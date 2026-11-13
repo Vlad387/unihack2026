@@ -1,5 +1,12 @@
 # Eidrien → Rares: unblock data science
 
+> UPDATE 2026-11-14: Your DATA_TIPS.md supersedes the embedding dependency below.
+> B now clusters votes directly, with no embedding requirement. See
+> backend/app/clustering/README.md and run the demo from backend/.
+> PR #11 contains clustering + bridges; API startup warms UMAP automatically.
+> PR #11 now includes app/clustering in default pytest discovery (user-authorized fix).
+> The remaining text records the original handoff, not outstanding blockers.
+
 Read `RULES.md` and `PLAN.md` first. Work on `rares`; integrate through a PR into
 `dev`. Eidrien owns `backend/app/clustering/` and `seed/`; Rares owns shared
 schemas, dependencies, database, API and infrastructure.
