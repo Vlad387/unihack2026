@@ -72,7 +72,7 @@ export function ProposalVote({ initial }: { initial: ConsultationState }) {
             className="rounded-lg border-l-4 bg-card p-3 text-sm shadow-sm"
             style={{ borderLeftColor: color(t.camp_id) }}
           >
-            <p className="mb-1 font-semibold" style={{ color: color(t.camp_id) }}>
+            <p className="mb-1 font-semibold">
               {campName(t.camp_id)}
               {t.camp_id === myCamp && <span className="ml-2 text-xs font-normal text-muted-foreground">(tabăra ta)</span>}
             </p>

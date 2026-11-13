@@ -1,5 +1,7 @@
+import answers from "./mock-answers.json";
 import type {
   ClusterResult,
+  Kpis,
   Consultation,
   ConsultationEvent,
   ModerationItem,
@@ -42,6 +44,13 @@ const camps = [
   { id: "c3", name: "Siguranță și transport", description: "Pun accent pe transport de noapte, patrule, lumină și curățenie.", size: 13 },
 ];
 
+// Seed answers grouped roughly by the camp their authors would fall into.
+const campAnswers: Record<string, string[]> = {
+  c1: [...answers.resident, ...answers.elderly],
+  c2: [...answers.bar_owner, ...answers.student],
+  c3: [...answers.tourist, ...answers.student.slice(0, 3)],
+};
+
 const centers: Record<string, [number, number]> = { c1: [-0.6, 0.4], c2: [0.6, 0.3], c3: [0, -0.6] };
 
 export const mockClusters: ClusterResult = {
@@ -53,6 +62,7 @@ export const mockClusters: ClusterResult = {
       x: centers[c.id][0] + Math.sin(i * 12.9898) * 0.25,
       y: centers[c.id][1] + Math.cos(i * 78.233) * 0.25,
       camp_id: c.id,
+      text: campAnswers[c.id][i % campAnswers[c.id].length],
     })),
   ),
 };
@@ -88,7 +98,13 @@ export function simulateEvents(onEvent: (e: ConsultationEvent) => void): () => v
       camps: clusters.camps.map((c) => (c.id === camp.id ? { ...c, size: c.size + 1 } : c)),
       points: [
         ...clusters.points,
-        { participant_id: `sim-${n}`, x: cx + (Math.random() - 0.5) * 0.6, y: cy + (Math.random() - 0.5) * 0.6, camp_id: camp.id },
+        {
+          participant_id: `sim-${n}`,
+          x: cx + (Math.random() - 0.5) * 0.6,
+          y: cy + (Math.random() - 0.5) * 0.6,
+          camp_id: camp.id,
+          text: campAnswers[camp.id][n % campAnswers[camp.id].length],
+        },
       ],
     };
     onEvent({ type: "map_updated", data: clusters });
@@ -101,3 +117,15 @@ export function simulateEvents(onEvent: (e: ConsultationEvent) => void): () => v
   }, 2000);
   return () => clearInterval(timer);
 }
+
+export const mockKpis: Kpis = {
+  responses: 50,
+  votes: 312,
+  statements: 74,
+  flagged: 3,
+  timeline: [0, 2, 5, 9, 14, 20, 24, 29, 33, 36, 40, 43, 45, 47, 48, 50].map((participants, minute) => ({
+    minute,
+    participants,
+  })),
+  ai: { calls: 186, avg_latency_ms: 1420, cost_usd: 0.38 },
+};

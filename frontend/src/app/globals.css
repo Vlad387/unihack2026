@@ -66,6 +66,15 @@
   --accent: #fdebd0;
   --accent-foreground: #8a5300;
   --brand-amber: #f2a541;
+  /* camp colors: validated categorical palette (dataviz), fixed order, never cycled */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #6250d6;
+  --series-8: #e34948;
   --destructive: oklch(0.577 0.245 27.325);
   --border: #e6e0d6;
   --input: #d9d2c6;
@@ -103,6 +112,14 @@
   --accent: #3a2a10;
   --accent-foreground: #f2a541;
   --brand-amber: #f2a541;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
   --destructive: oklch(0.704 0.191 22.216);
   --border: rgb(255 255 255 / 10%);
   --input: rgb(255 255 255 / 15%);

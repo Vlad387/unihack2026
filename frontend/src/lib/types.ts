@@ -19,6 +19,8 @@ export interface Point {
   x: number;
   y: number;
   camp_id: string | null;
+  // what this participant said (moderated), shown when hovering their dot
+  text: string | null;
 }
 
 export interface Camp {
@@ -73,6 +75,16 @@ export type ModerationReason = "abuse" | "personal_data" | "off_topic";
 export interface ModerationItem {
   statement: Statement;
   reason: ModerationReason;
+}
+
+export interface Kpis {
+  responses: number;
+  votes: number;
+  statements: number;
+  flagged: number;
+  // participants joined, sampled per minute since the consultation started
+  timeline: { minute: number; participants: number }[];
+  ai: { calls: number; avg_latency_ms: number; cost_usd: number };
 }
 
 export interface Verdict {

@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 const links = [
   { href: "/organizer", label: "Consultare" },
   { href: "/organizer/moderation", label: "Moderare" },
+  { href: "/organizer/kpi", label: "KPI" },
   { href: "/organizer/report", label: "Raport" },
   { href: "/board", label: "Ecran live" },
 ];

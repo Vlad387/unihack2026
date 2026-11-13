@@ -3,6 +3,7 @@ import {
   mockBridges,
   mockClusters,
   mockConsultation,
+  mockKpis,
   mockModeration,
   mockProposal,
   mockQuestion,
@@ -13,6 +14,7 @@ import { getParticipantId } from "./participant";
 import type {
   ClusterResult,
   Consultation,
+  Kpis,
   ModerationItem,
   Point,
   Proposal,
@@ -95,4 +97,8 @@ export async function getModerationQueue(): Promise<ModerationItem[]> {
 
 export async function moderateStatement(statementId: string, approve: boolean): Promise<void> {
   console.log("moderateStatement (mock)", { statementId, approve });
+}
+
+export async function getKpis(): Promise<Kpis> {
+  return mockKpis;
 }
