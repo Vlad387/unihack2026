@@ -1,0 +1,278 @@
+{
+  "synthetic": true,
+  "dataset_sha256": {
+    "responses.json": "f96c7754d3bcea7b543383e52658130a5e9ed2d3bbad2787029f2fd15be718db",
+    "statements.json": "cec8871ea7fe1923e5e75df01081acdc6c85744dbce3b180564bf95846ea50d8",
+    "votes.json": "3943e4554fb0bc6d89bec9faa15cc3bcc9567fe2adb296e5b85c555a7ac6022c"
+  },
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "python": "3.12.16",
+    "packages": {
+      "numpy": "2.5.4",
+      "scikit-learn": "1.9.1",
+      "umap-learn": "0.6.0",
+      "numba": "0.68.1"
+    }
+  },
+  "participants": 50,
+  "statements": 50,
+  "votes": 737,
+  "vote_values": {
+    "agree": 392,
+    "pass": 167,
+    "disagree": 178
+  },
+  "coverage": {
+    "seed_context_groups": {
+      "resident": 10,
+      "bar_owner": 10,
+      "student": 10,
+      "elderly": 10,
+      "tourist": 10
+    },
+    "note": "Equal fictional contexts are fixture design, not population representation."
+  },
+  "quality": {
+    "camp_sizes": [
+      35,
+      15
+    ],
+    "noise_count": 0,
+    "silhouette_original_vote_space_assigned_only": 0.24264184571531028,
+    "silhouette_participants": 50,
+    "note": "Not ground-truth accuracy. Noise excluded; 2D projection not used for scoring."
+  },
+  "bridges": [
+    {
+      "id": "seed-statement-027",
+      "text": "Ar trebui îmbunătățit iluminatul și intervenția împotriva hărțuirii."
+    },
+    {
+      "id": "seed-statement-037",
+      "text": "Trotuarele și băncile trebuie să rămână accesibile tuturor."
+    },
+    {
+      "id": "seed-statement-047",
+      "text": "Ar trebui mai multe coșuri, toalete publice și curățenie după petreceri."
+    },
+    {
+      "id": "seed-statement-049",
+      "text": "Localurile care respectă regulile nu ar trebui sancționate pentru abaterile altora."
+    }
+  ],
+  "warm_latency": {
+    "50": {
+      "runs": 10,
+      "median_ms": 7.732,
+      "p95_ms": 8.636,
+      "max_ms": 9.133,
+      "camps": 2,
+      "bridge_count": 4
+    },
+    "60": {
+      "runs": 10,
+      "median_ms": 8.767,
+      "p95_ms": 8.994,
+      "max_ms": 9.018,
+      "camps": 3,
+      "bridge_count": 4
+    }
+  },
+  "one_added_vote_stability": {
+    "cases": [
+      {
+        "participant_id": "seed-004",
+        "statement_id": "seed-statement-041",
+        "value": "disagree",
+        "adjusted_rand_index": 0.527531,
+        "retained_participants": 34,
+        "camps": 3,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-015",
+        "statement_id": "seed-statement-023",
+        "value": "disagree",
+        "adjusted_rand_index": 0.51307,
+        "retained_participants": 35,
+        "camps": 3,
+        "noise": 1
+      },
+      {
+        "participant_id": "seed-034",
+        "statement_id": "seed-statement-009",
+        "value": "disagree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-036",
+        "statement_id": "seed-statement-009",
+        "value": "agree",
+        "adjusted_rand_index": 0.505864,
+        "retained_participants": 34,
+        "camps": 3,
+        "noise": 1
+      },
+      {
+        "participant_id": "seed-029",
+        "statement_id": "seed-statement-045",
+        "value": "agree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-031",
+        "statement_id": "seed-statement-011",
+        "value": "disagree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-046",
+        "statement_id": "seed-statement-035",
+        "value": "agree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-008",
+        "statement_id": "seed-statement-034",
+        "value": "agree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-030",
+        "statement_id": "seed-statement-036",
+        "value": "disagree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-002",
+        "statement_id": "seed-statement-024",
+        "value": "agree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-027",
+        "statement_id": "seed-statement-009",
+        "value": "disagree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-047",
+        "statement_id": "seed-statement-041",
+        "value": "disagree",
+        "adjusted_rand_index": 0.51307,
+        "retained_participants": 35,
+        "camps": 3,
+        "noise": 1
+      },
+      {
+        "participant_id": "seed-015",
+        "statement_id": "seed-statement-007",
+        "value": "disagree",
+        "adjusted_rand_index": 0.51307,
+        "retained_participants": 35,
+        "camps": 3,
+        "noise": 1
+      },
+      {
+        "participant_id": "seed-026",
+        "statement_id": "seed-statement-034",
+        "value": "agree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-045",
+        "statement_id": "seed-statement-013",
+        "value": "agree",
+        "adjusted_rand_index": 0.527531,
+        "retained_participants": 34,
+        "camps": 3,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-010",
+        "statement_id": "seed-statement-011",
+        "value": "disagree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-002",
+        "statement_id": "seed-statement-030",
+        "value": "agree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-026",
+        "statement_id": "seed-statement-009",
+        "value": "disagree",
+        "adjusted_rand_index": 1.0,
+        "retained_participants": 50,
+        "camps": 2,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-050",
+        "statement_id": "seed-statement-035",
+        "value": "disagree",
+        "adjusted_rand_index": 0.542056,
+        "retained_participants": 36,
+        "camps": 3,
+        "noise": 0
+      },
+      {
+        "participant_id": "seed-037",
+        "statement_id": "seed-statement-035",
+        "value": "agree",
+        "adjusted_rand_index": 0.500111,
+        "retained_participants": 32,
+        "camps": 3,
+        "noise": 1
+      }
+    ],
+    "nonzero_cases": 20,
+    "median_ari_nonzero": 1.0,
+    "minimum_ari_nonzero": 0.500111,
+    "minimum_retained_nonzero": 32,
+    "note": "Each case independently adds ONE previously missing agree/disagree vote. Pass additions are excluded because they are matrix no-ops. Labels matched one-to-one; noise preserved."
+  },
+  "limitations": [
+    "Designed synthetic pitch fixture, not measured citizen consensus.",
+    "Timings exclude process import/Numba warm-up, API, DB, WebSocket and Gemini.",
+    "ARI compares all 50 participants with noise as a label; retained counts include unchanged noise.",
+    "Fixed random seed does not prevent layout, camp-ID or color changes on new votes.",
+    "Only one machine and one constructed dataset; no deployment or population-quality claim."
+  ]
+}

@@ -143,7 +143,11 @@ def test_votes_support_and_critiques_feed_the_next_round(
 
         second = run_round(client)
         assert second["round"] == 2
-        sent = json.loads(fake_gemini[-1]["contents"][0])
+        sent = next(
+            json.loads(call["contents"][0])
+            for call in reversed(fake_gemini)
+            if "Mediator agent" in call["system"]
+        )
         assert sent["critiques"] == ["Prea târziu pentru vecini."]
 
         assert vote(client, "dan", first, True).status_code == 409

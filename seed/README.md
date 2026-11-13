@@ -30,3 +30,26 @@ answers, creates clearly synthetic demo policy votes, and prints camps, sizes,
 noise, bridges and five-run timings for 50/60 participants. The vote-based
 algorithm does not need Gemini embeddings. Startup performs a tiny UMAP warm-up;
 timing output measures live calls after warm-up, not cold startup.
+
+## Persistent pitch fixture (for Rares's loader)
+
+Use `statements.json` + `votes.json` together: 50 curated atomic statements with
+stable IDs and 737 simulated votes from all 50 seed participants. Statement
+`seed-statement-NNN` is curated from response `seed-NNN`, whose ID is also its
+author. The arrays match the current shared Statement/Vote schemas. Preserve IDs
+or explicitly remap vote references; live intake creates different statement IDs.
+
+Votes include agree/disagree/pass and missing pairs, with mixed preferences and
+exceptions. All records are fictional/demo-only, never real-voter totals. The
+baseline produces two camps and four bridges on the recorded local environment.
+Demographic context groups are NOT clustering features or ground truth.
+
+`build_votes.py` regenerates the constructed fixture deterministically;
+`python3 seed/build_votes.py --check` verifies it without modifying files.
+The earlier `app.clustering.demo` is only a simpler developer smoke fixture;
+use `uv run python -m app.clustering.evaluate` for THESE persisted pitch files.
+
+See `PITCH_NUMBERS.md` for measured results/limits and `HANDOFF_PITCH.md` for loader,
+stable camp IDs, frontend colors, historical proposal labels and the PR #20
+review note. `pitch_metrics.json` contains reproducible fingerprints and all
+20 one-vote perturbation trials. No live Gemini calls are used in this evaluation.
