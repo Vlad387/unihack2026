@@ -38,13 +38,65 @@ cd backend && uv sync && uv run pytest     # → 83 passed
 
 ---
 
-## 2. Gemini: NU facem billing 💸
+## 2. Ce am făcut eu (Vladut, frontend) 🎨
+
+Tot frontend-ul e gata și **conectat la backend-ul real**. Deschide `http://localhost:3000/demo` ca să vezi toate paginile într-un singur loc, cu previzualizări live.
+
+### Paginile
+
+| Adresă | Pentru cine | Ce face |
+|---|---|---|
+| `/` | toată lumea | Landing page: ce e CityMind, pașii, principiile, harta live |
+| `/cum-functioneaza` | juriu, public | Metodologia: agenți AI → hartă → puncte comune → runde de vot |
+| `/demo` | echipă, juriu | Toate paginile într-un loc, cu previzualizări live |
+| `/participa` | cetățean (din QR) | **Pas 1:** răspuns cu vocea (microfon) sau în scris, cartier + vârstă opțional |
+| `/vote` | cetățean | **Pas 2:** votează afirmațiile celorlalți (de acord / nu / nu știu) |
+| `/me` | cetățean | **Pas 3:** „Tu” pe harta opiniilor, tabăra ta, ce te leagă de ceilalți |
+| `/proposal` | cetățean | **Pas 4:** compromisul AI, ce câștigă/cedează fiecare tabără, vot + critică |
+| `/board` | proiector | Ecran live (temă întunecată): hartă animată, QR, tabere, puncte comune, propunere, sprijin pe runde |
+| `/organizer` | organizator | Consultare nouă + QR + butonul **„Generează propunerea”** |
+| `/organizer/moderation` | organizator | Afirmații semnalate de AI: aprobă / respinge |
+| `/organizer/kpi` | organizator, pitch | Dashboard KPI complet cu filtre (utilizare, retenție, calitate, conversie, concluzii) |
+| `/organizer/report` | organizator | Raport final, descărcabil ca PDF |
+
+### Conectat la API-ul real (docs/tips/FRONTEND_TIPS.md)
+
+- `POST /responses` (text + audio), `GET /statements`, `POST /votes`
+- `GET /clusters`, `GET /bridges` + WebSocket live (`map_updated`, `bridges_updated`, `proposal_published`, `support_updated`)
+- `GET /proposal`, `POST /proposal-votes`, `GET /support`
+- `POST /proposals` + `GET /proposals/status` (butonul organizatorului, cu mesaje clare la cotă epuizată / fără tabere)
+- Când `NEXT_PUBLIC_API_URL` nu e setat, aplicația merge pe date mock (util pentru demo offline).
+
+### Detalii care contează la demo
+
+- **Hover/tap pe un punct de pe hartă** → vezi ce a spus persoana respectivă și tabăra ei.
+- **Tot ce scrie AI-ul e etichetat** „Generat de AI”, iar verificarea criticului apare ca „Verificare automată (AI)”.
+- **Procentele numără doar voturi reale**: opiniile simulate nu intră niciodată.
+- **Culori de tabere verificate** pentru daltonism (paletă validată, alt set pentru ecranul întunecat).
+- **Harta apare completă din prima secundă**, chiar și pe telefoane lente; punctele suprapuse se desfac în cerc.
+- **Ecranul 2 așteaptă singur** cât timp AI-ul procesează (reîncearcă la 3 s).
+- **Dublu-tap pe „Trimite”** nu mai creează răspunsuri duplicate.
+- **Mesaje clare în română** pentru fiecare stare: fără tabere încă, fără propunere încă, rundă închisă, cotă epuizată.
+- Testat la **375px (telefon)** și pe **desktop/proiector**; `pnpm lint`, `pnpm typecheck` și `pnpm build` trec.
+
+### PR-urile mele în dev
+
+#1, #2 ecranele cetățeanului + ecranul live + organizator · #4 date de seed realiste · #6 landing, hover pe hartă, KPI · #8 pagina `/demo` · #14 conectare la API-ul real · #19 ecranul 4 + runde pe API real · #21 hartă cu puțini participanți · #25 plural corect · #27, #28 checkpoint-uri `dev → main`.
+
+### Am verificat și pentru voi
+
+- Am rulat testele backend pe Mac-ul Intel la fiecare PR important (#20, #22, #24, #26) înainte de merge.
+- Testul cap-coadă cu Gemini real (secțiunea 1) l-am făcut eu pe Mac-ul meu.
+
+---
+
+## 3. Gemini: NU facem billing 💸
 
 Decizia echipei: rămânem pe planul **gratuit**, cu modelele **flash-lite**.
 
 - Fiecare model are **cota lui pe zi**, care se resetează zilnic.
 - `intake` și `critic` merg deja pe `gemini-3.5-flash-lite`. La eroarea **429** (cotă epuizată) trec automat pe `gemini-3.1-flash-lite` (PR #22).
-- `mediate` e singurul încă pe `gemini-3.5-flash`. Bordos îl mută pe flash-lite (vezi secțiunea 4).
+- `mediate` e singurul încă pe `gemini-3.5-flash`. Bordos îl mută pe flash-lite (vezi secțiunea 5).
 - **Calcul:** 1 răspuns = 1 apel AI, 1 rundă de compromis = 2 apeluri. 30 de oameni + 2 runde ≈ **34 de apeluri pe zi**.
 - **Răspunsurile nu se pierd** când se termină cota: stau în coadă și se reîncearcă singure, iar organizatorul are buton de „Reîncearcă” (PR #26).
 - **Nu folosim chei de pe mai multe conturi** ca să ocolim limita: încalcă regulile Google și riscăm să ne blocheze cheia exact la demo.
@@ -56,7 +108,7 @@ Decizia echipei: rămânem pe planul **gratuit**, cu modelele **flash-lite**.
 
 ---
 
-## 3. Calendar ⏰
+## 4. Calendar ⏰
 
 | Când | Ce |
 |---|---|
@@ -69,7 +121,7 @@ Ordinea în care tăiem dacă nu ajungem (PLAN.md): Proxy + auditor → raport P
 
 ---
 
-## 4. Ce are de făcut fiecare
+## 5. Ce am nevoie de la fiecare 🙏
 
 ### 🔧 Rares – backend + infra (în ordinea priorității)
 
@@ -116,7 +168,7 @@ Ordinea în care tăiem dacă nu ajungem (PLAN.md): Proxy + auditor → raport P
 5. **Descrierile taberelor, cu Bordos** (acum sunt generice).
 6. *Stretch:* auditul de reprezentare (cine lipsește din consultare).
 
-### 🎨 Vladut – frontend (ca să știți)
+### 🎨 Vladut – ce urmează la mine (ca să știți)
 
 1. **Culori stabile pe ID de tabără** (acum depind de ordinea taberelor, nota lui Eidrien).
 2. **Pagina de organizator:** răspunsuri în așteptare/eșuate + buton „Reîncearcă” (`/responses/stats` și `/responses/retry`, din PR #26). Util exact când se termină cota.
@@ -125,7 +177,7 @@ Ordinea în care tăiem dacă nu ajungem (PLAN.md): Proxy + auditor → raport P
 
 ---
 
-## 5. Cele 3 lucruri care deblochează cel mai mult
+## 6. Cele 3 lucruri care deblochează cel mai mult
 
 1. **Deploy cu HTTPS** (Rares): fără el nu avem test sâmbătă, nici microfon pe telefon, nici link pentru juriu.
 2. **Demo loader cu seed** (Rares + Eidrien): fără billing, e singurul mod de a avea o hartă plină fără să ardem cota.
@@ -133,7 +185,7 @@ Ordinea în care tăiem dacă nu ajungem (PLAN.md): Proxy + auditor → raport P
 
 ---
 
-## 6. Reguli scurte
+## 7. Reguli scurte
 
 - 🔑 **Cheia Gemini și `ORGANIZER_TOKEN` doar în privat.** Niciodată pe grup sau în git (repo-ul e public).
 - ❗ **Conflict la `git pull`?** Nu forțați nimic, scrieți pe grup.
