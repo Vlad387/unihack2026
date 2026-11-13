@@ -35,13 +35,27 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
 
 
 def with_camps(client: TestClient) -> None:
-    """Three citizens answer, so the (stub) clustering produces camps."""
-    for pid in ("ana", "bogdan", "carmen"):
-        res = client.post(
-            "/responses", data={"participant_id": pid, "text": f"Opinia lui {pid}."}
-        )
+    """Two opposed groups of 10 voters, so real clustering finds camps.
+
+    Real clustering never invents camps from answers alone: people must vote differently.
+    """
+    for pid, text in (
+        ("ana", "Terasele să închidă la 23."),
+        ("bogdan", "Barurile să rămână deschise noaptea."),
+    ):
+        res = client.post("/responses", data={"participant_id": pid, "text": text})
         assert res.status_code == 202
     asyncio.run(live.tick())
+
+    statements = client.get("/statements", params={"participant_id": "v0"}).json()
+    assert len(statements) == 2
+    for i in range(20):
+        for j, st in enumerate(statements):
+            value = "agree" if (i < 10) == (j == 0) else "disagree"
+            vote = {"participant_id": f"v{i}", "statement_id": st["id"], "value": value}
+            assert client.post("/votes", json=vote).status_code == 204
+    asyncio.run(live.recompute())
+    assert len(live.result.camps) >= 2, "two opposed groups should form camps"
 
 
 def wait_for_round(client: TestClient) -> dict:
@@ -87,9 +101,10 @@ def test_round_publishes_a_proposal_with_real_round_and_verdict(
 ) -> None:
     with_camps(client)
     with client, client.websocket_connect("/ws") as ws:
+        # started right after startup, before the first map exists: must wait, not fail
+        proposal = run_round(client)
         camps = client.get("/clusters").json()["camps"]
         assert camps, "the map has camps"
-        proposal = run_round(client)
 
         for _ in range(20):
             event = ws.receive_json()
