@@ -23,6 +23,8 @@ interface Props {
 
 export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
   const ref = useRef<SVGSVGElement>(null);
+  // first paint draws everything in place: animations only for later changes, so slow phones never show an empty map
+  const first = useRef(true);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -44,7 +46,7 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
             .append("circle")
             .attr("cx", (d) => x(d.x))
             .attr("cy", (d) => y(d.y))
-            .attr("r", 0)
+            .attr("r", first.current ? 8 * scale : 0)
             .attr("fill", (d) => color(d.camp_id))
             .attr("fill-opacity", 0.85)
             .call((e) => e.transition(t).attr("r", 8 * scale)),
@@ -65,23 +67,33 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
       return { ...c, cx: d3.mean(mine, (p) => x(p.x)) ?? W / 2, cy: d3.min(mine, (p) => y(p.y)) ?? H / 2 };
     });
 
+    // keep long camp names inside the map edges
+    function labelX(this: SVGTextElement, d: (typeof labels)[number]) {
+      const half = this.getComputedTextLength() / 2 + 4;
+      return Math.min(Math.max(d.cx, half), W - half);
+    }
+    const labelY = (d: (typeof labels)[number]) => Math.max(d.cy - 18 * scale, 20 * scale);
+
     svg
       .select<SVGGElement>("g.labels")
       .selectAll<SVGTextElement, (typeof labels)[number]>("text")
       .data(labels, (d) => d.id)
-      .join("text")
+      .join((enter) =>
+        enter
+          .append("text")
+          .text((d) => d.name)
+          .attr("text-anchor", "middle")
+          .attr("font-size", 18 * scale)
+          .attr("x", labelX)
+          .attr("y", labelY),
+      )
       .text((d) => d.name)
-      .attr("text-anchor", "middle")
       .attr("fill", (d) => color(d.id))
       .attr("font-size", 18 * scale)
       .attr("stroke-width", 4 * scale)
       .transition(t)
-      // keep long camp names inside the map edges
-      .attr("x", function (d) {
-        const half = this.getComputedTextLength() / 2 + 4;
-        return Math.min(Math.max(d.cx, half), W - half);
-      })
-      .attr("y", (d) => Math.max(d.cy - 18 * scale, 20 * scale));
+      .attr("x", labelX)
+      .attr("y", labelY);
 
     // "you" marker: the backend's latest position for this participant wins over the initial one
     const mine = me && (points.find((p) => p.participant_id === me.participant_id) ?? me);
@@ -104,6 +116,7 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
       .attr("font-size", 16 * scale)
       .attr("dy", 34 * scale);
     marker.transition(t).attr("transform", (d) => `translate(${x(d.x)},${y(d.y)})`);
+    first.current = false;
   }, [clusters, me, scale]);
 
   return (
