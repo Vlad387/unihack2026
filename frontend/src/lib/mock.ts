@@ -38,11 +38,12 @@ export const mockStatements: Statement[] = [
 ];
 
 // Sizes add up to the 50 seed answers.
+const memberIds = (id: string, size: number) => Array.from({ length: size }, (_, i) => `${id}-p${i}`);
 const camps = [
   { id: "c1", name: "Liniște pentru locuitori", description: "Vor terase închise mai devreme și zgomot măsurat și sancționat.", size: 19 },
   { id: "c2", name: "Centru viu", description: "Vor program târziu, terase vara și concerte, fără boxe pe stradă.", size: 18 },
   { id: "c3", name: "Siguranță și transport", description: "Pun accent pe transport de noapte, patrule, lumină și curățenie.", size: 13 },
-];
+].map((c) => ({ ...c, member_ids: memberIds(c.id, c.size) }));
 
 // Seed answers grouped roughly by the camp their authors would fall into.
 const campAnswers: Record<string, string[]> = {
@@ -95,7 +96,9 @@ export function simulateEvents(onEvent: (e: ConsultationEvent) => void): () => v
     const camp = camps[n % camps.length];
     const [cx, cy] = centers[camp.id];
     clusters = {
-      camps: clusters.camps.map((c) => (c.id === camp.id ? { ...c, size: c.size + 1 } : c)),
+      camps: clusters.camps.map((c) =>
+        c.id === camp.id ? { ...c, size: c.size + 1, member_ids: [...c.member_ids, `sim-${n}`] } : c,
+      ),
       points: [
         ...clusters.points,
         {

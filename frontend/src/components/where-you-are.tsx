@@ -9,21 +9,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { campColor } from "@/lib/colors";
 import { type ConsultationState, useConsultation } from "@/hooks/use-consultation";
 import { getMyPosition } from "@/lib/api";
+import { getParticipantId } from "@/lib/participant";
 import type { Point } from "@/lib/types";
 
 export function WhereYouAre({ initial }: { initial: ConsultationState }) {
   const { clusters, bridges } = useConsultation(initial);
   const [me, setMe] = useState<Point | null>(null);
+  const [myId, setMyId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     getMyPosition()
-      .then(setMe)
+      .then((p) => {
+        setMe(p);
+        setMyId(getParticipantId());
+      })
       .catch((err) => console.error("getMyPosition failed", err))
       .finally(() => setLoaded(true));
   }, []);
 
-  const myPoint = me && (clusters.points.find((p) => p.participant_id === me.participant_id) ?? me);
+  // live map wins: a new participant appears here as soon as clustering places them
+  const myPoint = clusters.points.find((p) => p.participant_id === myId) ?? me;
   const camp = clusters.camps.find((c) => c.id === myPoint?.camp_id);
   const color = campColor(clusters.camps);
 
@@ -31,7 +37,7 @@ export function WhereYouAre({ initial }: { initial: ConsultationState }) {
     <div className="flex flex-col gap-6">
       <Card className="py-2">
         <CardContent className="px-2">
-          <OpinionMap clusters={clusters} me={me} scale={2} />
+          <OpinionMap clusters={clusters} me={myPoint} scale={2} />
         </CardContent>
       </Card>
 

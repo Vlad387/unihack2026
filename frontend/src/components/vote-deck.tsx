@@ -2,9 +2,9 @@
 
 import { Check, HelpCircle, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { submitVote } from "@/lib/api";
+import { getStatementsToVote, submitVote } from "@/lib/api";
 import type { Statement, VoteValue } from "@/lib/types";
 
 const choices: { value: VoteValue; label: string; icon: typeof Check; className: string }[] = [
@@ -13,12 +13,42 @@ const choices: { value: VoteValue; label: string; icon: typeof Check; className:
   { value: "pass", label: "Nu știu", icon: HelpCircle, className: "" },
 ];
 
-export function VoteDeck({ statements }: { statements: Statement[] }) {
+const RETRY_MS = 3000;
+
+export function VoteDeck() {
+  const [statements, setStatements] = useState<Statement[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [index, setIndex] = useState(0);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(false);
 
+  // A fresh answer needs a few seconds of AI processing before its statements exist, so retry while empty.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let stopped = false;
+    const load = () =>
+      getStatementsToVote()
+        .then((list) => {
+          if (stopped) return;
+          setLoadError(false);
+          setStatements(list);
+          if (list.length === 0) timer = setTimeout(load, RETRY_MS);
+        })
+        .catch((err) => {
+          console.error("getStatementsToVote failed", err);
+          if (stopped) return;
+          setLoadError(true);
+          timer = setTimeout(load, RETRY_MS);
+        });
+    load();
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
+  }, []);
+
   async function vote(value: VoteValue) {
+    if (!statements) return;
     setSending(true);
     setError(false);
     try {
@@ -31,6 +61,18 @@ export function VoteDeck({ statements }: { statements: Statement[] }) {
     } finally {
       setSending(false);
     }
+  }
+
+  if (statements === null || statements.length === 0) {
+    return (
+      <p className="text-center text-muted-foreground" aria-live="polite">
+        {loadError
+          ? "Nu ne putem conecta la server. Reîncercăm automat…"
+          : statements === null
+            ? "Se încarcă afirmațiile…"
+            : "AI-ul pregătește afirmațiile din răspunsurile oamenilor. Apar aici în câteva secunde…"}
+      </p>
+    );
   }
 
   if (index >= statements.length) {
