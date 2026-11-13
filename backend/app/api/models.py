@@ -2,11 +2,11 @@
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, LargeBinary, String, Text, func
+from sqlalchemy import JSON, DateTime, ForeignKey, LargeBinary, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
-from app.schemas import Statement
+from app.schemas import Proposal, Statement
 
 
 class ResponseRow(Base):
@@ -56,6 +56,36 @@ class VoteRow(Base):
         ForeignKey("statements.id"), primary_key=True
     )
     value: Mapped[str] = mapped_column(String)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class ProposalRow(Base):
+    __tablename__ = "proposals"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    round: Mapped[int] = mapped_column(unique=True)
+    # the full Proposal (text, tradeoffs, verdict) as produced by mediate + critic
+    data: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    def to_schema(self) -> Proposal:
+        return Proposal.model_validate(self.data)
+
+
+class ProposalVoteRow(Base):
+    # composite key = one vote per (participant, proposal): voting again overwrites
+    __tablename__ = "proposal_votes"
+
+    participant_id: Mapped[str] = mapped_column(String, primary_key=True)
+    proposal_id: Mapped[str] = mapped_column(
+        ForeignKey("proposals.id"), primary_key=True
+    )
+    support: Mapped[bool]
+    critique: Mapped[str | None] = mapped_column(Text)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )

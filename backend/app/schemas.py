@@ -108,18 +108,30 @@ class CampTradeoff(BaseModel):
     gives_up: str
 
 
-class Proposal(BaseModel):
-    id: str
-    round: int
-    text: str
-    tradeoffs: list[CampTradeoff]
-
-
 class Verdict(BaseModel):
     faithful: bool
     balanced: bool
     feasible: bool
     notes: str
+
+
+class Proposal(BaseModel):
+    id: str
+    round: int
+    text: str
+    tradeoffs: list[CampTradeoff]
+    # critic()'s check, filled by the API after mediate(); None if critic failed
+    verdict: Verdict | None = None
+
+
+class ProposalVote(BaseModel):
+    """A citizen's vote on the current round's proposal. Voting again overwrites."""
+
+    participant_id: str = Field(min_length=1)
+    proposal_id: str
+    support: bool
+    # fed to mediate() in the next round, so the compromise answers real objections
+    critique: str | None = Field(default=None, max_length=1000)
 
 
 class ProxyOpinion(BaseModel):
