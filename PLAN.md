@@ -23,6 +23,8 @@ Evenimente WebSocket (D le trimite, C le ascultă): `map_updated`, `bridges_upda
 
 ## 2. Cine ce face
 
+Persoane: **A = Bordos**, **B = Eidrien**, **C = Vladut**, **D = Rares** (detalii și reguli în [RULES.md](RULES.md)).
+
 | Om | Rol | Folder | Livrează |
 |---|---|---|---|
 | **A** | Agenți AI | `backend/app/agents/` | Intake, Mediator, Critic, (Proxy), prompturi, apeluri Gemini |
@@ -59,10 +61,11 @@ Păstrăm: Next.js, FastAPI, Postgres + pgvector, Gemini, Vultr (premii pentru G
 
 ## 5. Git – cum nu ne călcăm pe picioare
 
-1. `git checkout dev && git pull`
-2. `git checkout -b a/intake` (prefixul = litera ta)
-3. commit des, `git push -u origin a/intake`
-4. Pull Request în `dev`, merge rapid (fără review obligatoriu, e hackathon)
-5. **Nimeni nu dă push direct pe `main`.** Vlad face merge `dev → main` la fiecare checkpoint care merge.
+Fiecare are branch-ul lui din `dev`: `rares`, `vladut`, `bordos`, `eidrien`.
+
+1. `git checkout numele-tau` și, înainte de lucru, `git pull origin dev`
+2. commit des, `git push`
+3. Pull Request în `dev`, merge rapid (fără review obligatoriu, e hackathon)
+4. **Nimeni nu dă push direct pe `main` sau `dev`.** Vladut face merge `dev → main` la fiecare checkpoint care merge.
 
 Fișierele comune (`schemas.py`, `docker-compose.yml`, `package.json`) – anunțați pe grup înainte să le modificați.
