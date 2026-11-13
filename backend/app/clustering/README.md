@@ -76,3 +76,14 @@ Default pytest discovery includes tests/ and app/clustering, so the standard
 pre-push command runs the clustering and bridge regression tests too.
 The existing stub pipeline test was previously updated to expect noise rather
 than fabricated camps; its uniform-vote fixture still contains no camp contrast.
+
+
+## Display continuity (optional API integration)
+
+`app.clustering.layout.align_layout(current, previous)` is a pure, tested display
+helper. It uses shared assigned participants to remove a global rotation/reflection
+and translation without rescaling, changing membership or mutating either input.
+Rares must call it with the previous full map in the API; it is not wired in here.
+It does not warm-start UMAP, improve ARI or guarantee smooth live sequences.
+See seed/DATA_CHECKPOINT.md for small-camp bridge thresholds, diagnostic commands,
+measured display-movement limits, the loader handoff and final pitch slide text.
