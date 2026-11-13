@@ -137,6 +137,9 @@ class Live:
         self.clients: set[WebSocket] = set()
         self.result = ClusterResult(camps=[], points=[])
         self.bridges: list[Statement] = []
+        # set after the first map since startup: until then `result` is empty even if
+        # the DB is full (real clustering takes a while on a cold start)
+        self.map_ready = asyncio.Event()
         # proposal rounds (api/proposals.py): one mediate run at a time
         self.round_running = False
         self.round_error: str | None = None
@@ -214,6 +217,7 @@ class Live:
         result = await asyncio.to_thread(cluster, statements, votes)
         common = await asyncio.to_thread(bridges, votes, result.camps)
         self.result, self.bridges = with_texts(result, statements), common
+        self.map_ready.set()
         await self.broadcast(MapUpdated(data=self.result))
         await self.broadcast(BridgesUpdated(data=self.bridges))
 
