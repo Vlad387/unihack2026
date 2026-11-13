@@ -8,6 +8,7 @@ export const siteLinks = [
   { href: "/cum-functioneaza", label: "Cum funcționează" },
   { href: "/board", label: "Ecran live" },
   { href: "/organizer", label: "Organizatori" },
+  { href: "/demo", label: "Demo" },
 ];
 
 export function SiteHeader() {
