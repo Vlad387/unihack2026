@@ -7,9 +7,10 @@ Ce s-a făcut în `backend/app/agents/`, pe scurt, pentru toată echipa.
 | `intake` | împarte și filtrează răspunsurile cetățenilor | ✅ gata, în `dev` (PR #9) |
 | `mediate` | scrie compromisul între tabere | ✅ gata, în `dev` (PR #15) |
 | `critic` | verifică dacă compromisul e corect și echilibrat | ✅ gata, în `dev` (PR #22) |
+| `name_camps` | dă nume și descriere reale taberelor („Liniște și odihnă") | ✅ gata (secțiunea 14) |
 | `proxy` | simulează vocea unui grup care lipsește (opțional) | ❌ neînceput |
 
-Secțiunile 1–7 sunt despre `intake`; 8–10 despre `mediate`; 11–13 despre `critic`.
+Secțiunile 1–7: `intake`; 8–10: `mediate`; 11–13: `critic`; 14: `name_camps`.
 **Modele și cota gratuită: secțiunea 5.**
 
 ---
@@ -115,6 +116,7 @@ cu funcția `intake` exportată din `__init__.py`. La fel vor fi `mediate_agent.
 | `intake` | `gemini-3.5-flash-lite` | 1 apel la **fiecare** răspuns → cele mai multe apeluri | `GEMINI_INTAKE_MODEL` |
 | `mediate` | `gemini-3.5-flash-lite` | 1 apel pe rundă (testat: propuneri bune, 5–10 s) | `GEMINI_MEDIATE_MODEL` |
 | `critic` | `gemini-3.5-flash-lite` | 1 apel pe rundă, verificare | `GEMINI_CRITIC_MODEL` |
+| `name_camps` | `gemini-3.5-flash-lite` | 1 apel doar când apar tabere noi | `GEMINI_NAMING_MODEL` |
 | rezervă | `gemini-3.1-flash-lite` | folosit **automat** când un model dă 429 | `GEMINI_FALLBACK_MODEL` |
 
 - Dacă modelul agentului dă **429**, se încearcă o dată modelul de rezervă. Dacă și
@@ -431,3 +433,59 @@ uv run python -m app.agents.demo_critic
 („Siguranșă"). Nota are uneori puțin peste 60 de cuvinte.
 
 **Fișiere:** `critic_agent.py`, `prompts/critic.md`, `demo_critic.py`.
+
+---
+
+## 14. `name_camps` – nume reale pentru tabere
+
+**Ce face:** clustering-ul face taberele, dar le dă nume generice („Tabăra 1", „Tabăra 2").
+`name_camps` citește ce au scris oamenii din fiecare tabără și îi dă un **nume scurt**
+și o **descriere de o propoziție**, care apar pe harta de pe ecranul mare și pe telefoane.
+
+**Exemplu real** – clustering-ul lui Eidrien pe tot seed-ul (50 de oameni, 737 de voturi),
+apoi `name_camps`, **un singur apel, 1,5 s**:
+
+| Înainte | După |
+|---|---|
+| Tabăra 1 (15 oameni) | **Viață de noapte activă** – „Vor program flexibil pentru terase și baruri deschise până târziu în centru." |
+| Tabăra 2 (16 oameni) | **Liniște și odihnă** – „Cer ore stricte de liniște și măsuri ferme împotriva zgomotului nocturn." |
+| Tabăra 3 (19 oameni) | **Curățenie și transport noaptea** – „Solicită transport nocturn, siguranță sporită și curățenie mai bună în centru." |
+
+**Reguli din prompt** ([`prompts/naming.md`](prompts/naming.md)): 2–4 cuvinte, despre **ce vrea**
+tabăra, nu despre **cine** e (niciodată „Bătrânii", „Studenții", „Patronii"), neutru, fără ironie,
+nume clar diferite între ele.
+
+**Cum funcționează** – aceeași rețetă în 4 pași:
+1. **Strânge datele** – pentru fiecare tabără: argumentele scrise de membri (aceleași filtre ca la
+   `mediate`) + numele deja folosite de alte tabere (`taken_names`).
+2. **Instrucțiunile** – `prompts/naming.md`.
+3. **Răspuns în format fix** – pentru fiecare tabără: `camp_id`, `name`, `description`.
+4. **Verificare în cod** – o tabără pe care Gemini a sărit-o, sau al cărei nume se repetă
+   (cu alta sau cu `taken_names`), **își păstrează numele vechi**. Taberele fără niciun argument
+   scris nu sunt trimise la Gemini.
+
+**Pentru Rares – cum îl legi de hartă:**
+
+```python
+from app.agents import name_camps, AgentError
+
+# în live.recompute(), DUPĂ camp_ids.stabilize():
+new = [c for c in result.camps if c.name.startswith("Tabăra ")]   # doar cele încă nenumite
+if new:
+    taken = [c.name for c in result.camps if c not in new]
+    try:
+        named = {c.id: c for c in name_camps(new, taken)}          # 1 apel Gemini
+        result = result.model_copy(update={"camps": [named.get(c.id, c) for c in result.camps]})
+    except AgentError:
+        pass   # rămân „Tabăra N"; se reîncearcă la următorul recompute
+```
+
+- **ID-urile, membrii și ordinea rămân neschimbate** – se schimbă doar `name` și `description`.
+- `stabilize()` deja păstrează numele unei tabere care supraviețuiește → numele dat de AI
+  rămâne la voturile următoare, deci **apelul se face doar când apare o tabără nouă**.
+- Rulează-l în fundal (`asyncio.to_thread`), ca la ceilalți agenți. Durează ~1–2 s.
+
+**Test live**, din `backend/`: `uv run python -m app.agents.demo_naming`
+(pe cele 3 tabere făcute de mână din seed; `agents/` nu are voie să importe `clustering/`).
+
+**Fișiere:** `naming_agent.py`, `prompts/naming.md`, `demo_naming.py`, `../../tests/test_naming.py`.
