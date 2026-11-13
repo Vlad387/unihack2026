@@ -5,18 +5,28 @@ import pytest
 from app.agents import critic_agent, intake_agent, mediate_agent
 
 
+class GeminiCalls(list):
+    """intake and mediate calls, in order. critic calls go to `.critic` instead:
+    the API runs critic right after mediate, and tests read fake_gemini[-1] as the
+    mediate call (tests/test_proposals.py)."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.critic: list[dict] = []
+
+
 @pytest.fixture(autouse=True)
-def fake_gemini(monkeypatch: pytest.MonkeyPatch) -> list[dict]:
+def fake_gemini(monkeypatch: pytest.MonkeyPatch) -> GeminiCalls:
     """Tests never call the real Gemini API: offline, free, deterministic.
 
     One fake per agent, mimicking the shape of a real answer. Each call is recorded
     so tests can check what the agent sent.
-    Live checks: `uv run python -m app.agents.demo_intake` / `demo_mediate`.
+    Live checks: `uv run python -m app.agents.demo_intake` / `demo_mediate` / `demo_critic`.
     """
-    calls: list[dict] = []
+    calls = GeminiCalls()
 
-    def record(model, system, contents):
-        calls.append({"model": model, "system": system, "contents": contents})
+    def record(model, system, contents, into: list[dict] = calls):
+        into.append({"model": model, "system": system, "contents": contents})
 
     def fake_intake(model, system, contents, schema, **_):
         record(model, system, contents)
@@ -37,7 +47,7 @@ def fake_gemini(monkeypatch: pytest.MonkeyPatch) -> list[dict]:
         )
 
     def fake_critic(model, system, contents, schema, **_):
-        record(model, system, contents)
+        record(model, system, contents, into=calls.critic)
         return schema(
             faithful=True, balanced=True, feasible=True, notes="Verdict de test."
         )
