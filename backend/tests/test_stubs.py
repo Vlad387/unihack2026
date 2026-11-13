@@ -13,7 +13,8 @@ def test_pipeline_runs_end_to_end_on_stubs() -> None:
     ]
     result = cluster(statements, votes)
     assert len(result.points) == 10
-    assert sum(c.size for c in result.camps) == 10
+    assert result.camps == []
+    assert all(p.camp_id is None for p in result.points)
 
     common = bridges(votes, result.camps)
     proposal = mediate(result.camps, common, [], [])
