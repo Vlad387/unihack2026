@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { campColor, OpinionMap } from "@/components/opinion-map";
+import { OpinionMap } from "@/components/opinion-map";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { campColor } from "@/lib/colors";
 import { type ConsultationState, useConsultation } from "@/hooks/use-consultation";
 import { getMyPosition } from "@/lib/api";
 import type { Point } from "@/lib/types";

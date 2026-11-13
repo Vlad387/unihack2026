@@ -1,8 +1,10 @@
 "use client";
 
-import { campColor, OpinionMap } from "@/components/opinion-map";
+import { JoinQr } from "@/components/join-qr";
+import { OpinionMap } from "@/components/opinion-map";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { campColor } from "@/lib/colors";
 import { type ConsultationState, useConsultation } from "@/hooks/use-consultation";
 
 function AiBadge() {
@@ -20,14 +22,19 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
   return (
     <div className="grid flex-1 gap-6 lg:grid-cols-[1fr_400px]">
       <section className="flex flex-col gap-4">
-        <header className="flex flex-wrap items-end justify-between gap-4">
+        <header className="flex flex-wrap items-end justify-between gap-4 lg:flex-nowrap">
           <div>
             <p className="text-sm font-medium text-muted-foreground">CityMind · Live</p>
             <h1 className="text-2xl font-bold lg:text-4xl">{question}</h1>
           </div>
-          <div className="text-right" aria-live="polite">
-            <p className="text-4xl font-bold tabular-nums lg:text-6xl">{clusters.points.length}</p>
-            <p className="text-sm text-muted-foreground">participanți</p>
+          <div className="flex items-center gap-6">
+            <div className="text-right" aria-live="polite">
+              <p className="text-4xl font-bold tabular-nums lg:text-6xl">{clusters.points.length}</p>
+              <p className="text-sm text-muted-foreground">participanți</p>
+            </div>
+            <div className="hidden lg:block">
+              <JoinQr size={110} />
+            </div>
           </div>
         </header>
         <Card className="flex-1">

@@ -1,7 +1,25 @@
 // The ONLY place that calls the REST API. shortcut: returns mock data until Rares's endpoints are up.
-import { mockBridges, mockClusters, mockProposal, mockQuestion, mockStatements, mockSupport } from "./mock";
+import {
+  mockBridges,
+  mockClusters,
+  mockConsultation,
+  mockModeration,
+  mockProposal,
+  mockQuestion,
+  mockStatements,
+  mockSupport,
+} from "./mock";
 import { getParticipantId } from "./participant";
-import type { ClusterResult, Point, Proposal, Statement, SupportRound, VoteValue } from "./types";
+import type {
+  ClusterResult,
+  Consultation,
+  ModerationItem,
+  Point,
+  Proposal,
+  Statement,
+  SupportRound,
+  VoteValue,
+} from "./types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -59,4 +77,22 @@ export interface ProposalVoteInput {
 
 export async function submitProposalVote(input: ProposalVoteInput): Promise<void> {
   console.log("submitProposalVote (mock)", { participant_id: getParticipantId(), ...input });
+}
+
+// Organizer. shortcut: no organizer login yet (Auth0 only if time allows).
+export async function getConsultation(): Promise<Consultation> {
+  return mockConsultation;
+}
+
+export async function createConsultation(input: Omit<Consultation, "id">): Promise<Consultation> {
+  console.log("createConsultation (mock)", input);
+  return { ...input, id: mockConsultation.id };
+}
+
+export async function getModerationQueue(): Promise<ModerationItem[]> {
+  return mockModeration;
+}
+
+export async function moderateStatement(statementId: string, approve: boolean): Promise<void> {
+  console.log("moderateStatement (mock)", { statementId, approve });
 }

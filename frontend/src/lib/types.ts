@@ -60,6 +60,21 @@ export type ConsultationEvent =
   | { type: "proposal_published"; data: Proposal }
   | { type: "support_updated"; data: SupportRound[] };
 
+export interface Consultation {
+  id: string;
+  question: string;
+  context: string;
+  // share of real "agree" votes (0–1) a proposal needs to pass
+  threshold: number;
+}
+
+export type ModerationReason = "abuse" | "personal_data" | "off_topic";
+
+export interface ModerationItem {
+  statement: Statement;
+  reason: ModerationReason;
+}
+
 export interface Verdict {
   faithful: boolean;
   balanced: boolean;
