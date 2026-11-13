@@ -5,9 +5,11 @@ Ce s-a făcut în `backend/app/agents/`, pe scurt, pentru toată echipa.
 | Agent | Ce face | Stare |
 |---|---|---|
 | `intake` | împarte și filtrează răspunsurile cetățenilor | ✅ gata, în `dev` (PR #9) |
-| `mediate` | scrie compromisul între tabere | ⏳ încă stub (date false) |
+| `mediate` | scrie compromisul între tabere | ✅ gata (vezi secțiunea 8) |
 | `critic` | verifică dacă compromisul e corect și echilibrat | ⏳ încă stub (date false) |
 | `proxy` | simulează vocea unui grup care lipsește (opțional) | ❌ neînceput |
+
+Secțiunile 1–7 sunt despre `intake`; secțiunea 8 e despre `mediate`.
 
 ---
 
@@ -52,7 +54,7 @@ produse de `intake` și din voturi.
 from app.agents import intake, AgentError
 
 try:
-    statements = intake(text="...", audio=None)   # sau audio=bytes, sau ambele
+    statements = intake(text="...", audio=None)  # sau audio=bytes, sau ambele
 except AgentError:
     # Gemini a picat: păstrează răspunsul brut în DB și reîncearcă mai târziu.
     # Nu pierde niciodată răspunsul cetățeanului.
@@ -148,3 +150,48 @@ Testul `test_stubs.py` merge în continuare neschimbat.
 - Promptul nu primește întrebarea consultării (semnătura nu o are), deci `off_topic`
   înseamnă „nu e despre oraș", nu „nu e despre întrebarea asta". Dacă vrem mai strict,
   trebuie adăugat un parametru în contract (prin Rares).
+
+---
+
+## 8. `mediate` – compromisul
+
+**Ce face:** primește taberele (de la clustering), punctele comune (`bridges`),
+criticile cetățenilor la propunerea anterioară și vocile simulate (proxy), și scrie
+**o propunere de compromis** + pentru **fiecare tabără** ce **câștigă** și la ce **cedează**.
+Frontend-ul afișează asta pe ecranul 4 („Câștigă:" / „Cedează:").
+
+```python
+from app.agents import mediate, AgentError
+
+proposal = mediate(camps, bridges, critiques, proxies)  # -> Proposal
+# proposal.text, proposal.tradeoffs (exact câte unul per tabără, în ordinea taberelor)
+```
+
+**Reguli importante (pentru Rares):**
+- Argumentele unei tabere = afirmațiile **scrise** de membrii ei (`author_id in member_ids`),
+  fără cele cu `flag`, maxim 20 per tabără.
+- `critiques` = textele criticilor din runda trecută (gol în runda 1). Runda 2 le ia în calcul.
+- `proxies` sunt trimise ca **voci simulate**: Gemini le folosește doar ca să nu uite
+  un grup; nu primesc tabără și nu contează ca voturi.
+- `proposal.round` e mereu 1 → **API-ul îl suprascrie** cu runda reală.
+- `AgentError` dacă: nu există nicio tabără, Gemini pică, sau Gemini uită o tabără.
+  Atunci reîncearcă mai târziu.
+- Durează **25–60 s** (gândire „high", sarcina e grea) → doar în fundal.
+- Model: `GEMINI_PRO_MODEL`, care momentan = `gemini-3.5-flash` (Pro nu merge pe cheia noastră).
+
+**Fișiere:** `mediate_agent.py`, `prompts/mediate.md`, `demo_mediate.py`, `tests/test_mediate.py`.
+
+**Test live** (3 tabere făcute de mână din seed, până e gata `cluster()` real):
+
+```bash
+uv run python -m app.agents.demo_mediate      # runda 1
+uv run python -m app.agents.demo_mediate 2    # runda 2, cu critici
+```
+
+Rezultat runda 1 (prescurtat): muzica pe terase până la 23, terase până la 24 în weekend,
+interior până la 02 cu controale de zgomot, autobuze și patrule de noapte, curățenie dimineața.
+În runda 2, după critici („02 e prea târziu", „cine plătește?", „localurile mici ≠ cluburi"),
+a coborât interiorul la 01, a spus că plătesc taxele de autorizare și a separat restaurantele de cluburi.
+
+**Probleme cunoscute:** uneori în „cedează" adaugă un detaliu care nu e în textul propunerii
+(ex. „autobuzele doar pe arterele principale"). Asta e treaba `critic`-ului să prindă.
