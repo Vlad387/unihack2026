@@ -6,10 +6,11 @@ import { useSyncExternalStore } from "react";
 const noop = () => () => {};
 
 // Points at whatever host serves the app, so it works on localhost, LAN IP and Vultr alike.
+// Citizens land straight on the answer screen, not the landing page.
 export function JoinQr({ size = 160 }: { size?: number }) {
   const url = useSyncExternalStore(
     noop,
-    () => window.location.origin,
+    () => `${window.location.origin}/participa`,
     () => null,
   );
   if (!url) return <div style={{ width: size, height: size }} />;

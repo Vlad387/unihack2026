@@ -11,7 +11,7 @@ export default async function BoardPage() {
   ]);
 
   return (
-    <main className="flex flex-1 flex-col px-4 py-6 lg:px-8">
+    <main className="dark flex flex-1 flex-col bg-background px-4 py-6 text-foreground lg:px-8">
       <LiveBoard question={question} initial={{ clusters, bridges, proposal, support }} />
     </main>
   );
