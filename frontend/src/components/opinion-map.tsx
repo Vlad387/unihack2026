@@ -1,7 +1,7 @@
 "use client";
 
 import * as d3 from "d3";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { campColor } from "@/lib/colors";
 import type { ClusterResult, Point } from "@/lib/types";
 
@@ -23,6 +23,9 @@ interface Props {
 
 export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
   const ref = useRef<SVGSVGElement>(null);
+  // first paint draws everything in place: animations only for later changes, so slow phones never show an empty map
+  const first = useRef(true);
+  const [hover, setHover] = useState<{ point: Point; left: number; top: number } | null>(null);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -44,9 +47,13 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
             .append("circle")
             .attr("cx", (d) => x(d.x))
             .attr("cy", (d) => y(d.y))
-            .attr("r", 0)
-            .attr("fill", (d) => color(d.camp_id))
+            .attr("r", first.current ? 8 * scale : 0)
             .attr("fill-opacity", 0.85)
+            // wide transparent stroke = ~24px hit area, so small dots are easy to hover or tap
+            .attr("stroke", "transparent")
+            .attr("stroke-width", 10 * scale)
+            .attr("tabindex", 0)
+            .attr("class", "cursor-pointer outline-none transition-[filter] hover:brightness-125 focus:brightness-125")
             .call((e) => e.transition(t).attr("r", 8 * scale)),
         (update) =>
           update.call((u) =>
@@ -54,34 +61,49 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
               .transition(t)
               .attr("cx", (d) => x(d.x))
               .attr("cy", (d) => y(d.y))
-              .attr("r", 8 * scale)
-              .attr("fill", (d) => color(d.camp_id)),
+              .attr("r", 8 * scale),
           ),
         (exit) => exit.call((e) => e.transition(t).attr("r", 0).remove()),
-      );
+      )
+      // CSS var colors can't be tweened, so they're set directly
+      .style("fill", (d) => color(d.camp_id))
+      .on("pointerenter focus click", (_, d) => setHover({ point: d, left: x(d.x) / W, top: y(d.y) / H }))
+      .on("pointerleave", (e: PointerEvent) => e.pointerType === "mouse" && setHover(null))
+      .on("blur", () => setHover(null));
+    // tap on empty map closes the card on phones
+    svg.on("click", (e: MouseEvent) => e.target === ref.current && setHover(null));
 
     const labels = camps.map((c) => {
       const mine = points.filter((p) => p.camp_id === c.id);
       return { ...c, cx: d3.mean(mine, (p) => x(p.x)) ?? W / 2, cy: d3.min(mine, (p) => y(p.y)) ?? H / 2 };
     });
 
+    // keep long camp names inside the map edges
+    function labelX(this: SVGTextElement, d: (typeof labels)[number]) {
+      const half = this.getComputedTextLength() / 2 + 4;
+      return Math.min(Math.max(d.cx, half), W - half);
+    }
+    const labelY = (d: (typeof labels)[number]) => Math.max(d.cy - 18 * scale, 20 * scale);
+
     svg
       .select<SVGGElement>("g.labels")
       .selectAll<SVGTextElement, (typeof labels)[number]>("text")
       .data(labels, (d) => d.id)
-      .join("text")
+      .join((enter) =>
+        enter
+          .append("text")
+          .text((d) => d.name)
+          .attr("text-anchor", "middle")
+          .attr("font-size", 18 * scale)
+          .attr("x", labelX)
+          .attr("y", labelY),
+      )
       .text((d) => d.name)
-      .attr("text-anchor", "middle")
-      .attr("fill", (d) => color(d.id))
       .attr("font-size", 18 * scale)
       .attr("stroke-width", 4 * scale)
       .transition(t)
-      // keep long camp names inside the map edges
-      .attr("x", function (d) {
-        const half = this.getComputedTextLength() / 2 + 4;
-        return Math.min(Math.max(d.cx, half), W - half);
-      })
-      .attr("y", (d) => Math.max(d.cy - 18 * scale, 20 * scale));
+      .attr("x", labelX)
+      .attr("y", labelY);
 
     // "you" marker: the backend's latest position for this participant wins over the initial one
     const mine = me && (points.find((p) => p.participant_id === me.participant_id) ?? me);
@@ -104,19 +126,48 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
       .attr("font-size", 16 * scale)
       .attr("dy", 34 * scale);
     marker.transition(t).attr("transform", (d) => `translate(${x(d.x)},${y(d.y)})`);
+    first.current = false;
   }, [clusters, me, scale]);
 
+  const camp = hover && clusters.camps.find((c) => c.id === hover.point.camp_id);
+  const color = campColor(clusters.camps);
+
   return (
-    <svg
-      ref={ref}
-      viewBox={`0 0 ${W} ${H}`}
-      role="img"
-      aria-label={`Harta opiniilor: ${clusters.points.length} participanți în ${clusters.camps.length} tabere`}
-      className="h-auto w-full"
-    >
-      <g className="points" />
-      <g className="labels font-semibold [paint-order:stroke] [&_text]:stroke-background" />
-      <g className="me [paint-order:stroke] [&_text]:stroke-background [&_text]:stroke-[6px]" />
-    </svg>
+    <div className="relative">
+      <svg
+        ref={ref}
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label={`Harta opiniilor: ${clusters.points.length} participanți în ${clusters.camps.length} tabere`}
+        className="h-auto w-full"
+      >
+        <g className="points" />
+        <g className="labels pointer-events-none fill-foreground font-semibold [paint-order:stroke] [&_text]:stroke-background" />
+        <g className="me pointer-events-none [paint-order:stroke] [&_text]:stroke-background [&_text]:stroke-[6px]" />
+      </svg>
+
+      {hover && (
+        <div
+          role="tooltip"
+          className="pointer-events-none absolute z-10 w-64 max-w-[80%] rounded-xl border bg-popover p-3 text-sm text-popover-foreground shadow-xl"
+          style={{
+            left: `${Math.min(Math.max(hover.left * 100, 18), 82)}%`,
+            top: `${hover.top * 100}%`,
+            // above the dot, or below it when the dot is near the top edge
+            transform: `translate(-50%, ${hover.top < 0.4 ? "16px" : "calc(-100% - 16px)"})`,
+          }}
+        >
+          <p className="font-medium leading-snug">
+            {hover.point.text ? `„${hover.point.text}”` : "Răspunsul e încă procesat."}
+          </p>
+          {camp && (
+            <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-0.5 w-3 rounded-full" style={{ background: color(camp.id) }} aria-hidden />
+              {camp.name}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

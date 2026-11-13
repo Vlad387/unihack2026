@@ -1,0 +1,62 @@
+{
+ "resident": [
+  "Locuiesc deasupra unui bar și nu pot dormi în weekend. Aș vrea ca terasele să închidă la 23, chiar dacă muzica din interior continuă.",
+  "Nu vreau să dispară barurile din centru. Problema mea sunt oamenii care strigă sub geam după închidere, nu muzica din local.",
+  "Pentru mine liniștea trebuie să înceapă la 22 în fiecare seară. Am copil mic și nu pot muta dormitorul în altă parte.",
+  "Aș accepta program până la două vinerea și sâmbăta dacă localurile au izolare fonică verificată și țin ușile închise.",
+  "Centrul a devenit murdar dimineața. Prefer mai multe coșuri și curățenie plătită de localuri în locul unei interdicții generale.",
+  "Lucrez în ture și dorm uneori ziua. O regulă bazată doar pe ora de închidere nu rezolvă zgomotul de la aprovizionare.",
+  "Sunt de acord cu concerte în piață de câteva ori pe an, anunțate din timp. Nu cu boxe afară în fiecare noapte.",
+  "Aș prefera să mutăm cluburile mari într-o zonă fără locuințe și să rămână în centru restaurante și cafenele.",
+  "Am făcut sesizări fără rezultat. Vreau măsurători de zgomot și sancțiuni aplicate celor care repetă abaterile, nu promisiuni.",
+  "Nu sunt sigur ce oră ar fi corectă. Aș testa trei luni un program diferit în weekend și aș decide după rezultate."
+ ],
+ "bar_owner": [
+  "Cea mai mare parte a încasărilor vine după miezul nopții. Închiderea la 23 ar însemna să reduc personalul, dar pot renunța la muzica pe terasă.",
+  "Sunt dispus să investesc în izolare fonică dacă primăria oferă un termen realist și regulile sunt aceleași pentru toți.",
+  "Susțin sancțiuni pentru localurile care depășesc repetat limita de zgomot. Ne strică reputația și nouă, celor care respectăm vecinii.",
+  "Vreau terase deschise până la unu vara. Clienții nu vor să stea înăuntru pe căldură, iar centrul trăiește din terase.",
+  "Aș accepta terasă până la 23 și interior până la trei, cu pază la ieșire. Nu pot controla singur toate străzile din jur.",
+  "O taxă mică pentru curățenia de noapte ar fi acceptabilă dacă banii sunt folosiți transparent chiar în zona localurilor.",
+  "Localul meu e mic și închide la zece. Nu mi se pare corect să plătesc aceeași taxă ca un club cu sute de clienți.",
+  "Mutarea tuturor cluburilor la periferie nu funcționează fără transport noaptea. Clienții și angajații trebuie să ajungă acasă în siguranță.",
+  "Aș prefera autorizații cu program stabil, nu excepții negociate de la o săptămână la alta. Pot planifica investiții dacă știu regulile.",
+  "Putem avea o persoană care le cere clienților să plece fără zgomot. Dar nu susțin închiderea tuturor pentru greșelile câtorva localuri."
+ ],
+ "student": [
+  "Vreau să avem unde ieși și după miezul nopții. Sunt de acord să nu se mai audă muzică afară după 23.",
+  "Problema e drumul spre casă. Dacă ar exista autobuze noaptea, nu am mai aștepta taxiul în grupuri gălăgioase lângă terase.",
+  "Stau în chirie în centru și am examene. Susțin localuri deschise târziu doar cu izolare bună; și studenții au nevoie de somn.",
+  "Mi-ar plăcea mai multe evenimente culturale accesibile, nu doar cluburi scumpe. Viața de noapte poate însemna și film sau muzică live.",
+  "Nu vreau limite noi de program. Am ales un oraș universitar tocmai pentru viața din centru, dar gunoiul trebuie strâns.",
+  "În timpul săptămânii aș închide mai devreme, iar în weekend aș lăsa cluburile până la trei. Mi se pare un compromis rezonabil.",
+  "Mă deranjează hărțuirea pe stradă după petreceri. Iluminatul și personalul care intervine contează mai mult pentru mine decât ora exactă.",
+  "Dacă mutăm petrecerile în afara centrului, transportul trebuie să fie ieftin. Altfel ieșirile devin accesibile doar celor cu bani.",
+  "Aș accepta o zonă dedicată concertelor, fără blocuri lipite de scenă. Nu cred că fiecare bar are nevoie de boxe pe stradă.",
+  "Nu merg în cluburi și nu am o preferință despre închidere. Aș vrea totuși să pot traversa centrul fără sticle sparte dimineața."
+ ],
+ "elderly": [
+  "Locuiesc aici de zeci de ani și vreau să pot dormi. După zece seara terasele ar trebui închise, inclusiv în weekend.",
+  "Îmi place că piața e plină de oameni seara. Nu doresc un centru pustiu, doar muzica să fie mai încet după ora 23.",
+  "Mă sperie grupurile care se ceartă noaptea. Aș vrea patrule vizibile și lumină pe străzile laterale, fără să interzicem distracția.",
+  "Nepotul meu lucrează într-un restaurant și pleacă târziu. Susțin transportul de noapte și pentru angajați, nu doar pentru clienți.",
+  "Aș accepta seri mai zgomotoase la festivaluri, dacă sunt puține și știm din timp programul. În rest vreau liniște.",
+  "Nu cred că închiderea devreme rezolvă totul. Oamenii rămân pe stradă; trebuie cineva să gestioneze plecarea lor din zonă.",
+  "Băncile și trotuarele sunt ocupate de terase. Vreau loc de mers pentru toată lumea, indiferent până la ce oră funcționează barurile.",
+  "Aș muta localurile cu dans și muzică puternică într-o zonă separată. Cafenelele liniștite pot rămâne deschise în centru.",
+  "Sunt pensionar, dar merg la jazz seara. Mi-ar părea rău să dispară concertele mici din cauza unei reguli aplicate fără diferențe.",
+  "Aș vrea întâlniri între vecini și patroni înainte de reguli noi. Nu știu încă dacă ora 23 sau miezul nopții e mai potrivită."
+ ],
+ "tourist": [
+  "Am venit pentru atmosfera centrului și mi-ar plăcea să găsesc baruri deschise târziu. Muzica din interior e suficientă, nu trebuie boxe afară.",
+  "Cazarea mea este lângă terase și nu m-am odihnit. Aș prefera o limită de zgomot respectată în locul unei ore fixe pentru toate localurile.",
+  "Nu mă interesează cluburile. Vreau să pot lua cina târziu fără ca restaurantele liniștite să fie închise odată cu discotecile.",
+  "Un autobuz de noapte cu traseu clar m-ar ajuta mai mult decât încă un club. Nu cunosc orașul și evit să merg singur pe străzi întunecate.",
+  "Mi-ar plăcea o zonă de petreceri separată și bine conectată. Aș putea alege cazare într-o parte liniștită fără să renunț la ieșiri.",
+  "Vreau concerte în aer liber vara până după miezul nopții. Aș accepta să fie doar în anumite weekenduri, anunțate dinainte.",
+  "Orașul arată rău dimineața după petreceri. Coșurile, toaletele publice și curățenia ar trebui rezolvate indiferent de program.",
+  "Nu cunosc suficient situația locuitorilor ca să aleg o oră de închidere. Regulile ar trebui explicate clar turiștilor în localuri.",
+  "Aș susține controale reale și sancțiuni pentru localurile gălăgioase. Nu vreau ca barurile care respectă regulile să piardă programul de noapte.",
+  "Merg la petreceri, dar aș accepta închiderea teraselor la 23 dacă se poate continua în interior și există transport spre cazare."
+ ]
+}

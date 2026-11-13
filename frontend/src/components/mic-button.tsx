@@ -62,7 +62,7 @@ export function MicButton({ audio, onChange }: Props) {
         onClick={recording ? stop : start}
         aria-label={recording ? "Oprește înregistrarea" : "Începe înregistrarea"}
         className={`flex size-32 items-center justify-center rounded-full text-white shadow-lg transition active:scale-95 ${
-          recording ? "animate-pulse bg-red-600" : "bg-primary"
+          recording ? "animate-pulse bg-red-600 ring-12 ring-red-600/15" : "bg-primary ring-12 ring-primary/10 hover:bg-primary/90"
         }`}
       >
         {recording ? <Square className="size-12" /> : <Mic className="size-14" />}

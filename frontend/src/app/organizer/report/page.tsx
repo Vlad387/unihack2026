@@ -73,7 +73,7 @@ export default async function ReportPage() {
             <ul className="flex flex-col gap-1 text-sm">
               {proposal.tradeoffs.map((t) => (
                 <li key={t.camp_id}>
-                  <strong style={{ color: color(t.camp_id) }}>{campName(t.camp_id)}:</strong> câștigă {t.gains.toLowerCase()};
+                  <strong>{campName(t.camp_id)}:</strong> câștigă {t.gains.toLowerCase()};
                   cedează {t.gives_up.toLowerCase()}.
                 </li>
               ))}
