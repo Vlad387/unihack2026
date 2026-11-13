@@ -88,6 +88,12 @@ if (!res.ok) throw new Error(`answer failed: ${res.status}`);
 - Organizer needs a "Generează propunerea" button calling `POST /proposals`. The token is `ORGANIZER_TOKEN` from the server's `.env` (empty locally = no token needed). Ask Rares for it on the deployed server; never commit it.
 - `POST /proposals` with no camps on the map → status `failed` with `"mediate needs at least one camp"`. Get a few people to answer and vote first.
 
+## Stable camp ids + organizer answer controls (PR "survive quota outages, stable camp ids")
+
+- **Camp ids are now stable** between map updates and across server restarts: a camp keeps its id (and name, e.g. "Tabăra 1") while people join or leave it. Screen 4 can keep matching `proposal.tradeoffs[].camp_id` to `clusters.camps[].id`, and colors stay put. A genuinely new camp gets a new id and a free name. If a camp splits, the bigger part keeps the id.
+- `GET /responses/stats` (organizer token) → `{pending, failed, done}`. Show it on the organizer page, so stuck answers (Gemini quota) are visible.
+- `POST /responses/retry` (organizer token) → retries every waiting/failed answer **now** and returns the same counts. Use it after billing is enabled or the daily quota resets. Answers are never given up on: they're retried automatically with growing waits (15 s → 10 min), but this skips the wait.
+
 ## Answers to PR #14 questions
 
 - **"After `POST /votes` no `map_updated` within 4 s":** that was a real bug. Slow Gemini intake blocked map updates. Fixed in PR #13: votes now reach the map in about 1 s, even while answers are still processing.
