@@ -7,12 +7,12 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.162.7",
     "google-genai>=3.3.0",
-    "numpy>=2.5.4",
+    "numpy>=2.0",
     "pgvector>=0.5.1",
     "psycopg[binary]>=3.3.9",
     "pydantic>=2.14.3",
     "python-dotenv>=1.2.4",
-    "scikit-learn>=1.9.1",
+    "scikit-learn>=1.6",
     "sqlalchemy>=2.1.8",
     "umap-learn>=0.6.0",
     "uvicorn[standard]>=0.54.0",
@@ -27,6 +27,12 @@ dev = [
 
 [tool.uv]
 package = false
+# llvmlite/numba >= 0.46/0.63 ship no Intel-Mac wheels, so uv would try to compile
+# LLVM from source and fail. Only Intel Macs are held back; everyone else gets latest.
+constraint-dependencies = [
+    "llvmlite<0.46; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "numba<0.63; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
