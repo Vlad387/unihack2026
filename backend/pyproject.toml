@@ -28,11 +28,13 @@ dev = [
 
 [tool.uv]
 package = false
-# llvmlite/numba >= 0.46/0.63 ship no Intel-Mac wheels, so uv would try to compile
-# LLVM from source and fail. Only Intel Macs are held back; everyone else gets latest.
+# These ship no Intel-Mac wheels in newer versions, so uv would try to compile them
+# from source (LLVM / OpenSSL) and fail. Only Intel Macs are held back; everyone else
+# gets latest. Check: uv sync --locked --python-platform x86_64-apple-darwin --no-build
 constraint-dependencies = [
     "llvmlite<0.46; sys_platform == 'darwin' and platform_machine == 'x86_64'",
     "numba<0.63; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "cryptography<49; sys_platform == 'darwin' and platform_machine == 'x86_64'",
 ]
 
 [tool.pytest.ini_options]
