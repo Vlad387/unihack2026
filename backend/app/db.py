@@ -28,8 +28,10 @@ def get_session() -> Iterator[Session]:
 
 
 def init_db() -> None:
-    with engine.begin() as conn:
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+    # tests run on SQLite, which has no extensions
+    if engine.dialect.name == "postgresql":
+        with engine.begin() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
     Base.metadata.create_all(engine)
 
 

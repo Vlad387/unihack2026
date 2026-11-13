@@ -12,6 +12,7 @@ dependencies = [
     "psycopg[binary]>=3.3.9",
     "pydantic>=2.14.3",
     "python-dotenv>=1.2.4",
+    "python-multipart>=0.0.33",
     "scikit-learn>=1.6",
     "sqlalchemy>=2.1.8",
     "umap-learn>=0.6.0",
