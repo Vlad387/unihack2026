@@ -10,8 +10,10 @@ import {
   mockStatements,
   mockSupport,
 } from "./mock";
+import { mockAnalytics } from "./mock-analytics";
 import { getParticipantId } from "./participant";
 import type {
+  Analytics,
   ClusterResult,
   Consultation,
   Kpis,
@@ -101,4 +103,8 @@ export async function moderateStatement(statementId: string, approve: boolean): 
 
 export async function getKpis(): Promise<Kpis> {
   return mockKpis;
+}
+
+export async function getAnalytics(): Promise<Analytics> {
+  return mockAnalytics;
 }

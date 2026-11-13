@@ -1,141 +1,111 @@
 "use client";
 
-import { Bot, CheckCircle2, XCircle } from "lucide-react";
-import { BarChart, ParticipationChart } from "@/components/kpi-charts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMemo, useState } from "react";
+import { BarChart } from "@/components/charts/bar-chart";
+import { type Filters, KpiFilters } from "@/components/kpi/kpi-filters";
+import { type Ctx, Engagement, FeaturePerformance, Overview } from "@/components/kpi/kpi-sections-a";
+import { Conversion, Insights, Quality, Scorecard } from "@/components/kpi/kpi-sections-b";
+import { ChartCard, fmtNum, Stat } from "@/components/kpi/kpi-ui";
 import { type ConsultationState, useConsultation } from "@/hooks/use-consultation";
 import { campColor } from "@/lib/colors";
-import type { Kpis } from "@/lib/types";
+import { buckets, fmtPct, ratio, scaleDays, sum, summarize, windows } from "@/lib/kpi";
+import type { Analytics, Kpis } from "@/lib/types";
 
-function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
+const DAY = 86_400_000;
+const shift = (iso: string, days: number) => new Date(Date.parse(iso) + days * DAY).toISOString().slice(0, 10);
+
+interface Props {
+  kpis: Kpis;
+  analytics: Analytics;
+  threshold: number;
+  initial: ConsultationState;
+}
+
+export function KpiDashboard({ kpis, analytics, threshold, initial }: Props) {
+  const last = analytics.days.at(-1)?.date ?? "";
+  const [f, setF] = useState<Filters>({ range: "30", from: shift(last, -29), to: last, feature: "all", period: "day", compare: true, segment: "all" });
+  const set = (p: Partial<Filters>) => setF((old) => ({ ...old, ...p }));
+
+  const ctx: Ctx = useMemo(() => {
+    const share = analytics.segments.find((s) => s.key === f.segment)?.share ?? 1;
+    const days = scaleDays(analytics.days, share);
+    const to = f.range === "custom" ? f.to : last;
+    const from = f.range === "custom" ? f.from : shift(last, -(Number(f.range) - 1));
+    const { cur, prev } = windows(days, from, to);
+    const usersUpTo = (iso: string) => sum(days.filter((d) => d.date <= iso), (d) => d.new_users);
+    return {
+      analytics,
+      S: summarize(cur, analytics.features),
+      P: summarize(prev, analytics.features),
+      compare: f.compare,
+      bks: buckets(cur, f.period),
+      prevBks: buckets(prev, f.period),
+      feature: f.feature,
+      totalUsers: usersUpTo(to),
+      prevTotalUsers: prev.length ? usersUpTo(prev.at(-1)!.date) : 0,
+    };
+  }, [analytics, f, last]);
+
   return (
-    <Card className="gap-1 py-4">
-      <CardContent className="px-4">
-        <p className="text-3xl font-bold tracking-tight tabular-nums">{value}</p>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-10">
+      <LiveConsultation kpis={kpis} threshold={threshold} initial={initial} />
+      <div className="flex flex-col gap-10">
+        <KpiFilters f={f} set={set} analytics={analytics} />
+        <Overview c={ctx} />
+        <FeaturePerformance c={ctx} />
+        <Engagement c={ctx} />
+        <Quality c={ctx} />
+        <Conversion c={ctx} />
+        <Scorecard c={ctx} />
+        <Insights c={ctx} />
+      </div>
+    </div>
   );
 }
 
-const pct = (agree: number, total: number) => (total ? Math.round((agree / total) * 100) : 0);
-
-export function KpiDashboard({ kpis, threshold, initial }: { kpis: Kpis; threshold: number; initial: ConsultationState }) {
+// The consultation running right now, updated live over the WebSocket. Not affected by the date filters.
+function LiveConsultation({ kpis, threshold, initial }: { kpis: Kpis; threshold: number; initial: ConsultationState }) {
   const { clusters, support } = useConsultation(initial);
   const participants = clusters.points.length;
-  const last = support.at(-1);
-  const finalPct = last ? pct(last.agree, last.total) : 0;
-  const thresholdPct = Math.round(threshold * 100);
-  const passed = finalPct >= thresholdPct;
+  const lastRound = support.at(-1);
+  const finalPct = lastRound ? ratio(lastRound.agree, lastRound.total) : 0;
   const color = campColor(clusters.camps);
-
   return (
-    <div className="flex flex-col gap-6">
+    <section className="flex flex-col gap-4">
+      <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight">
+        <span className="size-2 animate-pulse rounded-full bg-brand-amber" aria-hidden /> Consultarea curentă (live)
+      </h2>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Participanți" value={participants} hint="live" />
-        <Stat label="Voturi pe afirmații" value={kpis.votes} hint={`${(kpis.votes / Math.max(1, participants)).toFixed(1)} / participant`} />
-        <Stat label="Afirmații extrase de AI" value={kpis.statements} hint={`din ${kpis.responses} răspunsuri`} />
-        <Card className="gap-1 py-4">
-          <CardContent className="px-4">
-            <p className="text-3xl font-bold tracking-tight tabular-nums">{finalPct}%</p>
-            <p className="text-sm text-muted-foreground">Sprijin în runda {last?.round ?? "–"}</p>
-            <p className="mt-1 flex items-center gap-1 text-xs font-medium">
-              {passed ? <CheckCircle2 className="size-3.5 text-emerald-600" /> : <XCircle className="size-3.5 text-rose-600" />}
-              {passed ? `peste pragul de ${thresholdPct}%` : `sub pragul de ${thresholdPct}%`}
-            </p>
-          </CardContent>
-        </Card>
+        <Stat label="Participanți" value={String(participants)} hint="live" />
+        <Stat label="Voturi pe afirmații" value={fmtNum(kpis.votes)} hint={`${(kpis.votes / Math.max(1, participants)).toFixed(1)} / participant`} />
+        <Stat label={`Sprijin runda ${lastRound?.round ?? "–"}`} value={fmtPct(finalPct)} hint={finalPct >= threshold ? `✓ peste pragul de ${fmtPct(threshold)}` : `✗ sub pragul de ${fmtPct(threshold)}`} />
+        <Stat label="Cost AI (Gemini)" value={`$${kpis.ai.cost_usd.toFixed(2)}`} hint={`${kpis.ai.calls} apeluri · ${(kpis.ai.avg_latency_ms / 1000).toFixed(1)} s medie`} />
       </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Participanți în timp</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ParticipationChart data={kpis.timeline} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Sprijin pe runde</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BarChart
-              maxValue={100}
-              reference={{ value: thresholdPct, label: `prag ${thresholdPct}%` }}
-              data={support.map((r) => ({
-                key: String(r.round),
-                label: `Runda ${r.round}`,
-                value: pct(r.agree, r.total),
-                display: `${pct(r.agree, r.total)}%`,
-                color: "var(--series-1)",
-              }))}
-            />
-            <p className="mt-2 text-xs text-muted-foreground">Doar voturi reale. Opiniile simulate de AI nu sunt numărate.</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Mărimea taberelor</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BarChart
-              maxValue={Math.max(1, ...clusters.camps.map((c) => c.size))}
-              data={clusters.camps.map((c) => ({
-                key: c.id,
-                label: c.name.split(" ")[0],
-                value: c.size,
-                display: String(c.size),
-                color: color(c.id),
-              }))}
-            />
-            <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              {clusters.camps.map((c) => (
-                <li key={c.id} className="flex items-center gap-1.5">
-                  <span className="size-2.5 rounded-sm" style={{ background: color(c.id) }} aria-hidden />
-                  {c.name}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-        <section className="flex flex-col gap-3">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Bot className="size-4 text-primary" /> AI (Gemini)
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <Stat label="Apeluri AI" value={kpis.ai.calls} />
-            <Stat label="Latență medie" value={`${(kpis.ai.avg_latency_ms / 1000).toFixed(1)} s`} />
-            <Stat label="Cost total" value={`$${kpis.ai.cost_usd.toFixed(2)}`} hint={`$${(kpis.ai.cost_usd / Math.max(1, participants)).toFixed(3)} / participant`} />
-            <Stat label="Semnalate la moderare" value={kpis.flagged} />
-          </div>
-        </section>
-      </div>
-
-      <details className="rounded-xl border bg-card p-4 text-sm">
-        <summary className="cursor-pointer font-medium">Vezi datele ca tabel</summary>
-        <table className="mt-3 w-full tabular-nums">
-          <thead className="text-left text-muted-foreground">
-            <tr>
-              <th className="py-1 font-normal">Minut</th>
-              <th className="py-1 text-right font-normal">Participanți</th>
-            </tr>
-          </thead>
-          <tbody>
-            {kpis.timeline.map((d) => (
-              <tr key={d.minute} className="border-t">
-                <td className="py-1">{d.minute}</td>
-                <td className="py-1 text-right">{d.participants}</td>
-              </tr>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ChartCard title="Sprijin pe runde" note="Doar voturi reale. Opiniile simulate de AI nu sunt numărate.">
+          <BarChart
+            label="Sprijin pe runde"
+            maxValue={1}
+            reference={{ value: threshold, label: `prag ${fmtPct(threshold)}` }}
+            data={support.map((r) => ({ key: String(r.round), label: `Runda ${r.round}`, value: ratio(r.agree, r.total), display: fmtPct(ratio(r.agree, r.total)), color: "var(--series-1)" }))}
+          />
+        </ChartCard>
+        <ChartCard title="Mărimea taberelor">
+          <BarChart
+            label="Mărimea taberelor"
+            maxValue={Math.max(1, ...clusters.camps.map((c) => c.size))}
+            data={clusters.camps.map((c) => ({ key: c.id, label: c.name.split(" ")[0], value: c.size, display: String(c.size), color: color(c.id) }))}
+          />
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            {clusters.camps.map((c) => (
+              <li key={c.id} className="flex items-center gap-1.5">
+                <span className="size-2.5 rounded-sm" style={{ background: color(c.id) }} aria-hidden />
+                {c.name}
+              </li>
             ))}
-          </tbody>
-        </table>
-      </details>
-    </div>
+          </ul>
+        </ChartCard>
+      </div>
+    </section>
   );
 }

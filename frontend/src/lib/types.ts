@@ -82,9 +82,44 @@ export interface Kpis {
   votes: number;
   statements: number;
   flagged: number;
-  // participants joined, sampled per minute since the consultation started
-  timeline: { minute: number; participants: number }[];
   ai: { calls: number; avg_latency_ms: number; cost_usd: number };
+}
+
+// Product analytics for the KPI dashboard. A "feature" is one part of the app people use.
+export type FeatureKey = "answer" | "vote" | "map" | "proposal" | "board" | "organizer";
+
+export interface DayStats {
+  date: string; // YYYY-MM-DD
+  dau: number;
+  wau: number;
+  mau: number;
+  visits: number; // QR scans / landing visits
+  new_users: number;
+  sessions: number;
+  avg_session_s: number;
+  ops: number; // all interactions (answers, votes, page actions)
+  errors: number;
+  avg_response_ms: number;
+  uptime: number; // percent
+  feature_users: Record<FeatureKey, number>;
+  feature_uses: Record<FeatureKey, number>;
+  feature_errors: Record<FeatureKey, number>;
+}
+
+export interface FeatureInfo {
+  key: FeatureKey;
+  label: string;
+  retention: number; // share of users who use it again within 7 days
+  avg_time_s: number;
+  completion: number; // share of users who start it and finish it
+  availability: number; // percent
+}
+
+export interface Analytics {
+  days: DayStats[];
+  features: FeatureInfo[];
+  cohorts: { week: string; size: number; retention: number[] }[];
+  segments: { key: string; label: string; share: number }[];
 }
 
 export interface Verdict {

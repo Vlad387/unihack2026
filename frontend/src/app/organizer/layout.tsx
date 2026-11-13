@@ -12,7 +12,7 @@ const links = [
 
 export default function OrganizerLayout({ children }: LayoutProps<"/organizer">) {
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6">
       <nav className="flex flex-wrap items-center gap-1 border-b pb-3 print:hidden">
         <span className="mr-3 flex items-center gap-2">
           <Brand />

@@ -123,9 +123,5 @@ export const mockKpis: Kpis = {
   votes: 312,
   statements: 74,
   flagged: 3,
-  timeline: [0, 2, 5, 9, 14, 20, 24, 29, 33, 36, 40, 43, 45, 47, 48, 50].map((participants, minute) => ({
-    minute,
-    participants,
-  })),
   ai: { calls: 186, avg_latency_ms: 1420, cost_usd: 0.38 },
 };
