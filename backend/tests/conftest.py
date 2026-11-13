@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.agents import intake_agent, mediate_agent
+from app.agents import critic_agent, intake_agent, mediate_agent
 
 
 @pytest.fixture(autouse=True)
@@ -36,6 +36,13 @@ def fake_gemini(monkeypatch: pytest.MonkeyPatch) -> list[dict]:
             ],
         )
 
+    def fake_critic(model, system, contents, schema, **_):
+        record(model, system, contents)
+        return schema(
+            faithful=True, balanced=True, feasible=True, notes="Verdict de test."
+        )
+
     monkeypatch.setattr(intake_agent, "generate", fake_intake)
     monkeypatch.setattr(mediate_agent, "generate", fake_mediate)
+    monkeypatch.setattr(critic_agent, "generate", fake_critic)
     return calls

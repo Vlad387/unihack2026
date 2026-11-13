@@ -40,7 +40,7 @@ CRITIQUES = [
 ]
 
 
-def main(args: list[str]) -> None:
+def seed_camps() -> list[Camp]:
     texts = {r["id"]: r["text"] for r in json.loads(SEED.read_text(encoding="utf-8"))}
     camps = []
     for (cid, name, desc), ids in CAMPS.items():
@@ -50,6 +50,11 @@ def main(args: list[str]) -> None:
         ]
         camps.append(Camp(id=cid, name=name, description=desc, size=len(members),
                           member_ids=members, statements=statements))  # fmt: skip
+    return camps
+
+
+def main(args: list[str]) -> None:
+    camps = seed_camps()
     bridges = [Statement(id=f"b{i}", text=t) for i, t in enumerate(BRIDGES)]
     critiques = CRITIQUES if "2" in args else []
 

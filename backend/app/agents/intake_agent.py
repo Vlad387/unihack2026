@@ -6,7 +6,7 @@ from typing import Literal
 from google.genai import types
 from pydantic import BaseModel
 
-from app.agents.gemini import FLASH_MODEL, generate, load_prompt
+from app.agents.gemini import INTAKE_MODEL, generate, load_prompt
 from app.schemas import Statement
 
 
@@ -50,7 +50,7 @@ def intake(text: str | None, audio: bytes | None) -> list[Statement]:
 
     # splitting + moderation is easy for Flash; low thinking cuts latency ~severalfold
     output = generate(
-        FLASH_MODEL, load_prompt("intake"), contents, _IntakeOutput, thinking="low"
+        INTAKE_MODEL, load_prompt("intake"), contents, _IntakeOutput, thinking="low"
     )
     return [
         Statement(

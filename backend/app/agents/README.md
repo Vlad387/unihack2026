@@ -6,10 +6,11 @@ Ce s-a făcut în `backend/app/agents/`, pe scurt, pentru toată echipa.
 |---|---|---|
 | `intake` | împarte și filtrează răspunsurile cetățenilor | ✅ gata, în `dev` (PR #9) |
 | `mediate` | scrie compromisul între tabere | ✅ gata, în `dev` (PR #15) |
-| `critic` | verifică dacă compromisul e corect și echilibrat | ⏳ încă stub (date false) |
+| `critic` | verifică dacă compromisul e corect și echilibrat | ✅ gata (secțiunea 11) |
 | `proxy` | simulează vocea unui grup care lipsește (opțional) | ❌ neînceput |
 
-Secțiunile 1–7 sunt despre `intake`; secțiunile 8–10 sunt despre `mediate`.
+Secțiunile 1–7 sunt despre `intake`; 8–10 despre `mediate`; 11 despre `critic`.
+**Modele și cota gratuită: secțiunea 5.**
 
 ---
 
@@ -104,12 +105,21 @@ cu funcția `intake` exportată din `__init__.py`. La fel vor fi `mediate_agent.
 
 ## 5. Modele Gemini – IMPORTANT pentru toți
 
-- **Cheia API e bună.** Problema e doar numele modelului.
-- `gemini-2.5-flash` (cel din RULES.md) și `gemini-2.5-pro` **nu mai merg pentru chei noi** (404).
-- Folosiți **`gemini-3.5-flash`**.
-- Niciun model **Pro** nu merge pe cheia noastră → și `mediate` va folosi Flash.
-- Se pot schimba fără cod, din `.env`: `GEMINI_FLASH_MODEL=...`, `GEMINI_PRO_MODEL=...`.
-- Modelele de **embeddings** (pentru clustering) nu au fost testate.
+- **Cheia API e bună.** `gemini-2.5-*` și modelele **Pro** nu merg pe cheia noastră (404).
+- **Cota gratuită e pe model și pe zi** (~20 cereri/zi la `gemini-3.5-flash`). Când se
+  termină: eroare **429**. Fiecare model are cota lui, deci împărțim agenții pe modele:
+
+| Agent | Model implicit | De ce | Schimbi din `.env` |
+|---|---|---|---|
+| `intake` | `gemini-3.5-flash-lite` | 1 apel la **fiecare** răspuns → cele mai multe apeluri | `GEMINI_INTAKE_MODEL` |
+| `mediate` | `gemini-3.5-flash` | 1 apel pe rundă, sarcina cea mai grea | `GEMINI_MEDIATE_MODEL` |
+| `critic` | `gemini-3.5-flash-lite` | 1 apel pe rundă, verificare | `GEMINI_CRITIC_MODEL` |
+| rezervă | `gemini-3.1-flash-lite` | folosit **automat** când un model dă 429 | `GEMINI_FALLBACK_MODEL` |
+
+- Dacă modelul agentului dă **429**, se încearcă o dată modelul de rezervă. Dacă și
+  acela dă 429 → `AgentError`. Erorile 5xx („high demand") se reîncearcă de 4 ori.
+- **Pentru demo:** cu billing activat pe cheie (Google AI Studio → Billing) limitele cresc mult.
+- **Embeddings** merg pe cheie: `gemini-embedding-001` și `gemini-embedding-2` (3072 dimensiuni).
 
 ---
 
@@ -281,3 +291,48 @@ uv run python -m app.agents.demo_mediate 2    # runda 2, cu critici
 
 **Probleme cunoscute:** uneori în „cedează" adaugă un detaliu care nu e în textul propunerii
 (ex. „autobuzele doar pe arterele principale"). Asta trebuie să prindă `critic` (următorul agent).
+
+---
+
+## 11. `critic` – verificarea propunerii
+
+**Ce face:** după ce `mediate` scrie propunerea, `critic` o citește ca un **al doilea cititor,
+strict și corect**, înainte să voteze oamenii. Răspunde la 3 întrebări (da/nu) + o notă scurtă:
+
+| Întrebare | Ce verifică |
+|---|---|
+| `faithful` (fidelă) | respectă argumentele reale ale taberelor și textul propunerii? câștigurile/cedările nu inventează detalii care nu sunt în text? |
+| `balanced` (echilibrată) | fiecare tabără câștigă **și** cedează ceva real? nicio tabără nu plătește pentru toți? |
+| `feasible` (realizabilă) | poate primăria să o facă legal și practic? nu discriminează, nu se contrazice? |
+| `notes` | 1–3 propoziții în română, **pentru cetățeni**, cu numele taberelor; dacă ceva e greșit, spune concret ce |
+
+Verdictul apare lângă propunere în aplicație (câmpul nou `Proposal.verdict`, pus de API).
+
+**Cum funcționează:** exact ca `mediate`, aceeași rețetă în 4 pași:
+1. **Strânge datele** – propunerea (text + câștig/cedare pe tabără, cu **numele** taberelor)
+   + argumentele scrise de fiecare tabără (aceleași filtre ca la `mediate`).
+2. **Instrucțiunile** – [`prompts/critic.md`](prompts/critic.md): cele 3 verificări + cum se scrie nota.
+3. **Răspuns în format fix** – direct modelul `Verdict` din `schemas.py`.
+4. **Verificare în cod** – dacă o tabără **nu are** câștig/cedare, `balanced` devine
+   automat `False` (nu ne bazăm pe AI pentru asta) și nota spune ce tabără lipsește.
+
+**Test live** pe 3 propuneri salvate (fără să consume cota `mediate`), din `backend/`:
+
+```bash
+uv run python -m app.agents.demo_critic
+```
+
+| Caz | Rezultat (rulat de 3 ori, 2 modele) |
+|---|---|
+| propunere bună | ✅ fidelă, echilibrată, realizabilă |
+| „cedează" cu detaliu inventat („autobuze doar pe arterele principale") | ❌ `faithful=False`, nota spune exact ce rând e greșit |
+| propunere părtinitoare (totul închis la 22, muzică interzisă) | ❌ picată la toate 3 |
+
+**Pentru Rares (API):** `critic(proposal, camps) -> Verdict`; `AgentError` dacă nu
+există tabere sau Gemini pică → API-ul publică propunerea fără verdict. Durează **5–10 s**.
+
+**Probleme cunoscute:** o singură dată (din 9 rulări) nota a avut diacritice stricate
+(„Siguranșă"). Nota are uneori puțin peste 60 de cuvinte.
+
+**Fișiere:** `critic_agent.py`, `prompts/critic.md`, `demo_critic.py`, `../../tests/test_critic.py`.
+Testele pentru modele/rezervă: `../../tests/test_gemini.py`.
