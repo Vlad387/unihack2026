@@ -1,6 +1,6 @@
 // The ONLY place that calls the REST API.
 // Real backend (docs/tips/FRONTEND_TIPS.md) when NEXT_PUBLIC_API_URL is set, mock data otherwise.
-// shortcut: consultation, proposal, support, moderation, KPI and analytics stay mock-only until Rares adds their endpoints.
+// shortcut: consultation, moderation, KPI and analytics stay mock-only until Rares adds their endpoints.
 import {
   mockBridges,
   mockClusters,
@@ -22,6 +22,7 @@ import type {
   ModerationItem,
   Point,
   Proposal,
+  RoundStatus,
   Statement,
   SupportRound,
   VoteValue,
@@ -30,9 +31,19 @@ import type {
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const MOCK = !API_URL;
 
+// Carries the HTTP status so screens can react to e.g. 409 (round closed) differently from a network error.
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 async function http<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, { cache: "no-store", ...init });
-  if (!res.ok) throw new Error(`${init?.method ?? "GET"} ${path} failed: ${res.status}`);
+  if (!res.ok) throw new ApiError(`${init?.method ?? "GET"} ${path} failed: ${res.status}`, res.status);
   return (res.status === 204 ? undefined : await res.json()) as T;
 }
 
@@ -89,12 +100,14 @@ export async function getBridges(): Promise<Statement[]> {
   return MOCK ? mockBridges : http("/bridges");
 }
 
-export async function getProposal(): Promise<Proposal> {
-  return mockProposal;
+// null before the organizer has started the first round.
+export async function getProposal(): Promise<Proposal | null> {
+  return MOCK ? mockProposal : http("/proposal");
 }
 
+// Real citizens only: seed/demo participants and simulated voices are never counted.
 export async function getSupport(): Promise<SupportRound[]> {
-  return mockSupport;
+  return MOCK ? mockSupport : http("/support");
 }
 
 // Client-only: needs the participant id from localStorage. The API has no endpoint for this,
@@ -113,8 +126,35 @@ export interface ProposalVoteInput {
   critique: string | null;
 }
 
+// Throws ApiError 409 when a newer round exists (this one is closed). Voting again overwrites.
 export async function submitProposalVote(input: ProposalVoteInput): Promise<void> {
-  console.log("submitProposalVote (mock)", { participant_id: getParticipantId(), ...input });
+  if (MOCK) {
+    console.log("submitProposalVote (mock)", { participant_id: getParticipantId(), ...input });
+    return;
+  }
+  await http("/proposal-votes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      participant_id: getParticipantId(),
+      proposal_id: input.proposalId,
+      support: input.support,
+      critique: input.critique?.slice(0, 1000) || null,
+    }),
+  });
+}
+
+// Organizer: starts a mediate round in the background (25–60 s). Token is required on the deployed server only.
+export async function startProposalRound(token: string | null): Promise<void> {
+  if (MOCK) {
+    console.log("startProposalRound (mock)");
+    return;
+  }
+  await http("/proposals", { method: "POST", headers: token ? { "X-Organizer-Token": token } : {} });
+}
+
+export async function getRoundStatus(): Promise<RoundStatus> {
+  return MOCK ? { state: "idle", error: null } : http("/proposals/status");
 }
 
 // Organizer. shortcut: no organizer login yet (Auth0 only if time allows).
