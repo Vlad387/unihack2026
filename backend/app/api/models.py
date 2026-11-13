@@ -89,3 +89,12 @@ class ProposalVoteRow(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class MapStateRow(Base):
+    """The last non-empty camps (id, name, members), so camp ids survive a restart."""
+
+    __tablename__ = "map_state"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    camps: Mapped[list] = mapped_column(JSON)
