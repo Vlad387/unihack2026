@@ -35,13 +35,53 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
 
 
 def with_camps(client: TestClient) -> None:
-    """Three citizens answer, so the (stub) clustering produces camps."""
-    for pid in ("ana", "bogdan", "carmen"):
+    """Two voting groups form real camps; authored answers alone are not camps."""
+    for i in range(20):
+        pid = f"p{i:02}"
         res = client.post(
             "/responses", data={"participant_id": pid, "text": f"Opinia lui {pid}."}
         )
         assert res.status_code == 202
+    for _ in range(20):
+        asyncio.run(live.tick())
+        statements = client.get(
+            "/statements", params={"participant_id": "observer", "limit": 100}
+        ).json()
+        if len(statements) == 20:
+            break
+    else:
+        pytest.fail("intake did not process all fixture responses")
+    anchors = [
+        next(s for s in statements if s["author_id"] == pid) for pid in ("p00", "p10")
+    ]
+    for i in range(20):
+        pid = f"p{i:02}"
+        for j, statement in enumerate(anchors):
+            if statement["author_id"] == pid:
+                continue
+            value = "agree" if (i < 10) == (j == 0) else "disagree"
+            res = client.post(
+                "/votes",
+                json={
+                    "participant_id": pid,
+                    "statement_id": statement["id"],
+                    "value": value,
+                },
+            )
+            assert res.status_code == 204
     asyncio.run(live.tick())
+    assert live.result.camps
+
+
+def wait_for_camps(client: TestClient) -> list[dict]:
+    # Lifespan resets the snapshot before the first background recomputation.
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        camps = client.get("/clusters").json()["camps"]
+        if camps:
+            return camps
+        time.sleep(0.05)
+    pytest.fail("the live map never produced camps")
 
 
 def wait_for_round(client: TestClient) -> dict:
@@ -55,6 +95,7 @@ def wait_for_round(client: TestClient) -> dict:
 
 
 def run_round(client: TestClient) -> dict:
+    wait_for_camps(client)
     assert client.post("/proposals").status_code == 202
     assert wait_for_round(client) == {"state": "idle", "error": None}
     return client.get("/proposal").json()
@@ -87,7 +128,7 @@ def test_round_publishes_a_proposal_with_real_round_and_verdict(
 ) -> None:
     with_camps(client)
     with client, client.websocket_connect("/ws") as ws:
-        camps = client.get("/clusters").json()["camps"]
+        camps = wait_for_camps(client)
         assert camps, "the map has camps"
         proposal = run_round(client)
 
@@ -154,6 +195,7 @@ def test_only_one_round_at_a_time(
     monkeypatch.setattr(proposals_module, "mediate", slow_mediate)
     try:
         with client:
+            wait_for_camps(client)
             assert client.post("/proposals").status_code == 202
             assert client.post("/proposals").status_code == 409
             released.set()
