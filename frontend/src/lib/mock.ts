@@ -1,4 +1,4 @@
-import type { ClusterResult, Proposal, Statement } from "./types";
+import type { ClusterResult, ConsultationEvent, Proposal, Statement, SupportRound } from "./types";
 
 export const mockQuestion = "Ce facem cu viața de noapte din centru?";
 
@@ -43,3 +43,35 @@ export const mockProposal: Proposal = {
     { camp_id: "c3", gains: "Patrule și transport de noapte", gives_up: "Fără restricții totale" },
   ],
 };
+
+export const mockSupport: SupportRound[] = [
+  { round: 1, agree: 21, total: 38 },
+  { round: 2, agree: 29, total: 40 },
+];
+
+// Fakes live WebSocket traffic so the board animates before the backend exists.
+export function simulateEvents(onEvent: (e: ConsultationEvent) => void): () => void {
+  let clusters = mockClusters;
+  let support = mockSupport;
+  let n = 0;
+  const timer = setInterval(() => {
+    n++;
+    const camp = camps[n % camps.length];
+    const [cx, cy] = centers[camp.id];
+    clusters = {
+      camps: clusters.camps.map((c) => (c.id === camp.id ? { ...c, size: c.size + 1 } : c)),
+      points: [
+        ...clusters.points,
+        { participant_id: `sim-${n}`, x: cx + (Math.random() - 0.5) * 0.6, y: cy + (Math.random() - 0.5) * 0.6, camp_id: camp.id },
+      ],
+    };
+    onEvent({ type: "map_updated", data: clusters });
+    if (n % 3 === 0) {
+      const last = support[support.length - 1];
+      const vote = { ...last, total: last.total + 1, agree: last.agree + (Math.random() < 0.7 ? 1 : 0) };
+      support = [...support.slice(0, -1), vote];
+      onEvent({ type: "support_updated", data: support });
+    }
+  }, 2000);
+  return () => clearInterval(timer);
+}

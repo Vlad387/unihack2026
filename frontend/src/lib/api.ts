@@ -1,6 +1,6 @@
 // The ONLY place that calls the REST API. shortcut: returns mock data until Rares's endpoints are up.
-import { mockBridges, mockClusters, mockProposal, mockQuestion, mockStatements } from "./mock";
-import type { ClusterResult, Proposal, Statement, VoteValue } from "./types";
+import { mockBridges, mockClusters, mockProposal, mockQuestion, mockStatements, mockSupport } from "./mock";
+import type { ClusterResult, Proposal, Statement, SupportRound, VoteValue } from "./types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -37,4 +37,8 @@ export async function getBridges(): Promise<Statement[]> {
 
 export async function getProposal(): Promise<Proposal> {
   return mockProposal;
+}
+
+export async function getSupport(): Promise<SupportRound[]> {
+  return mockSupport;
 }

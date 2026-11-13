@@ -46,6 +46,20 @@ export interface Proposal {
   tradeoffs: CampTradeoff[];
 }
 
+// Real citizen votes only: simulated proxy votes are never counted here.
+export interface SupportRound {
+  round: number;
+  agree: number;
+  total: number;
+}
+
+// WebSocket messages from the backend. shortcut: {type, data} shape is a guess, agree it with Rares.
+export type ConsultationEvent =
+  | { type: "map_updated"; data: ClusterResult }
+  | { type: "bridges_updated"; data: Statement[] }
+  | { type: "proposal_published"; data: Proposal }
+  | { type: "support_updated"; data: SupportRound[] };
+
 export interface Verdict {
   faithful: boolean;
   balanced: boolean;
