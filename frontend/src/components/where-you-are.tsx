@@ -61,7 +61,11 @@ export function WhereYouAre({ initial }: { initial: ConsultationState }) {
         </Card>
       ) : (
         <p className="text-center text-muted-foreground" aria-live="polite">
-          {loaded ? "Încă te așezăm pe hartă. Revino în câteva momente." : "Te căutăm pe hartă…"}
+          {!loaded
+            ? "Te căutăm pe hartă…"
+            : myPoint
+              ? "Ești pe hartă. Taberele apar când votează mai mulți oameni, rămâi pe pagină."
+              : "Încă te așezăm pe hartă. Votează câteva afirmații și revino în câteva momente."}
         </p>
       )}
 
