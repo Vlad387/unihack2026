@@ -1,13 +1,24 @@
-from pathlib import Path
+import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import OperationalError
 
-# .env lives in the repo root (RULES.md section 5), not in backend/
-load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+from app.db import db_ok, init_db
 
-app = FastAPI(title="CityMind API")
+log = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    init_db()
+    yield
+
+
+app = FastAPI(title="CityMind API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,3 +32,13 @@ app.add_middleware(
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/health/db")
+def health_db() -> JSONResponse:
+    try:
+        ok = db_ok()
+    except OperationalError:
+        log.exception("database unreachable")
+        ok = False
+    return JSONResponse({"db": "ok" if ok else "down"}, status_code=200 if ok else 503)
