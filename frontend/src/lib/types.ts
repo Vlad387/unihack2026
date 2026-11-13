@@ -1,4 +1,4 @@
-// Mirror of backend/app/schemas.py. shortcut: guessed before Rares pushed schemas.py, sync once it lands.
+// Mirror of backend/app/schemas.py (synced 2026-11-14). Change it only together with Rares.
 
 export type VoteValue = "agree" | "disagree" | "pass";
 
@@ -6,6 +6,8 @@ export interface Statement {
   id: string;
   text: string;
   author_id: string | null;
+  // set by the intake agent; flagged statements go to moderation, not to voting
+  flag?: ModerationReason | null;
 }
 
 export interface Vote {
@@ -28,6 +30,7 @@ export interface Camp {
   name: string;
   description: string;
   size: number;
+  member_ids: string[];
 }
 
 export interface ClusterResult {
