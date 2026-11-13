@@ -1,0 +1,46 @@
+[project]
+name = "citymind-backend"
+version = "0.1.0"
+description = "CityMind API: FastAPI + Postgres/pgvector + Gemini agents"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.162.7",
+    "google-genai>=3.3.0",
+    "numpy>=2.0",
+    "pgvector>=0.5.1",
+    "psycopg[binary]>=3.3.9",
+    "pydantic>=2.14.3",
+    "python-dotenv>=1.2.4",
+    "python-multipart>=0.0.33",
+    "scikit-learn>=1.6",
+    "sqlalchemy>=2.1.8",
+    "umap-learn>=0.6.0",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.5",
+]
+
+[tool.uv]
+package = false
+# These ship no Intel-Mac wheels in newer versions, so uv would try to compile them
+# from source (LLVM / OpenSSL) and fail. Only Intel Macs are held back; everyone else
+# gets latest. Check: uv sync --locked --python-platform x86_64-apple-darwin --no-build
+constraint-dependencies = [
+    "llvmlite<0.46; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "numba<0.63; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "cryptography<49; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests", "app/clustering"]
+
+[tool.ruff]
+# only format Python files; docs like agents/README.md keep their authors' style
+extend-exclude = ["*.md"]
