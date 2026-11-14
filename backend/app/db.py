@@ -33,6 +33,12 @@ def init_db() -> None:
         with engine.begin() as conn:
             conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
     Base.metadata.create_all(engine)
+    if engine.dialect.name == "postgresql":
+        # Supabase serves every public table through its own REST API: RLS with no
+        # policies blocks that path. This app connects as the owner, so it is unaffected.
+        with engine.begin() as conn:
+            for table in Base.metadata.tables:
+                conn.execute(text(f'ALTER TABLE "{table}" ENABLE ROW LEVEL SECURITY'))
 
 
 def db_ok() -> bool:
