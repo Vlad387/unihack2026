@@ -70,7 +70,7 @@ const cards = [
     title: "Vezi cum se formează taberele.",
     text: "Ecranul mare arată harta opiniilor, punctele comune și sprijinul pe runde.",
     href: "/board",
-    cta: "Deschide ecranul live",
+    cta: "Vezi rundele",
     Visual: Cluster,
   },
 ];

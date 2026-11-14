@@ -6,10 +6,10 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export const siteLinks = [
   { href: "/", label: "Acasă" },
   { href: "/cum-functioneaza", label: "Cum funcționează" },
-  { href: "/board", label: "Ecran live" },
+  { href: "/board", label: "Rundele" },
   { href: "/simulare", label: "Simulare" },
-  { href: "/organizer", label: "Organizatori" },
-  { href: "/demo", label: "Demo" },
+  { href: "/organizer", label: "Admin" },
+  { href: "/demo", label: "Admin Demo" },
 ];
 
 const link = "rounded-lg px-3 py-2 text-sm whitespace-nowrap font-medium text-ink-2 transition-colors hover:bg-foreground/5 hover:text-foreground";
@@ -61,7 +61,7 @@ export function SiteHeader() {
         </div>
 
         {/* scroll progress, driven natively by animation-timeline: scroll() */}
-        <span className="scroll-progress absolute inset-x-8 bottom-0 h-px bg-primary" aria-hidden />
+        <span className="scroll-progress absolute inset-x-6 -bottom-px h-[3px] rounded-full bg-[linear-gradient(90deg,oklch(58%_0.25_300),oklch(68%_0.15_235))]" aria-hidden />
       </div>
     </header>
   );

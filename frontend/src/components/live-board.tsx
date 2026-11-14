@@ -13,6 +13,29 @@ import { type ConsultationState, useConsultation } from "@/hooks/use-consultatio
 // Romanian plural: 0 voturi, 1 vot, 2–19 voturi, 20+ "de voturi" (except when the last two digits are 01–19)
 const votes = (n: number) => (n === 1 ? "1 vot" : n === 0 || (n % 100 >= 1 && n % 100 <= 19) ? `${n} voturi` : `${n} de voturi`);
 
+// Long AI proposals are hard to read from far away: the first sentence leads (bold), and the concrete facts
+// (times, durations, percentages) are highlighted inside the rest.
+const FACT = /(\d{1,2}:\d{2}|\d+\s?(?:%|lei|luni|zile|ore|săptămâni)|trei luni|program-pilot|weekend)/gi;
+function ProposalText({ text }: { text: string }) {
+  const [, lead = text, rest = ""] = text.match(/^(.+?[.!?])\s+([\s\S]*)$/) ?? [];
+  const facts = (t: string) =>
+    t.split(FACT).map((part, i) =>
+      i % 2 ? (
+        <mark key={i} className="rounded bg-[var(--cyan)]/15 px-1 font-semibold text-foreground">
+          {part}
+        </mark>
+      ) : (
+        part
+      ),
+    );
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-lg leading-snug font-semibold">{facts(lead)}</p>
+      {rest && <p className="text-ink-2">{facts(rest)}</p>}
+    </div>
+  );
+}
+
 function AiBadge() {
   return (
     <Badge variant="secondary" className="font-normal">
@@ -25,37 +48,36 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
   const { clusters, bridges, proposal, support } = useConsultation(initial);
   const color = campColor(clusters.camps);
 
+  // Map first and as large as possible (top-left); everything else lives in the right column, starting with
+  // the identity block (logo, live, question, participants, QR) so the projector reads at a glance.
   return (
-    <div className="grid flex-1 gap-6 lg:grid-cols-[1fr_400px]">
-      <section className="flex flex-col gap-4">
-        <header className="flex flex-wrap items-end justify-between gap-4 lg:flex-nowrap">
-          <div>
-            <p className="flex items-center gap-3 text-sm">
-              <Brand className="text-base" />
-              <span className="flex items-center gap-1.5 font-semibold uppercase tracking-wider text-brand-amber">
-                <span className="size-2 animate-pulse rounded-full bg-brand-amber" aria-hidden /> Live
-              </span>
-            </p>
-            <h1 className="text-2xl font-bold lg:text-4xl">{question}</h1>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="text-right" aria-live="polite">
-              <p className="text-4xl font-bold tabular-nums lg:text-6xl">{clusters.points.length}</p>
-              <p className="text-sm text-muted-foreground">participanți</p>
-            </div>
-            <div className="hidden lg:block">
-              <JoinQr size={110} />
-            </div>
-          </div>
-        </header>
-        <Card className="board-map flex-1">
-          <CardContent>
-            <OpinionMap clusters={clusters} />
-          </CardContent>
-        </Card>
-      </section>
+    <div className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+      <Card className="board-map lg:sticky lg:top-6">
+        <CardContent>
+          <OpinionMap clusters={clusters} />
+        </CardContent>
+      </Card>
 
       <aside className="flex flex-col gap-4">
+        <Card>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-3">
+              <Brand className="text-base" />
+              <span className="flex items-center gap-1.5 text-sm font-semibold tracking-wider text-[var(--cyan)] uppercase">
+                <span className="size-2 animate-pulse rounded-full bg-[var(--cyan)]" aria-hidden /> Live
+              </span>
+            </div>
+            <h1 className="text-xl leading-snug font-bold text-balance">{question}</h1>
+            <div className="flex items-center justify-between gap-4">
+              <div aria-live="polite">
+                <p className="text-5xl font-bold tabular-nums">{clusters.points.length}</p>
+                <p className="text-sm text-muted-foreground">participanți</p>
+              </div>
+              <JoinQr size={110} />
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Tabere</CardTitle>
@@ -99,19 +121,21 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
               <AiBadge />
             </CardHeader>
             <CardContent>
-              <p>{proposal.text}</p>
+              <ProposalText text={proposal.text} />
               {proposal.verdict && (
                 <div className="mt-3">
                   <VerdictView verdict={proposal.verdict} />
                 </div>
               )}
-              {!!proposal.proxies?.length && (
-                <div className="mt-3">
-                  <ProxyVoices proxies={proposal.proxies} compact />
-                </div>
-              )}
             </CardContent>
           </Card>
+        )}
+
+        {/* simulated voices in their own clearly-different box: never part of the proposal's votes */}
+        {!!proposal?.proxies?.length && (
+          <section className="rounded-xl border-2 border-dashed border-foreground/25 bg-[repeating-linear-gradient(135deg,color-mix(in_oklch,var(--violet)_10%,var(--carbon))_0_12px,color-mix(in_oklch,var(--violet)_4%,var(--carbon))_12px_24px)] p-4">
+            <ProxyVoices proxies={proposal.proxies} compact />
+          </section>
         )}
 
         <Card>
@@ -131,7 +155,7 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
                     </span>
                   </div>
                   <div className="h-3 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full bg-primary transition-all duration-700" style={{ width: `${pct}%` }} />
+                    <div className="h-full bg-[linear-gradient(90deg,oklch(58%_0.25_300),oklch(68%_0.15_235))] transition-all duration-700" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );

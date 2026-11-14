@@ -27,13 +27,13 @@ const groups = [
     ],
   },
   {
-    title: "Ecran live",
+    title: "Rundele",
     text: "Pe proiector, în timpul consultării. Treci cu mouse-ul peste puncte.",
     device: "desktop" as const,
-    pages: [{ href: "/board", title: "Ecran live", text: "Harta animată, punctele comune, sprijinul pe runde și codul QR." }],
+    pages: [{ href: "/board", title: "Rundele", text: "Harta animată, punctele comune, sprijinul pe runde și codul QR." }],
   },
   {
-    title: "Organizator",
+    title: "Admin",
     text: "Pentru cine creează și conduce consultarea.",
     device: "desktop" as const,
     pages: [
@@ -49,7 +49,7 @@ export default function DemoPage() {
   return (
     <>
       <PageHero
-        eyebrow="Demo"
+        eyebrow="Admin Demo"
         title="Toate paginile CityMind, într-un singur loc"
         text="Fiecare previzualizare e pagina reală, live: poți da clic, vota și trece peste hartă direct aici, sau o deschizi pe tot ecranul."
       />

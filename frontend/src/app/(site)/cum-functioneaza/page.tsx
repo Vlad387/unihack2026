@@ -1,6 +1,6 @@
+import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { PageHero } from "@/components/site/page-hero";
 
 const pipeline = [
@@ -43,38 +43,50 @@ const rules = [
   "Prompturile agenților și codul sunt publice, ca oricine să poată verifica metoda.",
 ];
 
+const GRADIENT = "bg-[linear-gradient(135deg,oklch(58%_0.25_300),oklch(68%_0.15_235))]";
+// accent -> blue: violet on the light theme, turquoise on dark, both readable as large text
+const TEXT_GRADIENT = "bg-[linear-gradient(90deg,var(--cyan),oklch(55%_0.17_245))]";
+
 export default function HowItWorksPage() {
   return (
     <>
-      <PageHero
-        eyebrow="Metodologie"
-        title="Cum funcționează CityMind"
-        text="De la sute de păreri la o propunere votată, în șase pași. AI-ul face munca grea de citit și sortat. Oamenii decid."
-      />
+      {/* one band behind the hero AND the steps, so the violet -> ice gradient runs down to about step 4 */}
+      <div className="band-top -mt-[4.25rem] pt-[4.25rem]">
+        <PageHero
+          band={false}
+          eyebrow="Metodologie"
+          title="Cum funcționează CityMind"
+          text="De la sute de păreri la o propunere votată, în șase pași. AI-ul face munca grea de citit și sortat. Oamenii decid."
+        />
+        <div className="mx-auto w-full max-w-3xl px-4 pb-16">
+          <ol className="relative flex flex-col gap-6 border-l-2 border-[var(--cyan-line)] pl-8">
+            {pipeline.map((step, i) => (
+              <li key={step.title} className="relative">
+                <span
+                  className={`absolute -left-[2.85rem] flex size-9 items-center justify-center rounded-full text-sm font-bold text-white shadow ${GRADIENT}`}
+                >
+                  {i + 1}
+                </span>
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink-3">{step.who}</p>
+                <h2 className={`mt-1 w-fit bg-clip-text text-xl font-bold text-transparent ${TEXT_GRADIENT}`}>{step.title}</h2>
+                <p className="mt-1 text-ink-2">{step.text}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-12 px-4 py-16">
-        <ol className="relative flex flex-col gap-6 border-l-2 border-border pl-8">
-          {pipeline.map((step, i) => (
-            <li key={step.title} className="relative">
-              <span className="absolute -left-[2.85rem] flex size-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                {i + 1}
-              </span>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{step.who}</p>
-              <h2 className="mt-1 text-xl font-semibold">{step.title}</h2>
-              <p className="mt-1 text-muted-foreground">{step.text}</p>
-            </li>
-          ))}
-        </ol>
-
-        <Card>
-          <CardContent className="flex flex-col gap-3">
-            <h2 className="text-xl font-semibold">Regulile pe care nu le încălcăm</h2>
-            <ul className="flex list-disc flex-col gap-2 pl-5 text-muted-foreground">
-              {rules.map((r) => (
-                <li key={r}>{r}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <section className="flex flex-col gap-4 rounded-2xl border border-[var(--cyan-line)] bg-[linear-gradient(135deg,color-mix(in_oklch,var(--violet)_20%,var(--carbon)),color-mix(in_oklch,var(--wash)_75%,var(--carbon)))] p-6 shadow-sm sm:p-8">
+          <h2 className="text-2xl font-bold tracking-tight">Regulile noastre</h2>
+          <ul className="flex flex-col gap-3">
+            {rules.map((r) => (
+              <li key={r} className="flex gap-3 text-ink-2">
+                <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[var(--cyan)]" aria-hidden />
+                {r}
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link href="/participa" className={buttonVariants({ size: "lg", className: "h-12 px-6 text-base" })}>
