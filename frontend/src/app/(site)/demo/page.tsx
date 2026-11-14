@@ -1,4 +1,5 @@
 import { PagePreview } from "@/components/page-preview";
+import { PageHero } from "@/components/site/page-hero";
 
 const groups = [
   {
@@ -7,7 +8,11 @@ const groups = [
     device: "desktop" as const,
     pages: [
       { href: "/", title: "Acasă", text: "Prezentarea proiectului și harta opiniilor." },
-      { href: "/cum-functioneaza", title: "Cum funcționează", text: "Metodologia: agenți AI, hartă, puncte comune, runde de vot." },
+      {
+        href: "/cum-functioneaza",
+        title: "Cum funcționează",
+        text: "Metodologia: agenți AI, hartă, puncte comune, runde de vot.",
+      },
     ],
   },
   {
@@ -42,29 +47,27 @@ const groups = [
 
 export default function DemoPage() {
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-4 py-14">
-      <header className="flex max-w-2xl flex-col gap-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Demo</p>
-        <h1 className="text-4xl font-bold tracking-tight">Toate paginile CityMind, într-un singur loc</h1>
-        <p className="text-lg text-muted-foreground">
-          Fiecare previzualizare e pagina reală, live: poți da clic, vota și trece peste hartă direct aici, sau o deschizi pe tot
-          ecranul.
-        </p>
-      </header>
-
-      {groups.map((g) => (
-        <section key={g.title} className="flex flex-col gap-5">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">{g.title}</h2>
-            <p className="text-muted-foreground">{g.text}</p>
-          </div>
-          <div className="flex flex-wrap gap-8">
-            {g.pages.map((p) => (
-              <PagePreview key={p.href} device={g.device} {...p} />
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
+    <>
+      <PageHero
+        eyebrow="Demo"
+        title="Toate paginile CityMind, într-un singur loc"
+        text="Fiecare previzualizare e pagina reală, live: poți da clic, vota și trece peste hartă direct aici, sau o deschizi pe tot ecranul."
+      />
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-4 py-16">
+        {groups.map((g) => (
+          <section key={g.title} className="flex flex-col gap-5">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">{g.title}</h2>
+              <p className="text-muted-foreground">{g.text}</p>
+            </div>
+            <div className="flex flex-wrap gap-8">
+              {g.pages.map((p) => (
+                <PagePreview key={p.href} device={g.device} {...p} />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </>
   );
 }
