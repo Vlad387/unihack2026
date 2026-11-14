@@ -16,9 +16,11 @@ from sqlalchemy import select
 
 from app import db
 from app.agents import intake
-from app.api import camp_ids
-from app.api.models import ResponseRow, StatementRow, VoteRow
+from app.api import camp_ids, camp_names
+from app.api.map_inputs import load_inputs, with_texts
+from app.api.models import ResponseRow, StatementRow
 from app.clustering import bridges, cluster
+from app.clustering.layout import align_layout
 from app.schemas import (
     BridgesUpdated,
     Camp,
@@ -26,7 +28,6 @@ from app.schemas import (
     ConsultationEvent,
     MapUpdated,
     Statement,
-    Vote,
 )
 
 log = logging.getLogger(__name__)
@@ -83,44 +84,6 @@ def process_response(response_id: str) -> bool:
         return True
 
 
-def load_inputs() -> tuple[list[Statement], list[Vote]]:
-    """Approved statements + votes on them. The composite key already keeps one vote
-    per (participant, statement), so the 'latest vote wins' rule holds here."""
-    with db.SessionLocal() as s:
-        rows = s.scalars(
-            select(StatementRow)
-            .where(StatementRow.flag.is_(None))
-            .order_by(StatementRow.created_at)
-        ).all()
-        approved = {r.id for r in rows}
-        votes = [
-            Vote.model_validate(
-                {
-                    "participant_id": v.participant_id,
-                    "statement_id": v.statement_id,
-                    "value": v.value,
-                }
-            )
-            for v in s.scalars(select(VoteRow))
-            if v.statement_id in approved
-        ]
-        return [r.to_schema() for r in rows], votes
-
-
-def with_texts(result: ClusterResult, statements: list[Statement]) -> ClusterResult:
-    said: dict[str, list[str]] = {}
-    for st in statements:
-        if st.author_id:
-            said.setdefault(st.author_id, []).append(st.text)
-    points = [
-        p.model_copy(update={"text": " ".join(said[p.participant_id])})
-        if p.participant_id in said
-        else p
-        for p in result.points
-    ]
-    return result.model_copy(update={"points": points})
-
-
 async def _wait(event: asyncio.Event, timeout: float) -> None:
     try:
         await asyncio.wait_for(event.wait(), timeout)
@@ -152,6 +115,7 @@ class Live:
         self.map_ready = asyncio.Event()
         # last non-empty camps, to keep their ids stable (None = not loaded from DB yet)
         self._known_camps: list[Camp] | None = None
+        self.namer = camp_names.CampNamer()
         # proposal rounds (api/proposals.py): one mediate run at a time
         self.round_running = False
         self.round_error: str | None = None
@@ -251,9 +215,14 @@ class Live:
         if self._known_camps is None:  # first map since startup: ids from the DB
             self._known_camps = await asyncio.to_thread(camp_ids.load_previous)
         result = camp_ids.stabilize(result, self._known_camps)
+        # after stabilize (names of surviving camps kept) and before save (AI names persist)
+        result = await self.namer.name_new(result)
         if result.camps:
             self._known_camps = result.camps
             await asyncio.to_thread(camp_ids.save, result.camps)
+        # rotate/shift the fresh layout onto the previous map so dots don't jump on the
+        # board; memberships, ids and names are untouched (clustering/layout.py)
+        result = align_layout(result, self.result)
         common = await asyncio.to_thread(bridges, votes, result.camps)
         self.result, self.bridges = with_texts(result, statements), common
         self.map_ready.set()

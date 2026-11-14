@@ -7,7 +7,7 @@ Ce s-a făcut în `backend/app/agents/`, pe scurt, pentru toată echipa.
 | `intake` | împarte și filtrează răspunsurile cetățenilor | ✅ gata, în `dev` (PR #9) |
 | `mediate` | scrie compromisul între tabere | ✅ gata, în `dev` (PR #15) |
 | `critic` | verifică dacă compromisul e corect și echilibrat | ✅ gata, în `dev` (PR #22) |
-| `name_camps` | dă nume și descriere reale taberelor („Liniște și odihnă") | ✅ gata (secțiunea 14) |
+| `name_camps` | dă nume și descriere reale taberelor („Liniște și odihnă") | ✅ gata, în `dev` (PR #31), legat de hartă de Rares (`api/camp_names.py`) |
 | `proxy` | simulează vocea unui grup care lipsește (opțional) | ❌ neînceput |
 
 Secțiunile 1–7: `intake`; 8–10: `mediate`; 11–13: `critic`; 14: `name_camps`.
@@ -91,23 +91,23 @@ except AgentError:
 
 | Fișier | Ce conține |
 |---|---|
-| `__init__.py` | exportă `intake`, `mediate`, `critic`, `AgentError` (mediate/critic încă stub) |
-| `intake_agent.py` | agentul intake |
-| `gemini.py` | partea comună pentru toți agenții: client Gemini, retry, modele, `AgentError` |
-| `prompts/intake.md` | instrucțiunile pentru Gemini |
-| `demo_intake.py` | script de test live pe răspunsurile din `seed/` |
-| `../../tests/test_intake.py` | teste intake (fără internet) |
+| `__init__.py` | exportă `intake`, `mediate`, `critic`, `name_camps`, `AgentError` |
+| `gemini.py` | partea comună pentru toți agenții: client Gemini, modele, retry, rezervă la 429, `AgentError` |
+| `intake_agent.py`, `mediate_agent.py`, `critic_agent.py`, `naming_agent.py` | cei 4 agenți |
+| `prompts/*.md` | instrucțiunile pentru Gemini, câte una pe agent |
+| `demo_*.py` | scripturi de test live (consumă din cota Gemini) |
+| `../../tests/test_intake.py`, `test_mediate.py`, `test_critic.py`, `test_naming.py`, `test_gemini.py` | teste fără internet |
 | `../../tests/conftest.py` | înlocuiește Gemini cu un fals în **toate** testele |
 
-Modulul se numește `intake_agent.py` (nu `intake.py`) ca să nu se bată cap în cap
-cu funcția `intake` exportată din `__init__.py`. La fel vor fi `mediate_agent.py`, `critic_agent.py`.
+Modulele se numesc `*_agent.py` (nu `intake.py`) ca să nu se bată cap în cap
+cu funcțiile `intake`, `mediate`… exportate din `__init__.py`.
 
 ---
 
 ## 5. Modele Gemini – IMPORTANT pentru toți
 
 - **Cheia API e bună.** `gemini-2.5-*` și modelele **Pro** nu merg pe cheia noastră (404).
-- **Cota gratuită e pe model și pe zi** (~20 cereri/zi la `gemini-3.5-flash`). Când se
+- **Cota gratuită e pe model și pe zi** (~20 cereri/zi la `gemini-3.5-flash`; limita exactă: https://ai.dev/rate-limit). Când se
   termină: eroare **429**. Fiecare model are cota lui, deci împărțim agenții pe modele:
 - **Decizia echipei: fără billing → toți agenții pe Flash-Lite** (Flash a rămas fără cotă la teste).
 
@@ -464,7 +464,7 @@ nume clar diferite între ele.
    (cu alta sau cu `taken_names`), **își păstrează numele vechi**. Taberele fără niciun argument
    scris nu sunt trimise la Gemini.
 
-**Pentru Rares – cum îl legi de hartă:**
+**Pentru Rares – cum îl legi de hartă** (✅ făcut în `api/camp_names.py`, PR #35):
 
 ```python
 from app.agents import name_camps, AgentError
