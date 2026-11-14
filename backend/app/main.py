@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -28,8 +29,8 @@ app = FastAPI(title="CityMind API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    # shortcut: open CORS for the hackathon; restrict to the frontend domain after deploy
-    allow_origins=["*"],
+    # open locally; on the server set CORS_ORIGINS=https://<your-site>.vercel.app
+    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
     allow_methods=["*"],
     allow_headers=["*"],
 )
