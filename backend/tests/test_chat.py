@@ -29,7 +29,6 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
         db, "SessionLocal", sessionmaker(engine, expire_on_commit=False)
     )
     monkeypatch.delenv("ORGANIZER_TOKEN", raising=False)
-    chat_module._recent.clear()
     db.init_db()
     live.reset()
     yield TestClient(app)

@@ -16,7 +16,7 @@ from sqlalchemy import select
 
 from app import db
 from app.agents import intake
-from app.api import camp_ids, camp_names
+from app.api import camp_ids, camp_names, ratelimit
 from app.api.map_inputs import load_inputs, with_texts
 from app.api.models import ResponseRow, StatementRow
 from app.clustering import bridges, cluster
@@ -80,6 +80,8 @@ def process_response(response_id: str) -> bool:
                 )
             )
         row.status, row.error = "done", None
+        # the statements are saved: the raw recording is no longer needed (privacy + DB size)
+        row.audio = None
         s.commit()
         return True
 
@@ -97,6 +99,7 @@ class Live:
         self.reset()
 
     def reset(self) -> None:
+        ratelimit.reset_all()  # fresh app state includes the request counters
         # asyncio primitives bind to one event loop: recreate them for each app startup
         self._map_wake = asyncio.Event()
         self._intake_wake = asyncio.Event()
