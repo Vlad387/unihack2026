@@ -9,10 +9,26 @@ from app import db
 from app.api.auth import require_organizer
 from app.api.live import live
 from app.api.models import ResponseRow
+from app.api.ratelimit import limit
 
 router = APIRouter(tags=["responses"])
 
 MAX_AUDIO_BYTES = 10 * 1024 * 1024
+# audio + the small form fields; bigger requests are refused before parsing (main.py)
+MAX_REQUEST_BYTES = MAX_AUDIO_BYTES + 1024 * 1024
+# each answer is one Gemini intake call; one IP = a whole venue Wi-Fi, so keep it generous
+PER_IP = limit(20)
+GLOBAL = limit(40)
+
+
+async def _read_capped(upload: UploadFile) -> bytes:
+    """Read in 1 MB chunks and stop past the cap: never hold a huge upload in memory."""
+    data = bytearray()
+    while chunk := await upload.read(1024 * 1024):
+        data += chunk
+        if len(data) > MAX_AUDIO_BYTES:
+            raise HTTPException(413, "audio larger than 10 MB")
+    return bytes(data)
 
 
 class ResponseAccepted(BaseModel):
@@ -34,11 +50,9 @@ async def create_response(
 ) -> ResponseAccepted:
     """Multipart form. Saved first, intake runs in the background (202 Accepted)."""
     text = text.strip() if text and text.strip() else None
-    data = await audio.read() if audio else None
+    data = await _read_capped(audio) if audio else None
     if not text and not data:
         raise HTTPException(422, "send text or audio")
-    if data and len(data) > MAX_AUDIO_BYTES:
-        raise HTTPException(413, "audio larger than 10 MB")
 
     row = ResponseRow(
         id=f"r-{uuid.uuid4().hex[:12]}",

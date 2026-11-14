@@ -1,5 +1,6 @@
 import answers from "./mock-answers.json";
 import type {
+  ChatReply,
   ClusterResult,
   Kpis,
   Consultation,
@@ -135,3 +136,26 @@ export const mockKpis: Kpis = {
   flagged: 3,
   ai: { calls: 186, avg_latency_ms: 1420, cost_usd: 0.38 },
 };
+
+// Canned assistant until POST /chat is live (keyword match on the last message, Romanian).
+export function mockChatReply(last: string): ChatReply {
+  const t = last.toLowerCase();
+  if (/raport|abuz|jign|date personale|bug|eroare|nu merge/.test(t))
+    return {
+      text: "Am pregătit o ciornă de raport. Verific-o și trimite-o doar dacă e corectă.",
+      action: { type: "report" },
+      report: { kind: /date personale/.test(t) ? "personal_data" : /abuz|jign/.test(t) ? "abuse" : "bug", text: last },
+    };
+  if (/vot|afirma/.test(t)) return { text: "Poți vota afirmațiile celorlalți: de acord, nu sunt de acord sau nu știu.", action: { type: "vote" } };
+  if (/hart|unde|tab[aă]r/.test(t)) return { text: "Pe hartă vezi taberele și locul tău printre ele.", action: { type: "map" } };
+  if (/propun|compromis/.test(t)) return { text: "Compromisul curent și ce câștigă fiecare tabără sunt pe pagina propunerii.", action: { type: "proposal" } };
+  if (/cred|vreau|părere|parere|răspun|raspun/.test(t))
+    return {
+      text: "Pot să-ți pregătesc răspunsul. Îl deschizi în formular, îl modifici dacă vrei și îl trimiți tu.",
+      action: { type: "answer", prefill: last },
+    };
+  return {
+    text: "Te ajut să participi la consultare: să răspunzi, să votezi, să vezi harta sau să raportezi o problemă. Ce vrei să faci?",
+    action: { type: "none" },
+  };
+}

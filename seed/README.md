@@ -1,5 +1,49 @@
 # Nightlife consultation seed
 
+## Citizen help chatbot evaluation
+
+`chat_eval.json` is a UTF-8 JSON array of **40 synthetic Romanian conversations**
+for “Ce facem cu viața de noapte din centru?”. It is evaluation input, never citizen
+participation, a report to submit, or a vote. All names, addresses and numbers in
+the cases are explicitly fictional; `0000000000` is a dummy, not a contact number.
+
+Each object has:
+
+| Field | Meaning |
+| --- | --- |
+| `id` | Unique stable case ID, e.g. `chat-phrase-01` |
+| `page` | Current frontend path, passed as `ChatContext.page` |
+| `messages` | 1–4 message objects, each with `role` (`user` / `assistant`) and `text` (1–1000 characters); chronological, ending with the user request to evaluate |
+| `expected_action` | Exact `ChatReply.action.type`: `none`, `answer`, `vote`, `map`, `proposal`, or `report` |
+| `expected_report_kind` | Present only for report cases: `abuse`, `personal_data`, or `bug`; matches `ChatReply.report.kind` |
+
+The full contract also allows report kind `other`; this fixture focuses on the
+three requested report categories. The contract was read from Rares's PR #54;
+it is not redefined by this dataset.
+
+The ID prefix identifies the evaluation slice: `how` (10 explanations, action
+`none`), `phrase` (10 opinion drafts, `answer`), `nav` (6 navigation requests:
+2 each for `vote` / `map` / `proposal`), `report` (8: 3 abuse, 2 personal data,
+3 bugs), and `trap` (6, action `none`). Ages and roles appear naturally in the
+messages; they are not demographic labels or representative population samples.
+An assistant message in a multi-message case is fixed fictional history, not
+the evaluated agent's output. Evaluate only its next reply. No case requires
+a live proposal, particular camp names, a statement ID, or an organizer token.
+
+Expected actions describe the next UI suggestion, **never automatic submission**.
+An explanation alone uses `none`; a requested opinion draft uses `answer`.
+Reporting content already displayed uses `report`. A user volunteering their own
+dummy phone number (`chat-trap-05`) instead needs privacy guidance: `none`, no
+outbound call and no invented abuse report.
+
+### Evaluation handoff to Bordos
+
+Call `assist(messages, context)` with the exact question above and each case's
+page. Use empty optional context (no round/proposal, `camp_names=[]`) consistently;
+record any different context in the results. Validate replies against `ChatReply`.
+Do not send any action or report to the API. See `CHAT_EVAL_NUMBERS.md` for the
+scoring rubric, quota/latency accounting and current measurement status.
+
 Question: **Ce facem cu viața de noapte din centru?**
 
 `responses.json` contains 50 synthetic Romanian responses, with 10 each from

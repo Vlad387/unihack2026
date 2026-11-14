@@ -3,6 +3,7 @@ import json
 import pytest
 
 from app.agents import (
+    assist_agent,
     critic_agent,
     intake_agent,
     mediate_agent,
@@ -12,8 +13,8 @@ from app.agents import (
 
 
 class GeminiCalls(list):
-    """intake and mediate calls, in order. critic, naming and proxy calls go to
-    `.critic` / `.naming` / `.proxy` instead: the API runs them around mediate and on map updates, and tests
+    """intake and mediate calls, in order. critic, naming, proxy and assist calls go
+    to `.critic` / `.naming` / `.proxy` / `.assist` instead: the API runs them around mediate and on map updates, and tests
     read fake_gemini[-1] as the mediate call (tests/test_proposals.py)."""
 
     def __init__(self) -> None:
@@ -21,6 +22,7 @@ class GeminiCalls(list):
         self.critic: list[dict] = []
         self.naming: list[dict] = []
         self.proxy: list[dict] = []
+        self.assist: list[dict] = []
 
 
 @pytest.fixture(autouse=True)
@@ -84,9 +86,20 @@ def fake_gemini(monkeypatch: pytest.MonkeyPatch) -> GeminiCalls:
             ]
         )
 
+    def fake_assist(model, system, contents, schema, **_):
+        record(model, system, contents, into=calls.assist)
+        return schema(
+            text="Sunt asistentul CityMind. Te ajut să răspunzi la întrebare.",
+            action="none",
+            prefill="",
+            report_kind="none",
+            report_text="",
+        )
+
     monkeypatch.setattr(intake_agent, "generate", fake_intake)
     monkeypatch.setattr(mediate_agent, "generate", fake_mediate)
     monkeypatch.setattr(critic_agent, "generate", fake_critic)
     monkeypatch.setattr(naming_agent, "generate", fake_naming)
     monkeypatch.setattr(proxy_agent, "generate", fake_proxy)
+    monkeypatch.setattr(assist_agent, "generate", fake_assist)
     return calls
