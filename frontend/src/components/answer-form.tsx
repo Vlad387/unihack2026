@@ -1,17 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MicButton } from "@/components/mic-button";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { submitResponse } from "@/lib/api";
+import { clearDraft, readDraft } from "@/lib/draft";
 
 export function AnswerForm() {
   const [audio, setAudio] = useState<Blob | null>(null);
-  const [text, setText] = useState("");
+  // a draft prepared by the help chat starts the text field; the citizen edits and sends it themselves
+  const [text, setText] = useState(readDraft);
+  useEffect(() => {
+    clearDraft();
+    // the chat was opened on this page: take its new draft without a navigation
+    const take = () => {
+      setText(readDraft());
+      clearDraft();
+    };
+    window.addEventListener("citymind-draft", take);
+    return () => window.removeEventListener("citymind-draft", take);
+  }, []);
   const [neighborhood, setNeighborhood] = useState("");
   const [age, setAge] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");

@@ -155,3 +155,27 @@ export interface Verdict {
   feasible: boolean;
   notes: string;
 }
+
+// Chat assistant (POST /chat) and citizens' reports (POST /reports): mirrors schemas.py
+export interface ChatMessage {
+  role: "user" | "assistant";
+  text: string;
+}
+
+export interface ChatAction {
+  type: "none" | "answer" | "vote" | "map" | "proposal" | "report";
+  // a draft for the UI to show; never sent or submitted automatically
+  prefill?: string | null;
+}
+
+export interface ReportDraft {
+  kind: "abuse" | "personal_data" | "bug" | "other";
+  text: string;
+  statement_id?: string | null;
+}
+
+export interface ChatReply {
+  text: string;
+  action: ChatAction;
+  report?: ReportDraft | null;
+}
