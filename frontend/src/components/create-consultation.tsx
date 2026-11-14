@@ -75,11 +75,11 @@ export function CreateConsultation({ initial }: { initial: Consultation }) {
           <JoinQr size={200} />
           {status === "created" && (
             <p className="text-center text-sm text-emerald-700 dark:text-emerald-400" aria-live="polite">
-              Consultarea a pornit. Pune ecranul live pe proiector.
+              Consultarea a pornit. Pune pagina Rundele pe proiector.
             </p>
           )}
           <Link href="/board" className={buttonVariants({ variant: "outline", className: "w-full" })}>
-            Deschide ecranul live
+            Vezi rundele
           </Link>
         </CardContent>
       </Card>

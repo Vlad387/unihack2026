@@ -1,15 +1,16 @@
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { Brand } from "@/components/brand";
+import { NavLink } from "@/components/nav-link";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const siteLinks = [
   { href: "/", label: "Acasă" },
   { href: "/cum-functioneaza", label: "Cum funcționează" },
-  { href: "/board", label: "Ecran live" },
+  { href: "/board", label: "Rundele" },
   { href: "/simulare", label: "Simulare" },
-  { href: "/organizer", label: "Organizatori" },
-  { href: "/demo", label: "Demo" },
+  { href: "/organizer", label: "Admin" },
+  { href: "/demo", label: "Admin Demo" },
 ];
 
 const link = "rounded-lg px-3 py-2 text-sm whitespace-nowrap font-medium text-ink-2 transition-colors hover:bg-foreground/5 hover:text-foreground";
@@ -25,9 +26,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-1">
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Navigare principală">
             {siteLinks.map((l) => (
-              <Link key={l.href} href={l.href} className={link}>
-                {l.label}
-              </Link>
+              <NavLink key={l.href} href={l.href} label={l.label} className={link} />
             ))}
             <Link href="/participa" className={`${cta} ml-2`}>
               Participă
@@ -49,9 +48,7 @@ export function SiteHeader() {
               aria-label="Navigare principală"
             >
               {siteLinks.map((l) => (
-                <Link key={l.href} href={l.href} className={`${link} py-3 text-base`}>
-                  {l.label}
-                </Link>
+                <NavLink key={l.href} href={l.href} label={l.label} className={`${link} py-3 text-base`} />
               ))}
               <Link href="/participa" className={`${cta} mt-1 h-12 text-base`}>
                 Participă
@@ -61,7 +58,7 @@ export function SiteHeader() {
         </div>
 
         {/* scroll progress, driven natively by animation-timeline: scroll() */}
-        <span className="scroll-progress absolute inset-x-8 bottom-0 h-px bg-primary" aria-hidden />
+        <span className="scroll-progress absolute inset-x-6 -bottom-px h-[3px] rounded-full bg-[linear-gradient(90deg,oklch(58%_0.25_300),oklch(68%_0.15_235))]" aria-hidden />
       </div>
     </header>
   );

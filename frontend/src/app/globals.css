@@ -286,9 +286,10 @@ html.light .board [data-slot="card"] {
   background: radial-gradient(120% 60% at 0% 0%, oklch(52% 0.24 293 / 0.07), transparent 60%), linear-gradient(165deg, oklch(99.5% 0.006 240), oklch(95% 0.03 215));
   box-shadow: inset 0 0 0 1px var(--cyan-line), 0 30px 80px -40px oklch(52% 0.24 293 / 0.35);
 }
+/* light map: a lavender -> turquoise tint (the site gradient, softened) so the white page doesn't swallow it */
 html.light .board [data-slot="card"].board-map {
-  background: radial-gradient(circle, oklch(20% 0.035 285 / 0.1) 1px, transparent 1.6px) 0 0 / 26px 26px,
-    radial-gradient(60% 55% at 50% 45%, oklch(52% 0.24 293 / 0.08), transparent 70%), linear-gradient(165deg, oklch(99.5% 0.006 240), oklch(95% 0.03 215));
+  background: radial-gradient(circle, oklch(30% 0.08 290 / 0.14) 1px, transparent 1.6px) 0 0 / 26px 26px,
+    radial-gradient(60% 55% at 50% 45%, oklch(99% 0.01 250 / 0.55), transparent 70%), linear-gradient(160deg, oklch(86% 0.09 298), oklch(88% 0.08 205));
 }
 /* Template bands: the page itself fades violet -> ice at the top and ice -> violet at the bottom */
 .band-top { background: linear-gradient(180deg, var(--violet), color-mix(in oklch, var(--violet) 50%, var(--wash)) 38%, var(--wash) 72%, var(--midnight)); }

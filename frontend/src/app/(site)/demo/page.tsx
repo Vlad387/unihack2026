@@ -1,4 +1,5 @@
 import { PagePreview } from "@/components/page-preview";
+import { citizenPages } from "@/components/site/citizen-journey";
 import { PageHero } from "@/components/site/page-hero";
 
 const groups = [
@@ -19,21 +20,16 @@ const groups = [
     title: "Parcursul cetățeanului",
     text: "Pe telefon, după scanarea codului QR. Patru pași.",
     device: "phone" as const,
-    pages: [
-      { href: "/participa", title: "1. Răspunde", text: "Cu vocea sau în scris." },
-      { href: "/vote", title: "2. Votează afirmațiile", text: "De acord, nu sunt de acord, nu știu." },
-      { href: "/me", title: "3. Unde te afli", text: "Locul tău pe harta opiniilor." },
-      { href: "/proposal", title: "4. Votează compromisul", text: "Propunerea AI și ce câștigă fiecare tabără." },
-    ],
+    pages: citizenPages,
   },
   {
-    title: "Ecran live",
+    title: "Rundele",
     text: "Pe proiector, în timpul consultării. Treci cu mouse-ul peste puncte.",
     device: "desktop" as const,
-    pages: [{ href: "/board", title: "Ecran live", text: "Harta animată, punctele comune, sprijinul pe runde și codul QR." }],
+    pages: [{ href: "/board", title: "Rundele", text: "Harta animată, punctele comune, sprijinul pe runde și codul QR." }],
   },
   {
-    title: "Organizator",
+    title: "Admin",
     text: "Pentru cine creează și conduce consultarea.",
     device: "desktop" as const,
     pages: [
@@ -49,7 +45,7 @@ export default function DemoPage() {
   return (
     <>
       <PageHero
-        eyebrow="Demo"
+        eyebrow="Admin Demo"
         title="Toate paginile CityMind, într-un singur loc"
         text="Fiecare previzualizare e pagina reală, live: poți da clic, vota și trece peste hartă direct aici, sau o deschizi pe tot ecranul."
       />

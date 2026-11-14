@@ -8,7 +8,7 @@ const links = [
   { href: "/organizer/moderation", label: "Moderare" },
   { href: "/organizer/kpi", label: "KPI" },
   { href: "/organizer/report", label: "Raport" },
-  { href: "/board", label: "Ecran live" },
+  { href: "/board", label: "Rundele" },
 ];
 
 export default function OrganizerLayout({ children }: LayoutProps<"/organizer">) {
@@ -17,7 +17,7 @@ export default function OrganizerLayout({ children }: LayoutProps<"/organizer">)
       <nav className="flex flex-wrap items-center gap-1 border-b pb-3 print:hidden">
         <span className="mr-3 flex items-center gap-2">
           <Brand />
-          <span className="text-sm text-muted-foreground">Organizator</span>
+          <span className="text-sm text-muted-foreground">Admin</span>
         </span>
         {links.map((l) => (
           <Link key={l.href} href={l.href} className={buttonVariants({ variant: "ghost", size: "sm" })}>
