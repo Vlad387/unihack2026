@@ -4,6 +4,9 @@ import { siteLinks } from "@/components/site-header";
 import { buttonVariants } from "@/components/ui/button";
 import { getBridges, getClusters, getProposal, getQuestion, getSupport } from "@/lib/api";
 
+// Live data on purpose: wait for the backend so the page (and the map) arrive complete, not as an empty shell.
+export const instant = false;
+
 export default async function BoardPage() {
   const [question, clusters, bridges, proposal, support] = await Promise.all([
     getQuestion(),

@@ -2,6 +2,9 @@ import { Brand } from "@/components/brand";
 import { WhereYouAre } from "@/components/where-you-are";
 import { getBridges, getClusters, getSupport } from "@/lib/api";
 
+// Live data on purpose: wait for the backend so the page (and the map) arrive complete, not as an empty shell.
+export const instant = false;
+
 export default async function MePage() {
   const [clusters, bridges, support] = await Promise.all([getClusters(), getBridges(), getSupport()]);
 
