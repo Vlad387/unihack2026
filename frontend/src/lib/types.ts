@@ -44,6 +44,13 @@ export interface CampTradeoff {
   gives_up: string;
 }
 
+// Simulated view of a group that did not take part (proxy agent). Never a vote, never a camp, never in percentages.
+export interface ProxyOpinion {
+  group: string;
+  text: string;
+  simulated: true;
+}
+
 export interface Proposal {
   id: string;
   round: number;
@@ -51,6 +58,9 @@ export interface Proposal {
   tradeoffs: CampTradeoff[];
   // critic agent's check of the proposal; null if the critic failed
   verdict?: Verdict | null;
+  // proxy voices the mediator took into account; empty when proxy failed or found no missing group
+  // (optional: an API deployed before PR #45 doesn't send it)
+  proxies?: ProxyOpinion[];
 }
 
 export interface RoundStatus {

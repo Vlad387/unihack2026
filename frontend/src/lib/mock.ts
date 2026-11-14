@@ -79,6 +79,13 @@ export const mockProposal: Proposal = {
     { camp_id: "c2", gains: "Program târziu în weekend, reguli stabile pentru toți", gives_up: "Terasele după 23 și o taxă de curățenie" },
     { camp_id: "c3", gains: "Autobuze de noapte și curățenie dimineața", gives_up: "Fără patrule permanente în fiecare noapte" },
   ],
+  proxies: [
+    {
+      group: "Părinți cu copii mici",
+      text: "Avem nevoie de liniște după ora 22 în zilele lucrătoare. Un program fix și previzibil contează mai mult decât ora exactă.",
+      simulated: true,
+    },
+  ],
 };
 
 export const mockSupport: SupportRound[] = [
