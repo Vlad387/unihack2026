@@ -127,7 +127,8 @@ async def run_round() -> None:
     # Gemini down / no camps yet: nothing is half-saved, the organizer can retry
     except Exception as e:
         log.exception("proposal round failed")
-        live.round_error = str(e)[:500]
+        # TimeoutError has an empty str(): without a fallback the round looked "idle"
+        live.round_error = (str(e) or type(e).__name__)[:500]
     finally:
         live.round_running = False
 
