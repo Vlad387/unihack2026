@@ -10,9 +10,9 @@ Ce s-a făcut în `backend/app/agents/`, pe scurt, pentru toată echipa.
 | `mediate` | scrie compromisul între tabere | ✅ gata, în `dev` (PR #15) |
 | `critic` | verifică dacă compromisul e corect și echilibrat | ✅ gata, în `dev` (PR #22) |
 | `name_camps` | dă nume și descriere reale taberelor („Liniște și odihnă") | ✅ gata, în `dev` (PR #31), legat de hartă de Rares (`api/camp_names.py`) |
-| `proxy` | simulează vocea unui grup care lipsește (opțional) | ❌ neînceput |
+| `proxy` | simulează vocea unui grup care lipsește (opțional) | ✅ gata și testat live pe `bordos`, de legat de API (Rares) |
 
-Secțiunile 1–7: `intake`; 8–10: `mediate`; 11–13: `critic`; 14: `name_camps`.
+Secțiunile 1–7: `intake`; 8–10: `mediate`; 11–13: `critic`; 14: `name_camps`; 15: `proxy`.
 **Modele și cota gratuită: secțiunea 5.**
 
 ---
@@ -93,12 +93,12 @@ except AgentError:
 
 | Fișier | Ce conține |
 |---|---|
-| `__init__.py` | exportă `intake`, `mediate`, `critic`, `name_camps`, `AgentError` |
+| `__init__.py` | exportă `intake`, `mediate`, `critic`, `name_camps`, `proxy`, `AgentError` |
 | `gemini.py` | partea comună pentru toți agenții: client Gemini, modele, retry, rezervă la 429, `AgentError` |
-| `intake_agent.py`, `mediate_agent.py`, `critic_agent.py`, `naming_agent.py` | cei 4 agenți |
+| `intake_agent.py`, `mediate_agent.py`, `critic_agent.py`, `naming_agent.py`, `proxy_agent.py` | cei 5 agenți |
 | `prompts/*.md` | instrucțiunile pentru Gemini, câte una pe agent |
 | `demo_*.py` | scripturi de test live (consumă din cota Gemini) |
-| `../../tests/test_intake.py`, `test_mediate.py`, `test_critic.py`, `test_naming.py`, `test_gemini.py` | teste fără internet |
+| `../../tests/test_intake.py`, `test_mediate.py`, `test_critic.py`, `test_naming.py`, `test_proxy.py`, `test_gemini.py` | teste fără internet |
 | `../../tests/conftest.py` | înlocuiește Gemini cu un fals în **toate** testele |
 
 Modulele se numesc `*_agent.py` (nu `intake.py`) ca să nu se bată cap în cap
@@ -119,6 +119,7 @@ cu funcțiile `intake`, `mediate`… exportate din `__init__.py`.
 | `mediate` | `gemini-3.5-flash-lite` | 1 apel pe rundă (testat: propuneri bune, 5–10 s) | `GEMINI_MEDIATE_MODEL` |
 | `critic` | `gemini-3.5-flash-lite` | 1 apel pe rundă, verificare | `GEMINI_CRITIC_MODEL` |
 | `name_camps` | `gemini-3.5-flash-lite` | 1 apel doar când apar tabere noi | `GEMINI_NAMING_MODEL` |
+| `proxy` | `gemini-3.5-flash-lite` | 1 apel pe rundă, înainte de `mediate` | `GEMINI_PROXY_MODEL` |
 | rezervă | `gemini-3.1-flash-lite` | folosit **automat** când un model dă 429 | `GEMINI_FALLBACK_MODEL` |
 
 - Dacă modelul agentului dă **429**, se încearcă o dată modelul de rezervă. Dacă și
@@ -491,3 +492,97 @@ if new:
 (pe cele 3 tabere făcute de mână din seed; `agents/` nu are voie să importe `clustering/`).
 
 **Fișiere:** `naming_agent.py`, `prompts/naming.md`, `demo_naming.py`, `../../tests/test_naming.py`.
+
+---
+
+## 15. `proxy` – vocea grupurilor care lipsesc (simulată)
+
+### Ce face, pe înțelesul tuturor
+
+Imaginează-ți o ședință la primărie despre viața de noapte din centru. Au venit locatarii,
+studenții și patronii de baruri. **Nu au venit** părinții cu copii mici (erau acasă cu copiii)
+și nici cei care lucrează în ture de noapte (erau la muncă). Decizia îi afectează și pe ei,
+dar nimeni nu le-a spus părerea.
+
+`proxy` e ca un coleg care ridică mâna și zice: **„Stați, ne-am gândit și la părinții cu copii
+mici? Probabil le-ar păsa de liniște după ora 22."** Nu vorbește *în numele* lor și nu votează,
+doar **amintește** că există.
+
+**Exemplu real** – `demo_proxy` pe cele 3 tabere din seed (liniște / centru viu / siguranță și transport),
+fără grupuri date de organizator, **un singur apel, 2,3 s**. Gemini a găsit singur cine lipsea:
+
+> **[SIMULAT] Lucrători în ture de noapte** – „Noi care terminăm munca târziu sau începem dimineața devreme
+> ne temem de oboseală și de lipsa somnului din cauza zgomotului. Ne-ar ajuta o mai bună izolare fonică
+> a localurilor și un program strict respectat după miezul nopții."
+>
+> **[SIMULAT] Părinți cu copii mici** – „Noi care locuim în centru cu copii mici ne temem că odihna lor este
+> grav afectată de agitația de noapte. Ne-ar ajuta controale mai stricte ale nivelului de decibeli și zone
+> rezidentiale protejate de zgomot."
+
+### Regula de aur: e SIMULAT, nu e un cetățean
+
+- Iese ca `ProxyOpinion` cu `simulated=True` **mereu** (în `schemas.py` câmpul nici nu poate fi `False`).
+- **Nu e niciodată `Statement` sau `Vote`** → nu intră în clustering, în punctele comune
+  și nici în procentele de vot (`SupportRound`).
+- În UI apare cu eticheta **„simulat de AI"**, în altă culoare (RULES.md, secțiunea 3).
+
+### Cum funcționează în spate (aceeași rețetă în 4 pași)
+
+**Pasul 1 – strânge datele.** Codul pune într-un JSON:
+- întrebarea consultării („Ce facem cu viața de noapte din centru?");
+- taberele care **au participat**: nume, descriere, câți oameni, ce au scris (cu `camp_arguments`, ca la `mediate`);
+- `groups` = grupurile alese de organizator (ex. `["Părinți cu copii mici"]`), sau listă goală;
+- `max_groups` = câte voci maxim (implicit 2, niciodată peste 3, ca să nu acopere taberele reale).
+
+**Pasul 2 – instrucțiunile** ([`prompts/proxy.md`](backend/app/agents/prompts/proxy.md)), „fișa de post":
+- dacă organizatorul a dat grupuri → câte o voce pentru fiecare;
+- dacă **nu** → Gemini alege singur grupurile **afectate** de întrebare **ale căror griji lipsesc**
+  din ce au scris taberele; dacă nu lipsește nimeni, nu scoate nimic;
+- 2–3 propoziții, max. 60 de cuvinte, „Noi…", ce i-ar îngrijora și **un lucru concret** care i-ar ajuta;
+- **interzis**: cifre, studii, legi sau citate inventate; să pretindă că grupul a votat; stereotipuri, ironie;
+  să ia partea unei tabere.
+
+**Pasul 3 – răspuns în format fix.** Gemini trebuie să răspundă exact cu o listă `voices`,
+fiecare cu `group` și `text` (structured output, ca la ceilalți agenți).
+
+**Pasul 4 – verificare în cod** (`proxy_agent.py`):
+- aruncă vocile fără grup sau fără text (ar apărea ca un card gol);
+- aruncă grupurile repetate („Părinți" și „părinți" = același);
+- taie lista la limită;
+- transformă fiecare voce în `ProxyOpinion` → `simulated=True` pus automat.
+
+**Unde intră după aceea:**
+```
+taberele (clustering) ──► proxy ──► voci simulate ──► mediate (le ține minte ca „nu uita de ei")
+                                                └──► UI, cu eticheta „simulat de AI"
+```
+În `prompts/mediate.md` scrie deja: vocile simulate se folosesc **doar** ca să observi un grup uitat,
+niciodată ca voturi sau ca tabără.
+
+### Pentru Rares (API)
+
+```python
+from app.agents import proxy, mediate, AgentError
+
+# înainte de mediate(), o dată pe rundă, în fundal (asyncio.to_thread):
+try:
+    voices = proxy(consultation.question, result.camps)                   # Gemini alege grupurile
+    # sau: proxy(consultation.question, result.camps, ["Părinți cu copii mici"])
+except AgentError:
+    voices = []          # proxy e opțional: fără el, mediate merge la fel
+proposal = mediate(result.camps, bridges, critiques, voices)
+```
+
+- Semnătura: `proxy(question: str, camps: list[Camp], groups: list[str] | None = None, max_groups: int = 2) -> list[ProxyOpinion]`.
+- Fără schimbări în `schemas.py`: `ProxyOpinion` există deja.
+- Pentru Vladut: dacă vrea vocile pe ecran, Rares le trimite (ex. în `Proposal` sau un endpoint separat)
+  → de stabilit între ei; obligatoriu altă culoare + „simulat de AI".
+
+### Cum testezi
+
+Din `backend/`:
+```
+uv run pytest tests/test_proxy.py                                   # fără internet, Gemini fals
+uv run python -m app.agents.demo_proxy                              # live: Gemini alege grupurile
+uv run python -m app.agents.demo_proxy "Părinți cu copii mici"      # live: grupul ales de tine
+```
