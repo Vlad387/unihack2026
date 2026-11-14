@@ -94,7 +94,7 @@ export function ChatWidget() {
         <button
           type="button"
           onClick={open}
-          className="fixed right-[calc(5.75rem+env(safe-area-inset-right))] bottom-[calc(3.25rem+env(safe-area-inset-bottom))] z-50 max-w-[min(16rem,62vw)] rounded-2xl rounded-br-sm border border-foreground/10 bg-[var(--carbon)] px-3.5 py-2.5 text-left text-sm shadow-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 print:hidden"
+          className="fixed right-[calc(5.75rem+env(safe-area-inset-right))] bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-50 max-w-[min(16rem,62vw)] rounded-2xl rounded-br-sm border border-foreground/10 bg-[var(--carbon)] px-3.5 py-2.5 text-left text-sm shadow-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 print:hidden"
         >
           <span className="font-semibold">Bine ai venit! Sunt Bingus 👋</span>
           <span className="block text-ink-3">Sunt chatbotul CityMind. Scrie-mi orice întrebare și te ajut să participi.</span>
@@ -107,7 +107,7 @@ export function ChatWidget() {
         onClick={open}
         aria-label="Deschide chatul cu Bingus, asistentul AI"
         aria-haspopup="dialog"
-        className="group fixed right-[calc(0.75rem+env(safe-area-inset-right))] bottom-[calc(2rem+env(safe-area-inset-bottom))] z-50 size-18 rounded-full focus-visible:ring-4 focus-visible:ring-[var(--cyan)]/50 focus-visible:outline-none active:scale-95 print:hidden"
+        className="group fixed right-[calc(0.75rem+env(safe-area-inset-right))] bottom-[calc(5rem+env(safe-area-inset-bottom))] z-50 size-18 rounded-full focus-visible:ring-4 focus-visible:ring-[var(--cyan)]/50 focus-visible:outline-none active:scale-95 print:hidden"
       >
         <span className="pointer-events-none absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[linear-gradient(90deg,oklch(58%_0.25_300),oklch(68%_0.15_235))] px-2 py-0.5 text-[0.62rem] leading-none font-bold tracking-wider text-white uppercase shadow">
           Chatbot
@@ -122,7 +122,7 @@ export function ChatWidget() {
         aria-labelledby="chat-title"
         // click on the backdrop (outside the panel) closes it
         onClick={(e) => e.target === dialog.current && close()}
-        className="m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-[var(--carbon)] p-0 text-foreground backdrop:bg-black/40 sm:top-auto sm:right-[calc(1rem+env(safe-area-inset-right))] sm:bottom-[calc(6.75rem+env(safe-area-inset-bottom))] sm:left-auto sm:h-[min(600px,calc(100dvh-8.5rem))] sm:w-[360px] sm:rounded-2xl sm:border sm:border-foreground/10 sm:shadow-2xl sm:backdrop:bg-transparent"
+        className="m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-[var(--carbon)] p-0 text-foreground backdrop:bg-black/40 sm:top-auto sm:right-[calc(1rem+env(safe-area-inset-right))] sm:bottom-[calc(9.75rem+env(safe-area-inset-bottom))] sm:left-auto sm:h-[min(600px,calc(100dvh-11.5rem))] sm:w-[360px] sm:rounded-2xl sm:border sm:border-foreground/10 sm:shadow-2xl sm:backdrop:bg-transparent"
       >
         <div className="flex h-full flex-col">
           <header className={`flex items-center gap-3 px-4 py-3 text-white ${GRADIENT}`}>
