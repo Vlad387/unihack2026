@@ -94,6 +94,13 @@ if (!res.ok) throw new Error(`answer failed: ${res.status}`);
 - `GET /responses/stats` (organizer token) → `{pending, failed, done}`. Show it on the organizer page, so stuck answers (Gemini quota) are visible.
 - `POST /responses/retry` (organizer token) → retries every waiting/failed answer **now** and returns the same counts. Use it after billing is enabled or the daily quota resets. Answers are never given up on: they're retried automatically with growing waits (15 s → 10 min), but this skips the wait.
 
+## Simulated voices on the proposal (proxy agent)
+
+`Proposal.proxies` is a list of `{group, text, simulated: true}`: voices of groups missing from the
+consultation (e.g. "Părinți cu copii mici"), written by Bia's proxy agent and taken into account by
+the mediator. **Show them with the label "simulat de AI", in a different color, and never in vote
+counts or as a camp** (RULES.md section 3). The list is empty if proxy failed or found no missing group.
+
 ## Answers to PR #14 questions
 
 - **"After `POST /votes` no `map_updated` within 4 s":** that was a real bug. Slow Gemini intake blocked map updates. Fixed in PR #13: votes now reach the map in about 1 s, even while answers are still processing.

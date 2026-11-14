@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -9,7 +10,7 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 
 from app import db
-from app.agents import critic, mediate
+from app.agents import critic, mediate, proxy
 from app.api.auth import require_organizer
 from app.api.live import live
 from app.api.models import ProposalRow, ProposalVoteRow
@@ -27,6 +28,11 @@ log = logging.getLogger(__name__)
 # seed/demo participants are never counted as real citizens (schemas.py contract)
 DEMO_PREFIX = "seed-"
 MAP_READY_TIMEOUT_S = 60.0
+# shortcut: one consultation, question from env; read it from a consultations table once
+# the organizer can create consultations (POST /consultations).
+QUESTION = os.environ.get(
+    "CONSULTATION_QUESTION", "Ce facem cu viața de noapte din centru?"
+)
 
 
 class RoundStatus(BaseModel):
@@ -112,14 +118,20 @@ async def run_round() -> None:
         await asyncio.wait_for(live.map_ready.wait(), MAP_READY_TIMEOUT_S)
         camps, common = live.result.camps, live.bridges
         critiques = await asyncio.to_thread(previous_critiques)
-        proposal = await asyncio.to_thread(mediate, camps, common, critiques, [])
+        try:
+            voices = await asyncio.to_thread(proxy, QUESTION, camps)
+        # proxy is optional: without simulated voices mediate works the same
+        except Exception:
+            log.exception("proxy failed, mediating without simulated voices")
+            voices = []
+        proposal = await asyncio.to_thread(mediate, camps, common, critiques, voices)
         try:
             verdict = await asyncio.to_thread(critic, proposal, camps)
         # the critic is a quality check: without it the proposal is still publishable
         except Exception:
             log.exception("critic failed, publishing without a verdict")
             verdict = None
-        proposal = proposal.model_copy(update={"verdict": verdict})
+        proposal = proposal.model_copy(update={"verdict": verdict, "proxies": voices})
         saved = await asyncio.to_thread(save_proposal, proposal)
         live.round_error = None
         await live.broadcast(ProposalPublished(data=saved))
