@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" role="img" aria-label="Pini, mascota CityMind"><title>Pini – CityMind</title>
+    <ellipse cx="120" cy="236" rx="46" ry="9" fill="#1b2a2f" opacity="0.12"/>
+    <ellipse cx="120" cy="234" rx="24" ry="6" fill="none" stroke="#f2a541" stroke-width="4"/>
+    <ellipse cx="56" cy="132" rx="9" ry="18" transform="rotate(35 56 132)" fill="#0f5e6b"/>
+    <ellipse cx="192" cy="80" rx="9" ry="19" transform="rotate(-35 192 80)" fill="#0f5e6b"/>
+    <path d="M120 230 C100 198 52 162 52 106 A68 68 0 1 1 188 106 C188 162 140 198 120 230 Z" fill="#0f5e6b"/>
+    <path d="M120 230 C140 198 188 162 188 106 A68 68 0 0 0 150 45 C176 70 178 150 120 230 Z" fill="#0b4a55" opacity="0.55"/>
+    <ellipse cx="90" cy="68" rx="18" ry="9" transform="rotate(-35 90 68)" fill="#3fb8c8" opacity="0.45"/>
+    <circle cx="120" cy="106" r="45" fill="#faf8f5"/>
+    <ellipse cx="104" cy="100" rx="7" ry="10" fill="#1b2a2f"/><circle cx="106.45" cy="96" r="2.66" fill="#ffffff"/><ellipse cx="136" cy="100" rx="7" ry="10" fill="#1b2a2f"/><circle cx="138.45" cy="96" r="2.66" fill="#ffffff"/>
+    <path d="M108 120 Q120 130 132 120" fill="none" stroke="#1b2a2f" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="92" cy="118" rx="8" ry="4.5" fill="#f29a8a" opacity="0.85"/><ellipse cx="148" cy="118" rx="8" ry="4.5" fill="#f29a8a" opacity="0.85"/>
+    <path d="M178 14 L183 26 L195 31 L183 36 L178 48 L173 36 L161 31 L173 26 Z" fill="#f2a541"/></svg>

@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getBridges, getClusters, getConsultation, getProposal, getSupport } from "@/lib/api";
 
+// Live data on purpose: wait for the backend so the page (and the map) arrive complete, not as an empty shell.
+export const instant = false;
+
 const pct = (agree: number, total: number) => (total ? Math.round((agree / total) * 100) : 0);
 
 export default async function ReportPage() {

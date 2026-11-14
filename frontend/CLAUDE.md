@@ -1,98 +1,113 @@
 # Frontend – notes for Claude (Vladut, role C)
 
-Claude loads this file automatically when it works inside `frontend/`. The root `CLAUDE.md` (→ `RULES.md`, `PLAN.md`) still applies; this file adds where the frontend stands and what comes next.
+Claude loads this file automatically when it works inside `frontend/`. The root `CLAUDE.md` (→ `RULES.md`, `PLAN.md`) still applies.
+Team-wide status and what everyone owes is in [`../FOREVERYONE.md`](../FOREVERYONE.md) (Romanian) – read it too.
 
-**Who I am:** Vladut, role C (Frontend) and repo owner. Branch `vladut`, PRs go into `dev`. Stop code: **Sunday 13:00**.
-**How I like to work:** explain things in plain words (I'm new to some of this), tell me exactly which terminal command to run and where, check every screen in the browser (also at 375px) before saying it's done, then commit + push to `vladut`.
+**Who I am:** Vladut, role C (Frontend) and repo owner. Branch `vladut`, PRs go into `dev`. Stop code: **Sunday 13:00**, feature freeze Sunday 11:00.
+**How I like to work:** explain in plain words (I'm new to some of this), tell me exactly which command to run and where, check every screen in the browser (also at 375px) before saying it's done, then commit + push to `vladut`. When I say "merge", open a PR into `dev` and merge it.
+**⚠️ Never merge into `main` unless I say so explicitly.** (`main` was last updated by checkpoint PRs #27/#28; I asked to leave it alone after that.)
 
 ---
 
-## 1. Status (all merged into `dev`, all on mock data)
+## 1. Status (2026-11-14): everything is on the REAL backend
+
+Last end-to-end test with real Gemini on my Intel Mac passed: answer → intake (~20 s) → votes → real clustering (3 camps) → organizer "Generează propunerea" → mediate + critic (~15 s) → vote on screen 4 → board support updates live.
 
 | Route | What | Main files |
 |---|---|---|
-| `/` | Screen 1: answer by mic (MediaRecorder) or text, optional neighborhood/age | `components/answer-form.tsx`, `components/mic-button.tsx` |
-| `/vote` | Screen 2: agree / disagree / don't know, one statement at a time | `components/vote-deck.tsx` |
-| `/me` | Screen 3: "Tu" on the opinion map, your camp, common ground | `components/where-you-are.tsx` |
-| `/proposal` | Screen 4: AI compromise, gains/gives up per camp, critique, Susțin / Nu susțin | `components/proposal-vote.tsx` |
-| `/board` | Live board for the projector: D3 map, count, camps, common ground, proposal, support per round, QR | `components/live-board.tsx`, `components/opinion-map.tsx` |
-| `/organizer` | Create consultation (question, context, threshold) + QR | `components/create-consultation.tsx`, `components/join-qr.tsx` |
-| `/organizer/moderation` | Approve / reject AI-flagged statements | `components/moderation-queue.tsx` |
-| `/organizer/report` | Final report, "Descarcă PDF" = browser print | `app/organizer/report/page.tsx` |
+| `/` | Landing page | `app/(site)/page.tsx` |
+| `/cum-functioneaza` | Methodology page | `app/(site)/cum-functioneaza/page.tsx` |
+| `/demo` | Live previews of every page | `app/(site)/demo/page.tsx`, `components/page-preview.tsx` |
+| `/participa` | Screen 1: answer (mic or text) – the QR points here | `components/answer-form.tsx`, `components/mic-button.tsx` |
+| `/vote` | Screen 2: vote statements (loads in the browser, retries every 3 s while AI processes) | `components/vote-deck.tsx` |
+| `/me` | Screen 3: "Tu" on the map, your camp | `components/where-you-are.tsx` |
+| `/proposal` | Screen 4: AI compromise, tradeoffs, critic verdict, vote + critique | `components/proposal-vote.tsx`, `components/verdict.tsx` |
+| `/board` | Projector board (dark), D3 map with hover cards, QR | `components/live-board.tsx`, `components/opinion-map.tsx` |
+| `/organizer` | Create consultation + QR + **Generează propunerea** (round control) | `components/create-consultation.tsx`, `components/proposal-round.tsx` |
+| `/organizer/moderation` | Moderation queue (still mock) | `components/moderation-queue.tsx` |
+| `/organizer/kpi` | Full KPI dashboard with filters (analytics still mock) | `components/kpi-dashboard.tsx`, `components/kpi/*`, `components/charts/*`, `lib/kpi.ts` |
+| `/organizer/report` | Final report, print-to-PDF | `app/organizer/report/page.tsx` |
 
-**Shared plumbing**
-- `src/lib/api.ts` – the ONLY place for REST. Every function returns mock data right now.
-- `src/lib/ws.ts` – the ONLY place for the WebSocket. With no `NEXT_PUBLIC_WS_URL` it uses `simulateEvents()` from `mock.ts` (a fake participant every 2 s). Auto-reconnects.
-- `src/hooks/use-consultation.ts` – the one state hook, applies WebSocket events.
-- `src/lib/types.ts` – **my guess** at `backend/app/schemas.py`. Sync it once Rares pushes the real one.
-- `src/lib/mock.ts` – fake data (Romanian).
-- `src/lib/participant.ts` – anonymous participant id in localStorage, sent with every answer/vote.
-- `src/lib/colors.ts` – `campColor()`; same camp → same color everywhere.
+**Plumbing**
+- `src/lib/api.ts` – the ONLY place for REST. Real calls when `NEXT_PUBLIC_API_URL` is set, mock data otherwise. Real: responses, statements, votes, clusters, bridges, proposal, proposal-votes, support, proposals (start round) + status. **Still mock:** consultation, moderation, kpis, analytics.
+- `src/lib/ws.ts` – the ONLY WebSocket. Real when `NEXT_PUBLIC_WS_URL` is set, otherwise `simulateEvents()`. `{type, data}` events: map_updated, bridges_updated, proposal_published, support_updated.
+- `src/lib/types.ts` – mirrors `backend/app/schemas.py` (synced; includes `Statement.flag`, `Camp.member_ids`, `Point.text`, `Proposal.verdict`).
+- `src/hooks/use-consultation.ts` – the one state hook.
+- `src/lib/colors.ts` – camp colors as CSS vars `--series-1..8` (validated palette, separate dark steps in `globals.css`), assigned by camp ID (hash home slot; the browser remembers slots so a new camp never steals one). Self-check: `node src/lib/colors.check.mjs`.
+- **Design system, every page**: `<body class="dark brand">` in `app/layout.tsx` → solid Midnight background everywhere (I want ALL pages solid, no gradients, no background animation/lines). `.brand` in `globals.css` is built on 4 colors (Cyan Pulse #00D1B2, Midnight Grid #001F3F, Pure Signal #FFFFFF, Carbon Core #2E2E2E, tints derived in oklch); fonts Syne / Plus Jakarta Sans / JetBrains Mono; fluid `text-hero|display|title|lead|meta`. `dark:` variants are screen-only and a `@media print` block restores the light palette, so the PDF report prints dark-on-white. Landing sections in `components/site/*`; custom cursor `site/cursor.tsx` (public site only); GSAP motion `site/motion.tsx`, driven by `data-split|hero-fade|reveal|stagger|speed|count|step*` attributes. Camp colors stay the validated `--series-*` (dataviz exception to the 4-color rule).
+- `src/app/loading.tsx` – Suspense fallback so pages reading live API data pass `next build` with `cacheComponents`.
+- `frontend/.env.local` (not in git): `NEXT_PUBLIC_API_URL=http://localhost:8000`, `NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws`. Comment them out to go back to mock data.
+
+**Running everything locally** (repo root): Docker Desktop open → `docker compose up -d` → `cd backend && uv sync && uv run uvicorn app.main:app --port 8000` (**no `--reload`**: it restarts on .venv changes and kills background AI jobs) → `cd frontend && pnpm dev`. `.env` in the repo root has `GEMINI_API_KEY` + `DATABASE_URL` (never print or commit the key). `.claude/launch.json` has both servers for the preview tool.
+
+**Gemini:** no billing (team decision). Free tier ≈ 20 requests/day per model; intake + critic on `gemini-3.5-flash-lite`, fallback `gemini-3.1-flash-lite`. Don't burn quota on unnecessary real calls; tests use a fake Gemini. A 429 shows a clear message on the organizer page.
+
+**Local DB** has ~25 test participants (`e2e-*`) from my end-to-end test. Rares is building a demo loader + reset.
 
 ---
 
 ## 2. Next tasks, in order
 
-1. **Sync `types.ts` with Rares's `schemas.py`** as soon as it exists in `dev` (`git pull origin dev`, then compare). Fix every compile error the change causes.
-2. **Connect to the real API, one endpoint at a time**, in `api.ts` only. Replace each mock body with `fetch(\`${API_URL}/...\`)`, keep the same function signature, and `throw` on a non-OK response (the screens already show an error and keep the user's input). Expected endpoints:
-   - `POST /responses` – text and/or audio (multipart), neighborhood, age, `participant_id`
-   - `GET` statements to vote, `POST /votes` – `participant_id`, `statement_id`, `value`
-   - `GET` clusters, bridges, current proposal, support per round
-   - `GET` my position – `{ participant_id, x, y, camp_id }`
-   - `POST` proposal vote – `participant_id`, `proposal_id`, `support`, `critique`
-   - organizer: create consultation, moderation queue, approve/reject
-3. **Real WebSocket:** set `NEXT_PUBLIC_WS_URL` in `frontend/.env.local`. The message format must be `{ "type": "map_updated" | "bridges_updated" | "proposal_published" | "support_updated", "data": ... }`. If Rares's format differs, change only `ws.ts`.
-4. **Deploy check (Vultr, HTTPS):** the mic only works on HTTPS or localhost. Test the full flow on a real phone via the QR.
-5. **Stretch:** simulated proxy voices (different color, labeled "simulat", NEVER counted in percentages), organizer login (Auth0) only if time allows.
+1. ~~Stable camp colors by camp ID~~ done (`9f60a39`). ~~Landing redesign~~ done (dark brand site, no intro screen: I asked to skip it).
+2. **Organizer page: stuck answers** – show `GET /responses/stats` (`{pending, failed, done}`) and a "Reîncearcă" button for `POST /responses/retry` (both need the organizer token on the server). See `docs/tips/FRONTEND_TIPS.md`.
+3. **Screen 4 historical camp names**: when Rares adds `camp_name` to `proposal.tradeoffs[]`, prefer it over looking up current camps (fallback "Tabără" today).
+4. **Connect the rest when Rares adds endpoints**: consultation (question is hardcoded in `mock.ts` today), moderation queue, `/kpis`.
+5. **Deploy config**: when Rares gives the HTTPS URLs, set `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_WS_URL` for production and test the mic + QR on a real phone.
+6. ~~Styling~~ done: every page on the solid Midnight brand theme (no WebGL waves: I asked to drop them).
+7. Stretch: proxy voices (labeled "simulat", different color, NEVER counted in percentages).
 
 ---
 
-## 3. Lessons from building this (don't repeat these bugs)
+## 3. Lessons (don't repeat these bugs)
 
-- **d3 transitions:** `d3` is marked side-effect-free, so `selection.transition()` alone gets tree-shaken ("transition is not a function"). Always create `const t = d3.transition().duration(…)` and use `.transition(t)`.
-- **Server pages can't call functions from `"use client"` files.** Shared helpers go in `src/lib/` (that's why `campColor` lives in `lib/colors.ts`).
-- **ESLint `react-hooks/set-state-in-effect`:** don't call `setState` synchronously in `useEffect`. Use `useMemo`, `useSyncExternalStore`, or set state inside a promise callback.
-- **Fonts:** `layout.tsx` loads Geist with `latin-ext` (for ș, ț, ă). In `globals.css`, `--font-sans` must point to `var(--font-geist-sans)`; shadcn init once broke this.
-- **Dev server cache:** if a CSS change doesn't show up, restart `pnpm dev`.
-- **Browser pane:** an unfocused preview pane slows down d3 animations. Wait or focus it before deciding the map is broken.
-- **Before every push:** `pnpm lint && pnpm tsc --noEmit` from `frontend/`.
+- **d3 transitions:** `d3` is side-effect-free for the bundler, so `selection.transition()` gets tree-shaken. Always `const t = d3.transition()…` and `.transition(t)`.
+- **CSS var colors can't be tweened by d3** – set them with `.style("fill", …)`, not in a transition.
+- **Server pages can't call functions from `"use client"` files** – shared helpers go in `src/lib/`.
+- **ESLint `react-hooks/set-state-in-effect`:** no synchronous `setState` in `useEffect`.
+- **`<details>` (or any block element) inside `<p>` = hydration error.** Use `<div>`.
+- **Typecheck:** use `pnpm typecheck` (runs `next typegen` first), not bare `tsc`.
+- **iCloud Desktop sync** creates `… 2.ts` duplicates in `.next/` that break typecheck – delete them (`find .next -name "* 2*" -delete`).
+- **Dev server cache:** if a CSS/layout change doesn't show, restart `pnpm dev`. If it STILL serves old CSS, stop it and `rm -rf .next` (Turbopack's cache survives restarts).
+- **GSAP + streaming:** mount `<Motion />` inside the page, never the layout: the page hydrates later (its own Suspense boundary) and GSAP touching unhydrated HTML = hydration error. Use `fromTo` with explicit end values, and never CSS-transition `opacity` on elements GSAP reveals.
+- **Never style `html`/`body` with `:has(.some-page-class)`:** with `cacheComponents` Next keeps the previous page hidden in the DOM, so the rule still matches on the next page (this painted /organizer dark behind dark text).
+- **WebGL in Strict Mode:** don't `loseContext()` in effect cleanup; the re-run gets the same dead context back.
+- **`<details>` menu:** Chrome makes `<details>` the containing block of its content, so the panel needs an explicit width (`inset-x-0` collapses to the icon width).
+- **Browser preview pane:** background/unfocused tabs throttle d3 animations and screenshots can look empty – check the DOM before assuming the map is broken. A hidden pane may draw NO frames after a navigation (`document.timeline.currentTime` stays 0), so the landing hero looks empty until a screenshot forces frames.
+- **Real clustering with few people** puts everyone at the same spot and returns no camps – the map fans out stacked dots; messages explain camps appear later. Zero bridges with few voters is sparse voting, not a bug (`uv run python -m app.api.diagnose_bridges` shows why).
+- **New backend tables** are created at backend startup – restart the backend after pulling backend PRs.
+- **Before every push:** `pnpm lint && pnpm typecheck` (and `pnpm build` for bigger changes).
 
 ---
 
 ## 4. Ready-to-paste prompts
 
-**Start of a work session**
+**Start of a new session**
 ```
-Read frontend/CLAUDE.md. Run git pull origin dev on my branch vladut, tell me what changed in dev
-(especially backend/app/schemas.py and new endpoints), and suggest what I should do next from section 2.
-```
-
-**Rares pushed schemas.py**
-```
-Rares pushed backend/app/schemas.py. Update frontend/src/lib/types.ts to mirror it exactly, fix everything
-that breaks, update mock.ts to match, run lint + typecheck, check every screen in the browser, then commit and push.
+Read frontend/CLAUDE.md and FOREVERYONE.md. On my branch vladut run git pull origin dev, tell me what
+changed (new PRs, backend endpoints, docs/tips/FRONTEND_TIPS.md), check that backend + frontend start,
+and suggest what to do next from section 2. Don't touch main.
 ```
 
-**Connect one endpoint**
+**Teammate opened a PR**
 ```
-Rares's endpoint <METHOD /path> is live at <URL>. Replace the mock in src/lib/api.ts for it with a real fetch,
-same signature, throw on non-OK responses. Test the screen that uses it in the browser, then commit and push.
+Test PR #<n> like before: run the backend tests on dev merged with it in a throwaway worktree, tell me
+the result and whether it affects the frontend. Merge into dev only if it passes and I say so.
 ```
 
-**Turn on the real WebSocket**
+**Rares added an endpoint**
 ```
-Rares's WebSocket is at <ws://...>. Set NEXT_PUBLIC_WS_URL in frontend/.env.local, check the message format
-matches ws.ts, open /board and /me and confirm live updates arrive. Explain anything that doesn't match.
+Rares added <METHOD /path> (see docs/tips/FRONTEND_TIPS.md). Wire it in src/lib/api.ts (mock fallback stays),
+update types.ts if schemas.py changed, test it in the browser against the local backend, commit and push.
 ```
 
 **Before the demo**
 ```
-Do a full demo run: / → /vote → /me → /proposal on 375px, /board at 1440px, all organizer pages.
-List anything broken or ugly, fix it, and tell me what I must check on the real phone and projector.
+Full demo run on the real backend: /participa → /vote → /me → /proposal at 375px, /board at 1440px, all
+organizer pages, and one real round if Gemini quota allows. List anything broken or ugly and fix it.
 ```
 
 **Open a PR**
 ```
 Commit anything left, push vladut, open a PR into dev with a clear description and a "For Rares" section
-listing any API changes the frontend expects.
+if the frontend needs API changes, then merge it. Not into main.
 ```

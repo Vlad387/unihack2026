@@ -1,6 +1,9 @@
 import { KpiDashboard } from "@/components/kpi-dashboard";
 import { getAnalytics, getBridges, getClusters, getConsultation, getKpis, getProposal, getSupport } from "@/lib/api";
 
+// Live data on purpose: wait for the backend so the page (and the map) arrive complete, not as an empty shell.
+export const instant = false;
+
 export default async function KpiPage() {
   const [analytics, kpis, consultation, clusters, bridges, proposal, support] = await Promise.all([
     getAnalytics(),

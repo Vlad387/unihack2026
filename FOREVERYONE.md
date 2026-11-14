@@ -191,3 +191,21 @@ Ordinea în care tăiem dacă nu ajungem (PLAN.md): Proxy + auditor → raport P
 - ❗ **Conflict la `git pull`?** Nu forțați nimic, scrieți pe grup.
 - 🔀 Fiecare lucrează doar pe branch-ul lui → PR în `dev`. Vladut face `dev → main` la checkpoint-uri.
 - 🔁 După ce 3 încercări la aceeași eroare eșuează: stop, scrieți pe grup ce ați încercat și eroarea exactă.
+
+---
+
+## 8. Update 14 noiembrie, după-amiază (Vladut) 🎨
+
+**Ce e nou în frontend:**
+- **Design nou pe toate paginile:** fundal solid Midnight (#001F3F), accent Cyan (#00D1B2), carduri Carbon (#2E2E2E), fonturi Syne / Plus Jakarta Sans / JetBrains Mono. Raportul PDF se tipărește tot negru pe alb.
+- **Landing nou:** titlu animat, harta live, pașii „Cum participi”, principii cu date live (GSAP, fără animații de fundal).
+- **Ecranul live (`/board`):** link-uri spre toate paginile + hartă și carduri pe același fundal închis cu grilă de puncte.
+- **Culori stabile pe ID de tabără:** o tabără nouă nu mai „fură” culoarea alteia.
+- **Mascote** în `mascot/2d/` (SVG), încă nefolosite în aplicație.
+
+**Testare de pe telefon (aceeași rețea Wi-Fi):**
+- Backend-ul trebuie pornit cu `--host 0.0.0.0` (e deja în `.claude/launch.json`).
+- În `frontend/.env.local` puneți IP-ul Mac-ului (`ipconfig getifaddr en0`) în loc de `localhost`, iar în `frontend/next.config.ts` același IP la `allowedDevOrigins`.
+- Microfonul NU merge pe `http://`: are nevoie de HTTPS (deploy-ul lui Rares).
+
+**Dacă nu vedeți modificările de CSS:** opriți `pnpm dev`, rulați `rm -rf frontend/.next`, porniți din nou, apoi `Cmd + Shift + R` în browser.
