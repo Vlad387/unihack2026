@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { OpinionMap } from "@/components/opinion-map";
 import { ProposalRound } from "@/components/proposal-round";
 import { Pipeline } from "@/components/simulation/pipeline";
-import { ProposalPanel } from "@/components/simulation/proposal-panel";
+import { ChecksCard, RoundDetails, RoundTitle } from "@/components/simulation/proposal-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,11 +14,11 @@ import { type ConsultationState, useConsultation } from "@/hooks/use-consultatio
 import { API_URL, ApiError, getResponseStats, getRoundStatus, submitProposalVote } from "@/lib/api";
 import { campColor } from "@/lib/colors";
 import { type StageStatus, demoFrame, demoStatuses, DONE_STEP, liveStatuses } from "@/lib/simulation";
-import type { ClusterResult, ResponseStats, RoundStatus, Statement } from "@/lib/types";
+import type { ClusterResult, Proposal, ResponseStats, RoundStatus, Statement, SupportRound } from "@/lib/types";
 
 type Mode = "demo" | "live";
 
-export function SimulationDashboard({ initial }: { initial: ConsultationState }) {
+export function SimulationDashboard({ initial, question }: { initial: ConsultationState; question: string }) {
   const [mode, setMode] = useState<Mode>("demo");
   return (
     <div className="board flex flex-col gap-4">
@@ -47,7 +47,7 @@ export function SimulationDashboard({ initial }: { initial: ConsultationState })
               : "Fără NEXT_PUBLIC_API_URL: aplicația folosește datele ei mock, nu un server real."}
         </p>
       </div>
-      {mode === "demo" ? <DemoView /> : <LiveView initial={initial} />}
+      {mode === "demo" ? <DemoView question={question} /> : <LiveView initial={initial} question={question} />}
     </div>
   );
 }
@@ -66,7 +66,7 @@ function next(s: Sim, skip: boolean): Sim {
   return { ...s, step: Math.min(s.step + 1, DONE_STEP) };
 }
 
-function DemoView() {
+function DemoView({ question }: { question: string }) {
   const [sim, setSim] = useState<Sim>({ step: 0, votes: { agree: 0, total: 0 } });
   const [running, setRunning] = useState(false);
   const done = sim.step === DONE_STEP;
@@ -111,28 +111,24 @@ function DemoView() {
         </Button>
       </div>
       <Layout
+        question={question}
         note={frame.note}
         clusters={frame.clusters}
         bridges={frame.bridges}
         statuses={demoStatuses(sim.step)}
-        panel={
-          <ProposalPanel
-            proposal={frame.proposal}
-            council={frame.council}
-            camps={frame.clusters.camps}
-            support={frame.support}
-            // demo vote: counted locally only, never sent to the API
-            onVote={async (yes) =>
-              setSim((s) => ({ ...s, votes: { agree: s.votes.agree + (yes ? 1 : 0), total: s.votes.total + 1 } }))
-            }
-          />
+        proposal={frame.proposal}
+        council={frame.council}
+        support={frame.support}
+        // demo vote: counted locally only, never sent to the API
+        onVote={async (yes) =>
+          setSim((s) => ({ ...s, votes: { agree: s.votes.agree + (yes ? 1 : 0), total: s.votes.total + 1 } }))
         }
       />
     </>
   );
 }
 
-function LiveView({ initial }: { initial: ConsultationState }) {
+function LiveView({ initial, question }: { initial: ConsultationState; question: string }) {
   const { clusters, bridges, proposal, support } = useConsultation(initial);
   const [round, setRound] = useState<RoundStatus | null>(null);
   const [stats, setStats] = useState<ResponseStats | null>(null);
@@ -168,13 +164,16 @@ function LiveView({ initial }: { initial: ConsultationState }) {
 
   return (
     <Layout
-      note={round?.state === "running" ? "Mediatorul și Criticul lucrează (30–60 s)…" : "Date reale: se actualizează singure, fără reîncărcare."}
+      question={question}
+      note={round?.state === "running" ? "Mediatorul și Criticul lucrează (30–60 s)…" : "Date reale de pe server, actualizate live."}
       clusters={clusters}
       bridges={bridges}
       statuses={liveStatuses({ clusters, bridges, proposal, round, stats })}
-      panel={
+      proposal={proposal}
+      support={support}
+      onVote={vote}
+      extra={
         <>
-          <ProposalPanel proposal={proposal} camps={clusters.camps} support={support} onVote={vote} />
           <details className="rounded-xl border border-foreground/15 bg-[var(--glass)] p-4">
             <summary className="cursor-pointer text-sm font-semibold">Organizator: pornește o rundă</summary>
             <div className="mt-3 flex flex-col gap-3">
@@ -190,24 +189,29 @@ function LiveView({ initial }: { initial: ConsultationState }) {
 }
 
 interface LayoutProps {
+  question: string;
   note: string;
   clusters: ClusterResult;
   bridges: Statement[];
   statuses: StageStatus[];
-  panel: React.ReactNode;
+  proposal: Proposal | null;
+  council?: string | null;
+  support: SupportRound[];
+  onVote: (support: boolean, critique: string | null) => Promise<void>;
+  extra?: React.ReactNode;
 }
 
-function Layout({ note, clusters, bridges, statuses, panel }: LayoutProps) {
+// Left: the round title on top of the map, then what the round means for each camp and the vote.
+// Right (sticky): where we are in the process, and the AI's checks.
+function Layout({ question, note, clusters, bridges, statuses, proposal, council, support, onVote, extra }: LayoutProps) {
   const color = campColor(clusters.camps);
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       <div className="flex min-w-0 flex-col gap-4">
         <Card className="board-map">
-          <CardContent className="flex flex-col gap-3">
-            <p className="text-sm font-medium" aria-live="polite">
-              {note}
-            </p>
-            <OpinionMap clusters={clusters} bridges={bridges.length} />
+          <CardContent className="flex flex-col gap-4">
+            <RoundTitle proposal={proposal} council={council} question={question} />
+            <OpinionMap clusters={clusters} bridges={bridges.length} colorful />
             <ul className="flex flex-wrap gap-2" aria-label="Tabere">
               <li className="rounded-full bg-foreground/5 px-3 py-1 text-sm">
                 <strong className="tabular-nums">{clusters.points.length}</strong> participanți
@@ -221,10 +225,13 @@ function Layout({ note, clusters, bridges, statuses, panel }: LayoutProps) {
             </ul>
           </CardContent>
         </Card>
-        <Pipeline statuses={statuses} />
+        <RoundDetails proposal={proposal} council={council} camps={clusters.camps} support={support} onVote={onVote} />
+        {extra}
       </div>
-      <aside className="flex flex-col gap-4 lg:sticky lg:top-20">{panel}</aside>
+      <aside className="flex flex-col gap-4 lg:sticky lg:top-20">
+        <Pipeline statuses={statuses} note={note} />
+        <ChecksCard verdict={proposal?.verdict} />
+      </aside>
     </div>
   );
 }
-
