@@ -22,6 +22,7 @@ import type {
   ModerationItem,
   Point,
   Proposal,
+  ResponseStats,
   RoundStatus,
   Statement,
   SupportRound,
@@ -150,11 +151,23 @@ export async function startProposalRound(token: string | null): Promise<void> {
     console.log("startProposalRound (mock)");
     return;
   }
-  await http("/proposals", { method: "POST", headers: token ? { "X-Organizer-Token": token } : {} });
+  await http("/proposals", { method: "POST", headers: tokenHeader(token) });
 }
 
 export async function getRoundStatus(): Promise<RoundStatus> {
   return MOCK ? { state: "idle", error: null } : http("/proposals/status");
+}
+
+const tokenHeader = (token: string | null): HeadersInit => (token ? { "X-Organizer-Token": token } : {});
+
+// Organizer: how many answers are still waiting for (or failed) AI intake, e.g. when the Gemini quota ran out.
+export async function getResponseStats(token: string | null): Promise<ResponseStats> {
+  return MOCK ? { pending: 2, failed: 1, done: 12 } : http("/responses/stats", { headers: tokenHeader(token) });
+}
+
+// Organizer: retry every waiting/failed answer now instead of waiting for the automatic backoff.
+export async function retryResponses(token: string | null): Promise<ResponseStats> {
+  return MOCK ? { pending: 3, failed: 0, done: 12 } : http("/responses/retry", { method: "POST", headers: tokenHeader(token) });
 }
 
 // Organizer. shortcut: no organizer login yet (Auth0 only if time allows).

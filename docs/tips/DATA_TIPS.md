@@ -42,3 +42,22 @@ The live worker calls `cluster()` + `bridges()` after **every** answer or vote b
 - `bridges`: high agreement measured **inside every camp**; return `[]` with fewer than 2 camps.
 
 Packages: ask Rares. Map shape or colors: ask Rares, who checks with Vladut.
+
+## Debugging "zero bridges": `diagnose_bridges`
+
+To tell **sparse voting** from a **bridge bug** on any database (yours, Vladut's, the server), run from `backend/`:
+
+```sh
+uv run python -m app.api.diagnose_bridges              # every candidate (seen in every camp)
+uv run python -m app.api.diagnose_bridges <statement_id>
+```
+
+For each camp it prints size, **agree / disagree / pass / missing**, the author's implicit support, and `endorsed/needed` for the 70% rule. Every member is in exactly one column, so the columns add up to the size. It counts votes **independently** of `bridges()`, and `tests/test_diagnose_bridges.py` checks that both agree. Read-only: no Gemini calls, no DB writes.
+
+Example (sparse voting, not a bug: everyone who voted agreed, but 5 per camp never voted):
+
+```
+  camp                               size  agree disagr  pass missing author  endorsed/needed
+  Tabăra 1 (c-bef665e9093f)            12      6      0     0       5      1            7/9 ❌
+  Tabăra 2 (c-4745f72ed2e3)            11      6      0     0       5      0            6/8 ❌
+```

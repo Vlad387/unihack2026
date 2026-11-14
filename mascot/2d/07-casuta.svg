@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" role="img" aria-label="Căsuța, mascota CityMind"><title>Căsuța – CityMind</title>
+    <ellipse cx="120" cy="226" rx="66" ry="9" fill="#1b2a2f" opacity="0.12"/>
+    <circle cx="160" cy="42" r="8" fill="#8a9aa3" opacity="0.45"/><circle cx="170" cy="26" r="10" fill="#8a9aa3" opacity="0.35"/><circle cx="184" cy="10" r="12" fill="#8a9aa3" opacity="0.25"/>
+    <rect x="148" y="52" width="22" height="44" rx="3" fill="#1f8a99"/>
+    <ellipse cx="96" cy="216" rx="15" ry="7" fill="#0f5e6b"/><ellipse cx="144" cy="216" rx="15" ry="7" fill="#0f5e6b"/>
+    <rect x="60" y="106" width="120" height="106" rx="12" fill="#faf8f5"/>
+    <path d="M152 106 H168 A12 12 0 0 1 180 118 V200 A12 12 0 0 1 168 212 H152 Z" fill="#ece5d9"/>
+    <path d="M48 112 L120 44 L192 112 Z" fill="#0f5e6b" stroke="#0f5e6b" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M120 44 L192 112 H168 Z" fill="#0b4a55" opacity="0.45"/>
+    <rect x="76" y="120" width="34" height="34" rx="7" fill="#0f5e6b"/><rect x="130" y="120" width="34" height="34" rx="7" fill="#0f5e6b"/>
+    <rect x="81" y="125" width="24" height="24" rx="4" fill="#f2a541"/><rect x="135" y="125" width="24" height="24" rx="4" fill="#f2a541"/>
+    <circle cx="94" cy="139" r="6" fill="#1b2a2f"/><circle cx="148" cy="139" r="6" fill="#1b2a2f"/>
+    <circle cx="96" cy="136" r="2" fill="#ffffff"/><circle cx="150" cy="136" r="2" fill="#ffffff"/>
+    <path d="M110 160 Q120 168 130 160" fill="none" stroke="#1b2a2f" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="74" cy="166" rx="8" ry="4.5" fill="#f29a8a" opacity="0.85"/><ellipse cx="166" cy="166" rx="8" ry="4.5" fill="#f29a8a" opacity="0.85"/>
+    <rect x="106" y="172" width="28" height="40" rx="12" fill="#d9822b"/>
+    <circle cx="127" cy="194" r="2.6" fill="#1b2a2f"/></svg>

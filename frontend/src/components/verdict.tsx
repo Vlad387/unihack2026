@@ -16,9 +16,9 @@ export function VerdictView({ verdict }: { verdict: Verdict }) {
         {checks.map(({ key, label }) => (
           <li key={key} className="flex items-center gap-2">
             {verdict[key] ? (
-              <CheckCircle2 className="size-4 shrink-0 text-emerald-600" aria-hidden />
+              <CheckCircle2 className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
             ) : (
-              <XCircle className="size-4 shrink-0 text-rose-600" aria-hidden />
+              <XCircle className="size-4 shrink-0 text-rose-600 dark:text-rose-400" aria-hidden />
             )}
             <span>
               {label}: <strong>{verdict[key] ? "da" : "nu"}</strong>

@@ -14,7 +14,9 @@ def make_inputs(count: int = 50) -> tuple[list[Statement], list[Vote]]:
     if count not in (50, 60):
         raise ValueError("Demo supports 50 or 60 participants")
     rows = json.loads(
-        (Path(__file__).resolve().parents[3] / "seed/responses.json").read_text()
+        (Path(__file__).resolve().parents[3] / "seed/responses.json").read_text(
+            encoding="utf-8"
+        )
     )
     statements = [
         Statement(id=r["id"], text=r["text"], author_id=r["id"]) for r in rows

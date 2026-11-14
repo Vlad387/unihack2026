@@ -1,4 +1,4 @@
-"""Checks for cross-camp support, independent of the clustering stub."""
+"""Checks for cross-camp endorsement thresholds and synthetic seed fixtures."""
 
 import json
 from pathlib import Path
@@ -69,7 +69,7 @@ def test_flagged_statements_are_excluded() -> None:
 
 def test_seed_replay_with_explicitly_synthetic_votes() -> None:
     seed_path = Path(__file__).resolve().parents[3] / "seed" / "responses.json"
-    rows = json.loads(seed_path.read_text())
+    rows = json.loads(seed_path.read_text(encoding="utf-8"))
     statement = Statement(id="seed-034", text=rows[33]["text"], author_id="seed-034")
     # Test-only memberships/votes: neither inferred camps nor measured consensus.
     camps = [
@@ -152,3 +152,44 @@ def test_an_author_self_vote_does_not_count_twice() -> None:
         for pid in ("a0", "a1", "b0", "b1", "b2")
     ]
     assert bridges(votes, camps) == []
+
+
+@pytest.mark.parametrize(("size", "required"), [(3, 3), (4, 3), (5, 4)])
+def test_small_camps_require_seventy_percent_in_each_camp(
+    size: int, required: int
+) -> None:
+    statement = Statement(id="shared", text="Vrem transport de noapte.")
+    camps = [
+        Camp(
+            id=f"c{k}",
+            name=f"c{k}",
+            description="",
+            size=size,
+            member_ids=[f"p{k}-{i}" for i in range(size)],
+            statements=[statement],
+        )
+        for k in range(3)
+    ]
+    votes = [
+        Vote(participant_id=pid, statement_id="shared", value="agree")
+        for camp in camps
+        for pid in camp.member_ids[:required]
+    ]
+    assert bridges(votes, camps) == [statement]
+    assert bridges(votes[:-1], camps) == []
+    missing_pid = camps[-1].member_ids[required - 1]
+    for value in ("pass", "disagree"):
+        assert (
+            bridges(
+                votes[:-1]
+                + [
+                    Vote(
+                        participant_id=missing_pid,
+                        statement_id="shared",
+                        value=value,
+                    )
+                ],
+                camps,
+            )
+            == []
+        )

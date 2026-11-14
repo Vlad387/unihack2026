@@ -2,6 +2,9 @@ import { Brand } from "@/components/brand";
 import { ProposalVote } from "@/components/proposal-vote";
 import { getBridges, getClusters, getProposal, getQuestion, getSupport } from "@/lib/api";
 
+// Live data on purpose: wait for the backend so the page (and the map) arrive complete, not as an empty shell.
+export const instant = false;
+
 export default async function ProposalPage() {
   const [question, clusters, bridges, proposal, support] = await Promise.all([
     getQuestion(),

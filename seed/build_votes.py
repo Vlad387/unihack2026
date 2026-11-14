@@ -62,7 +62,7 @@ CORE = {1, 3, 8, 38, 14, 21, 25, 46, 22, 27, 37, 47, 49}
 
 
 def fixtures() -> tuple[list[dict], list[dict]]:
-    rows = json.loads((ROOT / "responses.json").read_text())
+    rows = json.loads((ROOT / "responses.json").read_text(encoding="utf-8"))
     assert len(rows) == len(TEXTS) == 50
     assert [r["id"] for r in rows] == [f"seed-{i:03}" for i in range(1, 51)]
     statements = [
@@ -119,13 +119,15 @@ def main() -> None:
     for name, records in (("statements.json", statements), ("votes.json", votes)):
         target = ROOT / name
         if args.check:
-            assert json.loads(target.read_text()) == records, f"Regenerate {name}"
+            assert json.loads(target.read_text(encoding="utf-8")) == records, (
+                f"Regenerate {name}"
+            )
         else:
             lines = [
                 ", ".join(json.dumps(r, ensure_ascii=False) for r in records[i : i + 4])
                 for i in range(0, len(records), 4)
             ]
-            target.write_text("[\n" + ",\n".join(lines) + "\n]\n")
+            target.write_text("[\n" + ",\n".join(lines) + "\n]\n", encoding="utf-8")
     print(
         f"SYNTHETIC fixtures: {len(statements)} statements, {len(votes)} votes, 50 participants"
     )

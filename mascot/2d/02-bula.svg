@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" role="img" aria-label="Bula, mascota CityMind"><title>Bula – CityMind</title>
+    <ellipse cx="120" cy="226" rx="60" ry="9" fill="#1b2a2f" opacity="0.12"/>
+    <path d="M112 174 V204 M146 174 V204" stroke="#0f5e6b" stroke-width="7" stroke-linecap="round"/>
+    <ellipse cx="114" cy="208" rx="14" ry="7" fill="#f2a541"/><ellipse cx="148" cy="208" rx="14" ry="7" fill="#f2a541"/>
+    <path d="M92 50 H148 A52 52 0 0 1 200 102 V120 A52 52 0 0 1 148 172 H102 L62 206 L76 166 A52 52 0 0 1 40 120 V102 A52 52 0 0 1 92 50 Z"
+      fill="#faf8f5" stroke="#0f5e6b" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M150 166 A52 52 0 0 0 196 120 V108 C190 150 168 164 150 166 Z" fill="#ece5d9"/>
+    <ellipse cx="100" cy="104" rx="8" ry="11" fill="#1b2a2f"/><circle cx="102.8" cy="99.6" r="3.04" fill="#ffffff"/><ellipse cx="140" cy="104" rx="8" ry="11" fill="#1b2a2f"/><circle cx="142.8" cy="99.6" r="3.04" fill="#ffffff"/>
+    <ellipse cx="120" cy="136" rx="15" ry="11" fill="#1b2a2f"/>
+    <ellipse cx="120" cy="141" rx="8" ry="4" fill="#f29a8a"/>
+    <ellipse cx="82" cy="126" rx="8" ry="4.5" fill="#f29a8a" opacity="0.85"/><ellipse cx="158" cy="126" rx="8" ry="4.5" fill="#f29a8a" opacity="0.85"/>
+    <circle cx="178" cy="30" r="6" fill="#f2a541"/><circle cx="196" cy="30" r="6" fill="#f2a541" opacity="0.75"/><circle cx="214" cy="30" r="6" fill="#f2a541" opacity="0.5"/></svg>

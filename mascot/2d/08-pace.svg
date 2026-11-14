@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" role="img" aria-label="Pace, mascota CityMind"><title>Pace – CityMind</title>
+    <ellipse cx="120" cy="222" rx="64" ry="9" fill="#1b2a2f" opacity="0.12"/>
+    <path d="M104 200 V214 M128 200 V214" stroke="#f2a541" stroke-width="5" stroke-linecap="round"/>
+    <path d="M96 216 H112 M120 216 H136" stroke="#f2a541" stroke-width="5" stroke-linecap="round"/>
+    <path d="M62 150 L22 132 L30 172 Z" fill="#6f8089" stroke="#6f8089" stroke-width="6" stroke-linejoin="round"/>
+    <ellipse cx="116" cy="152" rx="62" ry="54" fill="#8a9aa3"/>
+    <ellipse cx="136" cy="162" rx="34" ry="40" fill="#faf8f5"/>
+    <ellipse cx="92" cy="148" rx="36" ry="26" transform="rotate(-20 92 148)" fill="#1f8a99"/>
+    <path d="M66 156 Q90 176 120 160" fill="none" stroke="#0f5e6b" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <ellipse cx="142" cy="108" rx="32" ry="13" fill="#1f8a99"/>
+    <circle cx="146" cy="84" r="33" fill="#8a9aa3"/>
+    <path d="M174 86 L198 95 L174 102 Z" fill="#f2a541" stroke="#f2a541" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M190 99 L222 114" stroke="#d9822b" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="202" cy="99" rx="9" ry="4.5" transform="rotate(-25 202 99)" fill="#59a14f"/>
+    <ellipse cx="208" cy="114" rx="9" ry="4.5" transform="rotate(30 208 114)" fill="#59a14f"/>
+    <ellipse cx="220" cy="106" rx="9" ry="4.5" transform="rotate(-15 220 106)" fill="#59a14f"/>
+    <ellipse cx="154" cy="80" rx="6.5" ry="9" fill="#1b2a2f"/><circle cx="156.275" cy="76.4" r="2.47" fill="#ffffff"/><ellipse cx="134" cy="80" rx="5.5" ry="8" fill="#1b2a2f"/><circle cx="135.925" cy="76.8" r="2.09" fill="#ffffff"/>
+    <ellipse cx="160" cy="98" rx="7" ry="4" fill="#f29a8a" opacity="0.85"/></svg>
