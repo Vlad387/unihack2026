@@ -25,6 +25,7 @@ INTAKE_MODEL = os.getenv("GEMINI_INTAKE_MODEL", "gemini-3.5-flash-lite")
 MEDIATE_MODEL = os.getenv("GEMINI_MEDIATE_MODEL", "gemini-3.5-flash-lite")
 CRITIC_MODEL = os.getenv("GEMINI_CRITIC_MODEL", "gemini-3.5-flash-lite")
 NAMING_MODEL = os.getenv("GEMINI_NAMING_MODEL", "gemini-3.5-flash-lite")
+PROXY_MODEL = os.getenv("GEMINI_PROXY_MODEL", "gemini-3.5-flash-lite")
 # used once when the agent's own model answers 429 (daily quota exhausted)
 FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.1-flash-lite")
 

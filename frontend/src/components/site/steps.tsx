@@ -52,7 +52,7 @@ export function Steps() {
                   href={`#${s.id}`}
                   data-step-link={s.id}
                   data-active={i === 0 ? "" : undefined}
-                  className="group flex items-baseline gap-4 py-3 pl-6 text-ink-4 transition-colors duration-500 hover:text-white data-[active]:text-white"
+                  className="group flex items-baseline gap-4 py-3 pl-6 text-ink-4 transition-colors duration-500 hover:text-foreground data-[active]:text-foreground"
                 >
                   <span className="font-mono text-meta text-primary/60 transition-colors group-data-[active]:text-primary">
                     0{i + 1}

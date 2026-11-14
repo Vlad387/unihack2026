@@ -1,7 +1,7 @@
 import { Mic } from "lucide-react";
 
 // Illustrations only (aria-hidden by the caller): they show what each screen looks like, they are not controls.
-const panel = "rounded-2xl border border-input bg-white/[0.04] p-5";
+const panel = "rounded-2xl border border-input bg-foreground/[0.04] p-5";
 
 export function MicVisual() {
   const bars = [6, 14, 22, 10, 28, 18, 32, 12, 24, 8, 20, 14, 26, 10, 16, 6];
@@ -83,9 +83,9 @@ export function ProposalVisual() {
         <span>Sprijin 72%</span>
         <span>Prag 60%</span>
       </div>
-      <div className="relative mt-2 h-2 rounded-full bg-white/10">
+      <div className="relative mt-2 h-2 rounded-full bg-foreground/10">
         <div className="h-full w-[72%] rounded-full bg-primary" />
-        <span className="absolute -top-1 left-[60%] h-4 w-px bg-white" />
+        <span className="absolute -top-1 left-[60%] h-4 w-px bg-foreground" />
       </div>
     </div>
   );
