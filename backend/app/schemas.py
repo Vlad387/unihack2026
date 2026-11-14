@@ -115,6 +115,14 @@ class Verdict(BaseModel):
     notes: str
 
 
+class ProxyOpinion(BaseModel):
+    """Simulated view of a group that did not participate. Never counted in votes."""
+
+    group: str
+    text: str
+    simulated: Literal[True] = True
+
+
 class Proposal(BaseModel):
     id: str
     round: int
@@ -122,6 +130,9 @@ class Proposal(BaseModel):
     tradeoffs: list[CampTradeoff]
     # critic()'s check, filled by the API after mediate(); None if critic failed
     verdict: Verdict | None = None
+    # proxy()'s simulated voices of missing groups that mediate() took into account.
+    # Show them labeled "simulat de AI", in another color; never votes or a camp.
+    proxies: list[ProxyOpinion] = Field(default_factory=list)
 
 
 class ProposalVote(BaseModel):
@@ -132,14 +143,6 @@ class ProposalVote(BaseModel):
     support: bool
     # fed to mediate() in the next round, so the compromise answers real objections
     critique: str | None = Field(default=None, max_length=1000)
-
-
-class ProxyOpinion(BaseModel):
-    """Simulated view of a group that did not participate. Never counted in votes."""
-
-    group: str
-    text: str
-    simulated: Literal[True] = True
 
 
 class SupportRound(BaseModel):
