@@ -3,6 +3,7 @@
 // shortcut: consultation, moderation, KPI and analytics stay mock-only until Rares adds their endpoints.
 import {
   mockBridges,
+  mockChatReply,
   mockClusters,
   mockConsultation,
   mockKpis,
@@ -16,12 +17,15 @@ import { mockAnalytics } from "./mock-analytics";
 import { getParticipantId } from "./participant";
 import type {
   Analytics,
+  ChatMessage,
+  ChatReply,
   ClusterResult,
   Consultation,
   Kpis,
   ModerationItem,
   Point,
   Proposal,
+  ReportDraft,
   ResponseStats,
   RoundStatus,
   Statement,
@@ -194,4 +198,37 @@ export async function getKpis(): Promise<Kpis> {
 
 export async function getAnalytics(): Promise<Analytics> {
   return mockAnalytics;
+}
+
+// Help chat: the whole conversation, capped like the server (20 messages, 1000 chars each). The server adds the
+// context (question, round, proposal, camps) itself. Throws ApiError (e.g. 429 after 10 messages/minute).
+export async function sendChat(messages: ChatMessage[], page: string): Promise<ChatReply> {
+  const capped = messages.slice(-20).map((m) => ({ ...m, text: m.text.slice(0, 1000) }));
+  if (MOCK) {
+    await new Promise((r) => setTimeout(r, 700));
+    return mockChatReply(capped.at(-1)?.text ?? "");
+  }
+  return http("/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ participant_id: getParticipantId(), page: page.slice(0, 100), messages: capped }),
+  });
+}
+
+// Sends a report draft the citizen confirmed ("Trimite raportul"); never called automatically.
+export async function sendReport(draft: ReportDraft): Promise<void> {
+  if (MOCK) {
+    console.log("sendReport (mock)", draft);
+    return;
+  }
+  await http("/reports", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      participant_id: getParticipantId(),
+      kind: draft.kind,
+      text: draft.text.slice(0, 1000),
+      statement_id: draft.statement_id ?? null,
+    }),
+  });
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { ChatWidget } from "@/components/chat-widget";
 import "./globals.css";
 
 // Inter Tight: tight grotesk for headlines and body. JetBrains Mono: small uppercase labels.
@@ -32,7 +33,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             (next/script beforeInteractive is queued until Next's JS loads, which is too late here) */}
         <script dangerouslySetInnerHTML={{ __html: boot }} />
       </head>
-      <body className="dark brand flex min-h-full flex-col">{children}</body>
+      <body className="dark brand flex min-h-full flex-col">
+        {children}
+        <ChatWidget />
+      </body>
     </html>
   );
 }
