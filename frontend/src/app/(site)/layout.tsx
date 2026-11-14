@@ -1,5 +1,4 @@
 import { ViewTransition } from "react";
-import { Cursor } from "@/components/site/cursor";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
@@ -13,7 +12,6 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <main className="flex flex-1 flex-col">{children}</main>
       </ViewTransition>
       <SiteFooter />
-      <Cursor />
     </div>
   );
 }

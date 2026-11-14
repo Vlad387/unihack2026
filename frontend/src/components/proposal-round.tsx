@@ -4,8 +4,6 @@ import { Loader2, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ApiError, getProposal, getRoundStatus, startProposalRound } from "@/lib/api";
 
 const POLL_MS = 2000;
@@ -13,8 +11,7 @@ const POLL_MS = 2000;
 type View = { state: "idle" } | { state: "running"; seconds: number } | { state: "done"; round: number } | { state: "failed"; error: string };
 
 // Organizer starts a compromise round; mediate + critic run 25–60 s on the server, so we poll the status.
-export function ProposalRound() {
-  const [token, setToken] = useState("");
+export function ProposalRound({ token }: { token: string }) {
   const [view, setView] = useState<View>({ state: "idle" });
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const started = useRef(0);
@@ -75,10 +72,6 @@ export function ProposalRound() {
           Mediatorul AI scrie o propunere din taberele și punctele comune de pe hartă, plus criticile rundei anterioare. Durează
           30–60 de secunde, apoi apare live pe toate ecranele. Ai nevoie de câțiva participanți care au răspuns și au votat.
         </p>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="org-token">Parolă organizator (doar pe server)</Label>
-          <Input id="org-token" type="password" autoComplete="off" value={token} onChange={(e) => setToken(e.target.value)} className="max-w-xs" />
-        </div>
         <Button onClick={start} disabled={running} className="w-fit">
           {running ? <Loader2 className="animate-spin" /> : <Sparkles />}
           {running ? "Se generează…" : "Generează propunerea"}

@@ -230,7 +230,7 @@
   .eyebrow { font-family: var(--font-jetbrains), monospace; font-size: var(--text-meta); letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); }
   .glass { background: var(--glass); border: 1px solid var(--cyan-line); backdrop-filter: blur(18px) saturate(140%); }
   .text-gradient { background: linear-gradient(100deg, var(--signal) 15%, var(--cyan) 70%); background-clip: text; color: transparent; }
-  /* Bento tile: spotlight follows the pointer (--mx/--my set by the cursor script) */
+  /* Bento tile: soft spotlight on hover */
   /* never transition opacity here: GSAP reveals tiles with opacity and would read a half-transitioned value */
   .tile { position: relative; isolation: isolate; container-type: inline-size; transition: border-color 0.4s var(--ease-out), filter 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out); }
   .tile::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; opacity: 0; transition: opacity 0.4s var(--ease-out); background: radial-gradient(28rem circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklch, var(--cyan) 16%, transparent), transparent 60%); }
@@ -242,9 +242,6 @@
   }
   .marquee-track { display: flex; width: max-content; animation: marquee 48s linear infinite; }
   .marquee:hover .marquee-track { animation-play-state: paused; }
-  .cursor { position: fixed; top: 0; left: 0; z-index: 90; display: none; pointer-events: none; }
-  .has-cursor .cursor { display: block; }
-  .has-cursor .brand, .has-cursor .brand * { cursor: none; }
   /* hero lines wait for the split reveal; the delayed fallback shows them even if JS fails */
   .js [data-split], .js [data-hero-fade] { visibility: hidden; animation: show-late 0s 3.5s forwards; }
 }
