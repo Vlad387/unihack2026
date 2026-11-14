@@ -7,11 +7,12 @@ export const siteLinks = [
   { href: "/", label: "Acasă" },
   { href: "/cum-functioneaza", label: "Cum funcționează" },
   { href: "/board", label: "Ecran live" },
+  { href: "/simulare", label: "Simulare" },
   { href: "/organizer", label: "Organizatori" },
   { href: "/demo", label: "Demo" },
 ];
 
-const link = "rounded-lg px-3 py-2 text-sm font-medium text-ink-2 transition-colors hover:bg-foreground/5 hover:text-foreground";
+const link = "rounded-lg px-3 py-2 text-sm whitespace-nowrap font-medium text-ink-2 transition-colors hover:bg-foreground/5 hover:text-foreground";
 const cta =
   "inline-flex h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5";
 
@@ -22,7 +23,7 @@ export function SiteHeader() {
         <Brand className="text-lg" />
 
         <div className="flex items-center gap-1">
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Navigare principală">
+          <nav className="hidden items-center gap-1 lg:flex" aria-label="Navigare principală">
             {siteLinks.map((l) => (
               <Link key={l.href} href={l.href} className={link}>
                 {l.label}
@@ -32,10 +33,10 @@ export function SiteHeader() {
               Participă
             </Link>
           </nav>
-          <ThemeToggle className="md:order-first" />
+          <ThemeToggle className="lg:order-first" />
 
           {/* <details> gives a working mobile menu with zero client JS */}
-          <details className="group md:hidden">
+          <details className="group lg:hidden">
             <summary
               className="grid size-10 list-none place-items-center rounded-full text-ink-2 hover:bg-foreground/5 [&::-webkit-details-marker]:hidden"
               aria-label="Meniu"
