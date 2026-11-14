@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, SendHorizontal, X } from "lucide-react";
+import { SendHorizontal, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChatActionButton, ReportCard } from "@/components/chat-actions";
@@ -23,6 +23,13 @@ export function ChatWidget() {
   const [input, setInput] = useState("");
   const [waiting, setWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Bingus says hi next to the button for a few seconds after each page load
+  const [hello, setHello] = useState(true);
+
+  useEffect(() => {
+    const id = setTimeout(() => setHello(false), 9000);
+    return () => clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     log.current?.scrollTo({ top: log.current.scrollHeight, behavior: "smooth" });
@@ -31,6 +38,10 @@ export function ChatWidget() {
   if (path.startsWith("/board")) return null;
 
   const close = () => dialog.current?.close();
+  const open = () => {
+    setHello(false);
+    dialog.current?.showModal();
+  };
 
   async function ask(text: string) {
     const q = text.trim().slice(0, 1000);
@@ -60,14 +71,28 @@ export function ChatWidget() {
 
   return (
     <>
+      {hello && (
+        <button
+          type="button"
+          onClick={open}
+          className="fixed right-[calc(5.75rem+env(safe-area-inset-right))] bottom-[calc(1.75rem+env(safe-area-inset-bottom))] z-50 max-w-[min(15rem,60vw)] rounded-2xl rounded-br-sm border border-foreground/10 bg-[var(--carbon)] px-3.5 py-2.5 text-left text-sm shadow-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 print:hidden"
+        >
+          <span className="font-semibold">Salut! Sunt Bingus 👋</span>
+          <span className="block text-ink-3">Mascota CityMind. Sunt aici să te ajut.</span>
+        </button>
+      )}
+
+      {/* Bingus: the mascot's head floats (idle bob) and tilts toward you on hover, a light 3D feel */}
       <button
         type="button"
-        onClick={() => dialog.current?.showModal()}
-        aria-label="Deschide asistentul AI"
+        onClick={open}
+        aria-label="Deschide chatul cu Bingus, asistentul AI"
         aria-haspopup="dialog"
-        className={`fixed right-[calc(1rem+env(safe-area-inset-right))] bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 grid size-14 place-items-center rounded-full ${GRADIENT} text-white shadow-[0_12px_32px_-8px_oklch(45%_0.25_295/0.6)] transition-transform hover:scale-105 focus-visible:ring-4 focus-visible:ring-[var(--cyan)]/40 focus-visible:outline-none active:scale-95 print:hidden`}
+        className="group fixed right-[calc(0.75rem+env(safe-area-inset-right))] bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 size-18 rounded-full focus-visible:ring-4 focus-visible:ring-[var(--cyan)]/50 focus-visible:outline-none active:scale-95 print:hidden"
       >
-        <MessageCircle className="size-6" aria-hidden />
+        <span className="block size-full motion-safe:animate-[bingus-float_3.4s_ease-in-out_infinite]">
+          <Logo className="size-full drop-shadow-[0_10px_12px_oklch(38%_0.2_295/0.45)] transition-transform duration-300 [transform:perspective(300px)_rotateX(8deg)] group-hover:[transform:perspective(300px)_rotateX(16deg)_rotateY(-16deg)_scale(1.1)]" />
+        </span>
       </button>
 
       <dialog
@@ -79,10 +104,12 @@ export function ChatWidget() {
       >
         <div className="flex h-full flex-col">
           <header className={`flex items-center gap-3 px-4 py-3 text-white ${GRADIENT}`}>
-            <Logo className="size-9 shrink-0" />
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/90 shadow-inner">
+              <Logo className="size-9" />
+            </span>
             <div className="min-w-0 flex-1">
               <h2 id="chat-title" className="leading-tight font-semibold">
-                Asistent AI
+                Bingus <span className="font-normal text-white/85">· Asistent AI</span>
               </h2>
               <p className="text-xs text-white/85">Te ajută să participi. Nu votează în locul tău.</p>
             </div>
@@ -92,7 +119,10 @@ export function ChatWidget() {
           </header>
 
           <div ref={log} role="log" aria-live="polite" aria-label="Conversația cu asistentul" className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
-            <Bubble role="assistant" text="Salut! Te pot ajuta să răspunzi la consultare, să votezi, să găsești harta sau să raportezi o problemă." />
+            <Bubble
+              role="assistant"
+              text="Salut! Sunt Bingus, mascota CityMind, și sunt aici să te ajut: să răspunzi la consultare, să votezi, să găsești harta sau să raportezi o problemă."
+            />
             {entries.length === 0 && (
               <div className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map((s) => (
@@ -164,7 +194,7 @@ function Bubble({ role, text }: ChatMessage) {
   const mine = role === "user";
   return (
     <div className={`flex max-w-[85%] flex-col gap-1 ${mine ? "self-end items-end" : "self-start"}`}>
-      <span className="text-[0.7rem] font-semibold tracking-wide text-ink-3 uppercase">{mine ? "Tu" : "Asistent AI"}</span>
+      <span className="text-[0.7rem] font-semibold tracking-wide text-ink-3 uppercase">{mine ? "Tu" : "Bingus · Asistent AI"}</span>
       <p className={`rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${mine ? "bg-[var(--cyan)] text-white" : "bg-foreground/5"}`}>{text}</p>
     </div>
   );

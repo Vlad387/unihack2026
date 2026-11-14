@@ -252,6 +252,7 @@ html.light .brand {
 @keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .scroll-progress { display: none; }
 @keyframes word-on { from { opacity: 0.16; color: var(--cyan); } }
+@keyframes bingus-float { 50% { transform: translateY(-6px) rotate(-3deg); } }
 
 /* Native scroll-driven animations: zero JS, run off the main thread */
 @supports (animation-timeline: scroll()) {
