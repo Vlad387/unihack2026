@@ -64,7 +64,7 @@ export function Closing() {
             href="/board"
             className="inline-flex h-12 items-center justify-center rounded-lg border border-foreground/80 px-6 font-semibold transition-colors hover:bg-foreground/10"
           >
-            Deschide ecranul live
+            Vezi rundele
           </Link>
         </div>
       </div>

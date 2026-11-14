@@ -9,9 +9,77 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { campColor } from "@/lib/colors";
 import { type ConsultationState, useConsultation } from "@/hooks/use-consultation";
+import type { SupportRound } from "@/lib/types";
 
 // Romanian plural: 0 voturi, 1 vot, 2–19 voturi, 20+ "de voturi" (except when the last two digits are 01–19)
 const votes = (n: number) => (n === 1 ? "1 vot" : n === 0 || (n % 100 >= 1 && n % 100 <= 19) ? `${n} voturi` : `${n} de voturi`);
+
+// Long AI proposals are hard to read from far away: the first sentence leads (bold), and the concrete facts
+// (times, durations, percentages) are highlighted inside the rest.
+const FACT = /(\d{1,2}:\d{2}|\d+\s?(?:%|lei|luni|zile|ore|săptămâni)|trei luni|program-pilot|weekend)/gi;
+function ProposalText({ text }: { text: string }) {
+  const [, lead = text, rest = ""] = text.match(/^(.+?[.!?])\s+([\s\S]*)$/) ?? [];
+  const facts = (t: string) =>
+    t.split(FACT).map((part, i) =>
+      i % 2 ? (
+        <mark key={i} className="rounded bg-[var(--cyan)]/15 px-1 font-semibold text-foreground">
+          {part}
+        </mark>
+      ) : (
+        part
+      ),
+    );
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-lg leading-snug font-semibold">{facts(lead)}</p>
+      {rest && <p className="text-ink-2">{facts(rest)}</p>}
+    </div>
+  );
+}
+
+const pct = (r: SupportRound) => (r.total ? Math.round((r.agree / r.total) * 100) : 0);
+const BAR = "bg-[linear-gradient(90deg,oklch(58%_0.25_300),oklch(68%_0.15_235))]";
+
+// The round's outcome is what the room waits for: the current round is one big number, earlier rounds stay small.
+function SupportCard({ support }: { support: SupportRound[] }) {
+  const now = support.at(-1);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Sprijin pe runde</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3" aria-live="polite">
+        {!now && <p className="text-sm text-muted-foreground">Încă nu s-a votat nicio propunere.</p>}
+        {now && (
+          <div className="flex flex-col gap-2">
+            <p className="flex items-baseline justify-between gap-3">
+              <span className="bg-[linear-gradient(90deg,var(--cyan),oklch(55%_0.17_245))] bg-clip-text text-5xl font-extrabold tracking-tight text-transparent tabular-nums">
+                {pct(now)}%
+              </span>
+              <span className="text-right text-sm text-muted-foreground">
+                susțin runda {now.round}
+                <br />
+                {votes(now.total)} reale
+              </span>
+            </p>
+            <div className="h-4 overflow-hidden rounded-full bg-muted">
+              <div className={`h-full ${BAR} transition-all duration-700`} style={{ width: `${pct(now)}%` }} />
+            </div>
+          </div>
+        )}
+        {support.slice(0, -1).reverse().map((r) => (
+          <div key={r.round} className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="w-16 shrink-0">Runda {r.round}</span>
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+              <div className={`h-full ${BAR} opacity-60`} style={{ width: `${pct(r)}%` }} />
+            </div>
+            <span className="w-10 text-right tabular-nums">{pct(r)}%</span>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
 
 function AiBadge() {
   return (
@@ -25,37 +93,41 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
   const { clusters, bridges, proposal, support } = useConsultation(initial);
   const color = campColor(clusters.camps);
 
+  // Map first and as large as possible (top-left); everything else lives in the right column, starting with
+  // the identity block (logo, live, question, participants, QR) so the projector reads at a glance.
   return (
-    <div className="grid flex-1 gap-6 lg:grid-cols-[1fr_400px]">
-      <section className="flex flex-col gap-4">
-        <header className="flex flex-wrap items-end justify-between gap-4 lg:flex-nowrap">
-          <div>
-            <p className="flex items-center gap-3 text-sm">
-              <Brand className="text-base" />
-              <span className="flex items-center gap-1.5 font-semibold uppercase tracking-wider text-brand-amber">
-                <span className="size-2 animate-pulse rounded-full bg-brand-amber" aria-hidden /> Live
-              </span>
-            </p>
-            <h1 className="text-2xl font-bold lg:text-4xl">{question}</h1>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="text-right" aria-live="polite">
-              <p className="text-4xl font-bold tabular-nums lg:text-6xl">{clusters.points.length}</p>
-              <p className="text-sm text-muted-foreground">participanți</p>
-            </div>
-            <div className="hidden lg:block">
-              <JoinQr size={110} />
-            </div>
-          </div>
-        </header>
-        <Card className="board-map flex-1">
-          <CardContent>
+    <div className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+      <Card className="board-map lg:sticky lg:top-6">
+        <CardContent>
+          {/* capped to the screen height (map is 800x560), so it never fills the whole projector */}
+          <div className="mx-auto w-full max-w-[calc((100dvh-9rem)*1.43)]">
             <OpinionMap clusters={clusters} />
-          </CardContent>
-        </Card>
-      </section>
+          </div>
+        </CardContent>
+      </Card>
 
       <aside className="flex flex-col gap-4">
+        <Card>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-3">
+              <Brand className="text-base" />
+              <span className="flex items-center gap-1.5 text-sm font-semibold tracking-wider text-[var(--cyan)] uppercase">
+                <span className="size-2 animate-pulse rounded-full bg-[var(--cyan)]" aria-hidden /> Live
+              </span>
+            </div>
+            <h1 className="text-xl leading-snug font-bold text-balance">{question}</h1>
+            <div className="flex items-center justify-between gap-4">
+              <div aria-live="polite">
+                <p className="text-5xl font-bold tabular-nums">{clusters.points.length}</p>
+                <p className="text-sm text-muted-foreground">participanți</p>
+              </div>
+              <JoinQr size={110} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <SupportCard support={support} />
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Tabere</CardTitle>
@@ -99,45 +171,23 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
               <AiBadge />
             </CardHeader>
             <CardContent>
-              <p>{proposal.text}</p>
+              <ProposalText text={proposal.text} />
               {proposal.verdict && (
                 <div className="mt-3">
                   <VerdictView verdict={proposal.verdict} />
-                </div>
-              )}
-              {!!proposal.proxies?.length && (
-                <div className="mt-3">
-                  <ProxyVoices proxies={proposal.proxies} compact />
                 </div>
               )}
             </CardContent>
           </Card>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sprijin pe runde</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {support.length === 0 && <p className="text-sm text-muted-foreground">Încă nu s-a votat nicio propunere.</p>}
-            {support.map((r) => {
-              const pct = r.total ? Math.round((r.agree / r.total) * 100) : 0;
-              return (
-                <div key={r.round} className="flex flex-col gap-1">
-                  <div className="flex justify-between text-sm">
-                    <span>Runda {r.round}</span>
-                    <span className="tabular-nums">
-                      <strong>{pct}%</strong> · {votes(r.total)}
-                    </span>
-                  </div>
-                  <div className="h-3 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full bg-primary transition-all duration-700" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+        {/* simulated voices in their own clearly-different box: never part of the proposal's votes */}
+        {!!proposal?.proxies?.length && (
+          <section className="rounded-xl border-2 border-dashed border-foreground/25 bg-[repeating-linear-gradient(135deg,color-mix(in_oklch,var(--violet)_10%,var(--carbon))_0_12px,color-mix(in_oklch,var(--violet)_4%,var(--carbon))_12px_24px)] p-4">
+            <ProxyVoices proxies={proposal.proxies} compact />
+          </section>
+        )}
+
       </aside>
     </div>
   );

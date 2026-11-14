@@ -23,12 +23,31 @@ export function ChatWidget() {
   const [input, setInput] = useState("");
   const [waiting, setWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Bingus says hi next to the button for a few seconds after each page load
-  const [hello, setHello] = useState(true);
+  // Bingus welcomes you once per visit (not on every page change): appears shortly after arrival, hides after 10 s
+  const [hello, setHello] = useState(false);
 
   useEffect(() => {
-    const id = setTimeout(() => setHello(false), 9000);
-    return () => clearTimeout(id);
+    let seen = false;
+    try {
+      seen = sessionStorage.getItem("citymind-greeted") === "1";
+    } catch {
+      // storage blocked: greet anyway, it's only a hint
+    }
+    if (seen) return;
+    // marked as seen only when it really shows (a cancelled effect run must not use up the greeting)
+    const show = setTimeout(() => {
+      setHello(true);
+      try {
+        sessionStorage.setItem("citymind-greeted", "1");
+      } catch {
+        // storage blocked: it may greet again on the next page, harmless
+      }
+    }, 800);
+    const hide = setTimeout(() => setHello(false), 10800);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+    };
   }, []);
 
   useEffect(() => {
@@ -75,10 +94,10 @@ export function ChatWidget() {
         <button
           type="button"
           onClick={open}
-          className="fixed right-[calc(5.75rem+env(safe-area-inset-right))] bottom-[calc(1.75rem+env(safe-area-inset-bottom))] z-50 max-w-[min(15rem,60vw)] rounded-2xl rounded-br-sm border border-foreground/10 bg-[var(--carbon)] px-3.5 py-2.5 text-left text-sm shadow-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 print:hidden"
+          className="fixed right-[calc(5.75rem+env(safe-area-inset-right))] bottom-[calc(3.25rem+env(safe-area-inset-bottom))] z-50 max-w-[min(16rem,62vw)] rounded-2xl rounded-br-sm border border-foreground/10 bg-[var(--carbon)] px-3.5 py-2.5 text-left text-sm shadow-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 print:hidden"
         >
-          <span className="font-semibold">Salut! Sunt Bingus 👋</span>
-          <span className="block text-ink-3">Mascota CityMind. Sunt aici să te ajut.</span>
+          <span className="font-semibold">Bine ai venit! Sunt Bingus 👋</span>
+          <span className="block text-ink-3">Sunt chatbotul CityMind. Scrie-mi orice întrebare și te ajut să participi.</span>
         </button>
       )}
 
@@ -88,8 +107,11 @@ export function ChatWidget() {
         onClick={open}
         aria-label="Deschide chatul cu Bingus, asistentul AI"
         aria-haspopup="dialog"
-        className="group fixed right-[calc(0.75rem+env(safe-area-inset-right))] bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 size-18 rounded-full focus-visible:ring-4 focus-visible:ring-[var(--cyan)]/50 focus-visible:outline-none active:scale-95 print:hidden"
+        className="group fixed right-[calc(0.75rem+env(safe-area-inset-right))] bottom-[calc(2rem+env(safe-area-inset-bottom))] z-50 size-18 rounded-full focus-visible:ring-4 focus-visible:ring-[var(--cyan)]/50 focus-visible:outline-none active:scale-95 print:hidden"
       >
+        <span className="pointer-events-none absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-[linear-gradient(90deg,oklch(58%_0.25_300),oklch(68%_0.15_235))] px-2 py-0.5 text-[0.62rem] leading-none font-bold tracking-wider text-white uppercase shadow">
+          Chatbot
+        </span>
         <span className="block size-full motion-safe:animate-[bingus-float_3.4s_ease-in-out_infinite]">
           <Logo className="size-full drop-shadow-[0_10px_12px_oklch(38%_0.2_295/0.45)] transition-transform duration-300 [transform:perspective(300px)_rotateX(8deg)] group-hover:[transform:perspective(300px)_rotateX(16deg)_rotateY(-16deg)_scale(1.1)]" />
         </span>
@@ -100,7 +122,7 @@ export function ChatWidget() {
         aria-labelledby="chat-title"
         // click on the backdrop (outside the panel) closes it
         onClick={(e) => e.target === dialog.current && close()}
-        className="m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-[var(--carbon)] p-0 text-foreground backdrop:bg-black/40 sm:top-auto sm:right-[calc(1rem+env(safe-area-inset-right))] sm:bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:left-auto sm:h-[min(600px,calc(100dvh-7rem))] sm:w-[360px] sm:rounded-2xl sm:border sm:border-foreground/10 sm:shadow-2xl sm:backdrop:bg-transparent"
+        className="m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-[var(--carbon)] p-0 text-foreground backdrop:bg-black/40 sm:top-auto sm:right-[calc(1rem+env(safe-area-inset-right))] sm:bottom-[calc(6.75rem+env(safe-area-inset-bottom))] sm:left-auto sm:h-[min(600px,calc(100dvh-8.5rem))] sm:w-[360px] sm:rounded-2xl sm:border sm:border-foreground/10 sm:shadow-2xl sm:backdrop:bg-transparent"
       >
         <div className="flex h-full flex-col">
           <header className={`flex items-center gap-3 px-4 py-3 text-white ${GRADIENT}`}>
