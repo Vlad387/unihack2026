@@ -58,6 +58,10 @@ It builds the image **locally**, because Azure for Students blocks cloud builds 
 permitted"). It skips Docker's cache so the GitHub clone is fresh, pushes the image, and restarts.
 **A restart takes ~5 minutes** before the new version answers.
 
+**Required app setting `TRUST_X_FORWARDED_FOR=1`.** Behind Azure's proxy every request comes
+from the proxy's address, so without it the per-IP rate limits would act as one global limit.
+(Never set it when the API is reached directly: clients could fake the header.)
+
 Change a secret: `az webapp config appsettings set -g citymind-rg -n <app> -o none --settings NAME=value`
 (this restarts the app). Logs: `az webapp log tail -g citymind-rg -n <app>`.
 
