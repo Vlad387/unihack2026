@@ -81,7 +81,9 @@ export function ChatWidget() {
       setError(
         err instanceof ApiError && err.status === 429
           ? "Ai trimis multe mesaje într-un minut. Așteaptă puțin și încearcă din nou."
-          : "Asistentul nu răspunde acum. Verifică internetul și încearcă din nou.",
+          : err instanceof TypeError // fetch itself failed: offline, DNS, or a CORS block
+            ? "Asistentul nu răspunde acum. Verifică internetul și încearcă din nou."
+            : "Asistentul nu e disponibil acum. Încearcă din nou puțin mai târziu.",
       );
     } finally {
       setWaiting(false);
