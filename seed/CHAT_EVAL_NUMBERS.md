@@ -2,11 +2,28 @@
 
 ## Status
 
-Not measured. At preparation time, PR #54 contains the chat contract and an
-`assist()` stub; no assist evaluation runner is present on the fetched dev,
-rares or bordos branches. Stub responses are not agent quality measurements.
-Run this evaluation after Bordos's real agent and runner are available. No live
-Gemini calls were made to prepare the fixture.
+Measured by Bordos on 14 November 2026, approximately 22:00 UTC, using the real
+`assist()` and `app.agents.eval_assist`. Results and prompt changes are recorded
+in the root `README.md`, section 16. The final run used `gemini-3.1-flash-lite`:
+action accuracy **40/40 (100%)**, report-kind accuracy **8/8 (100%)**, manually
+reviewed traps **6/6 (100%)**, **0 failures**, and **2.9 s median latency** across
+40 valid replies. Eidrien checked the published record and runner; this update
+did not repeat Gemini calls or independently repeat the manual trap review.
+
+The prompt was tuned on these same 40 conversations. These are synthetic
+development-set results, **not an unseen test or results from real citizens**.
+
+| Run | Model and conditions | Action | Report kind | Traps (manual) | Failures | Median latency |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | Initial prompt; `gemini-3.5-flash-lite` with some fallback calls | 33/40 | 8/8 | 4/6 | 0 | 2.6 s |
+| 2 | Revised prompt; `gemini-3.1-flash-lite` | 37/40 | 6/8 | 6/6 | 2 (rate limit) | 3.5 s |
+| 3 (final) | Proposal text included in context; `gemini-3.1-flash-lite`; 4.5 s pause between cases | 40/40 | 8/8 | 6/6 | 0 | 2.9 s |
+
+The first revision removed unwanted navigation suggestions from explanations
+and refusals, and tightened preservation of the citizen's meaning in drafts.
+The final runner supplied proposal text alongside round 1; earlier context had
+omitted it. Runs therefore differ in both prompt and evaluation context. Drafts
+can still add small explanations: citizens must review them before submitting.
 
 ## Fixed benchmark
 
@@ -15,14 +32,18 @@ explanations, 10 draft requests, 6 navigation requests, 8 reports and 6 traps.
 It measures this small fixture only, not accuracy for real citizens or fairness
 across age groups. Do not train/tune on it and then describe it as an unseen test.
 
-Fixture SHA-256:
+Final-run fixture SHA-256 (CRLF checkout, reported by Bordos and reproduced by
+converting the repository file to CRLF):
+`61493dd93a8e08cac9ea35b212db309c46ad8fd1d3acd94aab849591da7c3685`.
+Repository fixture SHA-256 (LF):
 `205a99e1620befcf9166140462707f8021b799caeb4815b0e1f9c6982e7ffc48`.
+These hashes differ only because of line endings; the parsed JSON is identical.
 Offline checks passed: unique IDs, category counts, chronological alternating
 messages within the 1–4-message bound, and message/context/action/report-kind
 validation against PR #54's Pydantic contract. These checks do not measure the
 agent's behavior.
 
-## Numbers to publish after a real run
+## Scoring rules
 
 - **Action accuracy:** exact `reply.action.type == expected_action`, correct / 40.
   Invalid replies, exceptions and exhausted-quota cases count as unsuccessful;
@@ -63,8 +84,10 @@ generation requests; retries can increase that. Coordinate with Bordos before
 using the shared demo quota. Do not merge partial runs across different model
 settings into a single unlabeled score.
 
-Pitch template, **fill only after the real run**:
+## Pitch text
 
-> Pe 40 de conversații sintetice în română: acțiunea corectă în __/40 cazuri;
-> __/6 capcane trecute la verificare manuală; latență mediană __ s pentru __
-> răspunsuri valide. __ cereri au eșuat. Nu sunt rezultate pe utilizatori reali.
+> Pe 40 de conversații sintetice în română: acțiunea corectă în 40/40 cazuri;
+> rapoarte clasificate corect în 8/8 cazuri; 6/6 capcane trecute la verificare
+> manuală; latență mediană 2,9 s pentru 40 de răspunsuri valide, fără cereri
+> eșuate. Promptul a fost ajustat pe aceleași conversații: nu este un test pe
+> date nevăzute și nu sunt rezultate pe utilizatori reali.
