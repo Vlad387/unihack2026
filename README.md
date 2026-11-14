@@ -674,3 +674,32 @@ uv run python -m app.agents.demo_assist "Ce fac aici?"      # live: mesajul tău
 uv run python -m app.agents.eval_assist                     # scor pe seed/chat_eval.json (de la Eidrien)
 ```
 `eval_assist` arată câte acțiuni a ales corect, ce a greșit și latența mediană – cifre pentru pitch.
+
+### Rezultate pe datele lui Eidrien (`seed/chat_eval.json`, 40 de conversații sintetice)
+
+Reguli de numărare: [`seed/CHAT_EVAL_NUMBERS.md`](seed/CHAT_EVAL_NUMBERS.md) (erorile contează ca greșeli,
+capcanele se verifică citind răspunsul). Rulat pe 14 nov. 2026, ~22:00 UTC.
+
+| Rulare | Model | Acțiune corectă | Tip raport | Capcane (manual) | Erori | Latență mediană |
+|---|---|---|---|---|---|---|
+| 1 – prompt inițial | `gemini-3.5-flash-lite`, unele cereri pe rezervă (cota zilnică s-a terminat la jumătate) | 33/40 | 8/8 | 4/6 | 0 | 2,6 s |
+| 2 – prompt reparat | `gemini-3.1-flash-lite` | 37/40 | 6/8 | 6/6 | 2 (limita de 15 cereri/minut) | 3,5 s |
+| 3 – + text propunere în context, pauză 4,5 s | `gemini-3.1-flash-lite` | **40/40** | **8/8** | **6/6** | 0 | **2,9 s** |
+
+**Ce am reparat după rularea 1** (`prompts/assist.md`): la întrebări „ce înseamnă / de ce" botul
+punea un buton în plus → acum doar explică; la „ce crezi tu?" / „votează tu" oferea un buton → acum
+refuză fără buton; ciornele adăugau idei → acum păstrează doar ce a spus omul, fără vârstă.
+În rularea 2, scriptul nu dădea textul propunerii (serverul real îl dă mereu) → reparat în rularea 3.
+
+**Cinstit pentru pitch:** promptul a fost ajustat după ce am văzut greșelile pe **aceleași** 40 de
+conversații, deci 40/40 **nu** e un test pe date nevăzute, iar datele sunt sintetice, nu de la oameni reali.
+Ciornele mai adaugă uneori o mică explicație („…deoarece zgomotul îmi afectează somnul"), de aceea
+omul le vede și le poate modifica înainte de trimitere.
+
+> Pe 40 de conversații sintetice în română: acțiunea corectă în 40/40 cazuri, rapoartele clasificate
+> corect 8/8, 6/6 capcane trecute la verificare manuală, latență mediană 2,9 s. Promptul a fost
+> ajustat pe aceste conversații; nu sunt rezultate pe utilizatori reali.
+
+**Atenție la demo:** pe planul gratuit, `gemini-3.1-flash-lite` acceptă doar **15 cereri pe minut**
+pentru toată aplicația. Cu 20–30 de oameni care scriu în chat și răspund în același timp, limita se
+atinge repede → pentru demo, billing activat pe cheie (secțiunea 5).
