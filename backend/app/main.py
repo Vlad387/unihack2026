@@ -10,7 +10,16 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
 
 from app import db
-from app.api import clusters, proposals, responses, statements, votes, ws
+from app.api import (
+    chat,
+    clusters,
+    proposals,
+    reports,
+    responses,
+    statements,
+    votes,
+    ws,
+)
 from app.api.live import live
 
 log = logging.getLogger(__name__)
@@ -35,7 +44,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for router in (responses, statements, votes, clusters, proposals, ws):
+for router in (responses, statements, votes, clusters, proposals, chat, reports, ws):
     app.include_router(router.router)
 
 

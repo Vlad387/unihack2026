@@ -21,6 +21,7 @@ from app.api.models import (
     MapStateRow,
     ProposalRow,
     ProposalVoteRow,
+    ReportRow,
     ResponseRow,
     StatementRow,
     VoteRow,
@@ -112,6 +113,7 @@ def reset() -> None:
     """Delete ALL data, real and demo: a clean start before the test or the pitch."""
     with db.SessionLocal() as s:
         for model in (
+            ReportRow,
             ProposalVoteRow,
             ProposalRow,
             VoteRow,
