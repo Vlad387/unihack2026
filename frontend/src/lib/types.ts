@@ -58,6 +58,13 @@ export interface RoundStatus {
   error: string | null;
 }
 
+// mirrors ResponseStats in backend/app/api/responses.py
+export interface ResponseStats {
+  pending: number;
+  failed: number;
+  done: number;
+}
+
 // Real citizen votes only: simulated proxy votes are never counted here.
 export interface SupportRound {
   round: number;

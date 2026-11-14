@@ -58,7 +58,7 @@ export function Closing() {
         <div data-reveal className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
           <Link
             href="/organizer"
-            data-magnetic
+           
             className="group inline-flex h-14 items-center justify-center gap-3 rounded-full bg-primary px-8 font-semibold text-primary-foreground shadow-[0_0_50px_-12px] shadow-primary transition-shadow hover:shadow-[0_0_70px_-8px] focus-visible:ring-4 focus-visible:ring-primary/40 focus-visible:outline-none"
           >
             Creează o consultare

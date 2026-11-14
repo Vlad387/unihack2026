@@ -26,7 +26,7 @@ export function SiteHeader() {
               {l.label}
             </Link>
           ))}
-          <Link href="/participa" data-magnetic className={`${cta} ml-2`}>
+          <Link href="/participa" className={`${cta} ml-2`}>
             Participă
           </Link>
         </nav>
