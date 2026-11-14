@@ -70,23 +70,31 @@ Then **restart the Space** (Settings → **Restart Space**), because it keeps th
 memory. The map should show 2 camps (35/15) and 4 bridges. In Supabase → **Table Editor**
 you'll see `responses`, `statements`, `votes`.
 
-## 4. Vercel: the website (Vladut, ~5 min)
+## 4. Vercel: the website (Rares's laptop, ~3 min)
 
-The GitHub repo belongs to Vladut, so Vercel has to be connected from his account.
+Live: **https://citymind-iota.vercel.app** (project `rares-projects3/citymind`).
+It's deployed **from Rares's laptop with the Vercel CLI**, not linked to GitHub, so it only
+changes when someone runs the deploy. That's safer before a pitch.
 
-1. https://vercel.com → **Sign in with GitHub** → **Add New… → Project** → import
-   `Vlad387/unihack2026`.
-2. **Root Directory: `frontend`**. Framework: Next.js (detected).
-3. **Environment Variables**:
+One-time (already done): `npx vercel login`, then in `frontend/`:
+`npx vercel link --yes --project citymind`. The project has `ENABLE_EXPERIMENTAL_COREPACK=1`,
+so Vercel uses the pnpm version from `package.json`.
 
-   | Name | Value |
-   |---|---|
-   | `NEXT_PUBLIC_API_URL` | `https://<hf-username>-citymind.hf.space` |
-   | `NEXT_PUBLIC_WS_URL` | `wss://<hf-username>-citymind.hf.space/ws` |
-   | `ENABLE_EXPERIMENTAL_COREPACK` | `1` (so Vercel uses the pnpm version in `package.json`) |
+1. Once the Space exists (step 2), set the API addresses on the Vercel project, in `frontend/`:
+   ```sh
+   echo -n 'https://<hf-username>-citymind.hf.space' | npx vercel env add NEXT_PUBLIC_API_URL production
+   echo -n 'wss://<hf-username>-citymind.hf.space/ws' | npx vercel env add NEXT_PUBLIC_WS_URL production
+   ```
+2. Deploy, from the repo root:
+   ```sh
+   deploy/vercel-deploy.sh
+   ```
+   It deploys the **committed** `frontend/` of the current checkout from a clean copy, so
+   `frontend/.env.local` (localhost URLs) never reaches Vercel. Check out `main` first.
 
-4. **Deploy.** Settings → Git: make sure the **Production Branch is `main`**.
-   `NEXT_PUBLIC_*` values are baked in at build time: after changing them, **Redeploy**.
+`NEXT_PUBLIC_*` values are baked in at build time: after changing them, deploy again.
+Want auto-deploy on every push instead? Vladut can import the repo in his own Vercel account
+(Root Directory `frontend`, the same env vars).
 
 ## 5. Lock it down + test (Rares)
 
@@ -99,7 +107,7 @@ The GitHub repo belongs to Vladut, so Vercel has to be connected from his accoun
 ## Updating
 
 1. Vladut merges `dev → main`.
-2. Vercel redeploys by itself.
+2. Rares runs `deploy/vercel-deploy.sh` (with `main` checked out).
 3. HF Space → Settings → **Factory rebuild** (it re-downloads `main`).
 
 ## Pitch-day checklist
