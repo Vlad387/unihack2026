@@ -20,6 +20,7 @@ from app.api import camp_ids, camp_names
 from app.api.map_inputs import load_inputs, with_texts
 from app.api.models import ResponseRow, StatementRow
 from app.clustering import bridges, cluster
+from app.clustering.layout import align_layout
 from app.schemas import (
     BridgesUpdated,
     Camp,
@@ -219,6 +220,9 @@ class Live:
         if result.camps:
             self._known_camps = result.camps
             await asyncio.to_thread(camp_ids.save, result.camps)
+        # rotate/shift the fresh layout onto the previous map so dots don't jump on the
+        # board; memberships, ids and names are untouched (clustering/layout.py)
+        result = align_layout(result, self.result)
         common = await asyncio.to_thread(bridges, votes, result.camps)
         self.result, self.bridges = with_texts(result, statements), common
         self.map_ready.set()
