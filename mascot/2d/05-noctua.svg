@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" role="img" aria-label="Noctua, mascota CityMind"><title>Noctua – CityMind</title>
+    <ellipse cx="120" cy="230" rx="60" ry="9" fill="#1b2a2f" opacity="0.12"/>
+    <path d="M64 96 L70 50 L100 80 Z M176 96 L170 50 L140 80 Z" fill="#0f5e6b" stroke="#0f5e6b" stroke-width="6" stroke-linejoin="round"/>
+    <ellipse cx="58" cy="160" rx="17" ry="38" transform="rotate(15 58 160)" fill="#1f8a99"/>
+    <ellipse cx="182" cy="160" rx="17" ry="38" transform="rotate(-15 182 160)" fill="#1f8a99"/>
+    <ellipse cx="120" cy="148" rx="64" ry="76" fill="#0f5e6b"/>
+    <ellipse cx="120" cy="172" rx="40" ry="46" fill="#faf8f5"/>
+    <path d="M104 160 l6 6 l6 -6 M124 160 l6 6 l6 -6 M114 180 l6 6 l6 -6 M104 198 l6 6 l6 -6 M124 198 l6 6 l6 -6"
+      fill="none" stroke="#1f8a99" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="96" cy="112" r="25" fill="#faf8f5"/><circle cx="144" cy="112" r="25" fill="#faf8f5"/>
+    <circle cx="96" cy="112" r="15" fill="#f2a541"/><circle cx="144" cy="112" r="15" fill="#f2a541"/>
+    <circle cx="96" cy="113" r="8" fill="#1b2a2f"/><circle cx="144" cy="113" r="8" fill="#1b2a2f"/>
+    <circle cx="99" cy="109" r="3" fill="#ffffff"/><circle cx="147" cy="109" r="3" fill="#ffffff"/>
+    <path d="M113 130 H127 L120 143 Z" fill="#d9822b" stroke="#d9822b" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="100" cy="222" rx="13" ry="6" fill="#f2a541"/><ellipse cx="140" cy="222" rx="13" ry="6" fill="#f2a541"/></svg>

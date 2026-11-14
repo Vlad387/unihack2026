@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" role="img" aria-label="Felix, mascota CityMind"><title>Felix – CityMind</title>
+    <ellipse cx="120" cy="228" rx="50" ry="9" fill="#1b2a2f" opacity="0.12"/>
+    <circle cx="120" cy="88" r="74" fill="#f2a541" opacity="0.16"/>
+    <rect x="86" y="208" width="68" height="16" rx="7" fill="#0f5e6b"/>
+    <rect x="113" y="122" width="14" height="90" rx="4" fill="#0f5e6b"/>
+    <ellipse cx="96" cy="160" rx="6" ry="17" transform="rotate(45 96 160)" fill="#0f5e6b"/>
+    <ellipse cx="148" cy="146" rx="6" ry="17" transform="rotate(-45 148 146)" fill="#0f5e6b"/>
+    <rect x="102" y="118" width="36" height="9" rx="4.5" fill="#d9822b"/>
+    <path d="M80 58 H160 L150 120 H90 Z" fill="#f2a541"/>
+    <path d="M140 58 H160 L150 120 H134 Z" fill="#d9822b" opacity="0.45"/>
+    <path d="M100 58 L104 120 M140 58 L136 120" stroke="#faf8f5" stroke-width="2.5" opacity="0.55"/>
+    <rect x="86" y="116" width="68" height="9" rx="4.5" fill="#0f5e6b"/>
+    <path d="M68 60 L120 22 L172 60 Z" fill="#0f5e6b" stroke="#0f5e6b" stroke-width="6" stroke-linejoin="round"/>
+    <circle cx="120" cy="17" r="7" fill="#0f5e6b"/>
+    <ellipse cx="106" cy="84" rx="6" ry="8.5" fill="#1b2a2f"/><circle cx="108.1" cy="80.6" r="2.2800000000000002" fill="#ffffff"/><ellipse cx="134" cy="84" rx="6" ry="8.5" fill="#1b2a2f"/><circle cx="136.1" cy="80.6" r="2.2800000000000002" fill="#ffffff"/>
+    <path d="M110 100 Q120 109 130 100" fill="none" stroke="#1b2a2f" stroke-width="4.5" stroke-linecap="round"/>
+    <ellipse cx="96" cy="100" rx="8" ry="4.5" fill="#f29a8a" opacity="0.85"/><ellipse cx="144" cy="100" rx="8" ry="4.5" fill="#f29a8a" opacity="0.85"/></svg>
