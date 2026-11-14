@@ -1,20 +1,26 @@
-# Deploy: Vercel + Hugging Face + Supabase (all free)
+# Deploy: Vercel + laptop API (Cloudflare Tunnel) + Supabase (all free)
 
 ```
-phone ─► https://<site>.vercel.app          Vercel: the Next.js website (frontend/)
+phone ─► https://citymind-iota.vercel.app      Vercel: the Next.js website (frontend/)
             │ fetch + WebSocket
             ▼
-         https://<user>-<space>.hf.space    Hugging Face Space: the FastAPI backend (Docker)
-            │                               ─► Gemini (Google)
+         https://<random>.trycloudflare.com    Cloudflare quick tunnel (free, no account)
             ▼
-         Supabase Postgres (Frankfurt)      the data + Table Editor
+         API on Rares's laptop                 FastAPI + live worker (backend/)
+            │                                   ─► Gemini (Google)
+            ▼
+         Supabase Postgres                     the data + Table Editor
 ```
 
-Both Vercel and the HF Space deploy the **`main`** branch, so the live site only changes
-when Vladut merges `dev → main` at a checkpoint (RULES.md). Free tiers change: if a screen
-looks different from this guide, follow the site's own wording.
+**Why the API runs on a laptop:** Hugging Face Docker Spaces now need a paid PRO plan,
+and our API uses ~430 MB of RAM idle (UMAP/numba), too close to the 512 MB free tiers.
+`deploy/huggingface/` still works on any Docker host if the team pays for one.
 
-**Never paste passwords or keys into chats, git or the group.** Only into the dashboards below.
+**The laptop is the server:** during the test and the pitch, keep it plugged in, awake
+(no sleep), and on stable internet (a phone hotspot is safer than venue Wi-Fi).
+
+**Never paste passwords or keys into chats, git or the group.** Private config lives in
+`~/.config/citymind/` on the laptop (outside the repo, readable only by its owner).
 
 ---
 
@@ -27,35 +33,29 @@ looks different from this guide, follow the site's own wording.
 3. Once the project is ready: **Connect** (top of the page) → **Session pooler**. Copy the URI:
    `postgresql://postgres.<ref>:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:5432/postgres`
    - Use the **Session pooler**, not the "Direct connection": the direct one is IPv6-only
-     on the free plan, and Hugging Face may not reach it.
+     on the free plan, and many networks can't reach it.
 4. Turn it into our format: change `postgresql://` to **`postgresql+psycopg://`**, and put
    your password in place of `[YOUR-PASSWORD]`. That's the `DATABASE_URL` for step 2.
 
 You don't create tables: the API creates them on its first start, with Row Level Security
 turned on, so Supabase's public REST API can't read citizens' answers.
 
-## 2. Hugging Face Space: the API (Rares, ~10 min + ~5 min build)
+## 2. The API on the laptop + tunnel (Rares, one command)
 
-1. https://huggingface.co → sign up → **New** → **Space**.
-   - Name `citymind`, **SDK: Docker** (Blank), **Hardware: CPU basic (free)**.
-   - **Public.** A private Space needs a login, so the website couldn't call it.
-     The code is public on GitHub anyway; the secrets stay hidden.
-2. In the Space: **Files** → **Add file** → **Create a new file**. Create two files,
-   copying them exactly from this repo:
-   - `Dockerfile` ← `deploy/huggingface/Dockerfile`
-   - `README.md` ← `deploy/huggingface/README.md` (replace the generated one)
-3. **Settings** → **Variables and secrets** → **New secret**, one at a time:
+One-time (done): `cloudflared` in `~/.local/bin`, `npx vercel login`, and in `~/.config/citymind/`:
+`supabase_url` (step 1.4) and `organizer_token` (random; sent to Vladut privately).
 
-   | Secret | Value |
-   |---|---|
-   | `DATABASE_URL` | from step 1.4 |
-   | `GEMINI_API_KEY` | the team key |
-   | `ORGANIZER_TOKEN` | a random password. Make one with `python3 -c "import secrets; print(secrets.token_urlsafe(24))"`, and send it to Vladut privately |
-   | `CORS_ORIGINS` | leave it out for now; set it in step 5 |
+From the repo root, **after every reboot** (and whenever in doubt):
 
-4. The Space builds (~5 min) and starts (~1–2 min for the clustering warm-up).
-   Your API address is **`https://<your-hf-username>-citymind.hf.space`**.
-   Check `…/health` → `{"status":"ok"}` and `…/health/db` → `{"db":"ok"}`.
+```sh
+deploy/laptop-server.sh
+```
+
+- It starts the API (on Supabase, CORS locked to the Vercel site, organizer token set)
+  and the tunnel, but only the parts that aren't running.
+- If the tunnel got a **new random address**, it updates the Vercel env vars and
+  redeploys the website by itself (~2 min). The Vercel link and the QR code never change.
+- Logs: `~/.config/citymind/api.log`, `~/.config/citymind/tunnel.log`.
 
 ## 3. Demo data into Supabase (Rares, ~1 min)
 
@@ -66,8 +66,8 @@ cd ~/unihack2026/backend
 DATABASE_URL='postgresql+psycopg://…' uv run python -m app.api.demo load
 ```
 
-Then **restart the Space** (Settings → **Restart Space**), because it keeps the live map in
-memory. The map should show 2 camps (35/15) and 4 bridges. In Supabase → **Table Editor**
+Then **restart the API** (stop it, then `deploy/laptop-server.sh`), because it keeps the live
+map in memory. The map should show 2 camps (35/15) and 4 bridges. In Supabase → **Table Editor**
 you'll see `responses`, `statements`, `votes`.
 
 ## 4. Vercel: the website (Rares's laptop, ~3 min)
@@ -80,11 +80,8 @@ One-time (already done): `npx vercel login`, then in `frontend/`:
 `npx vercel link --yes --project citymind`. The project has `ENABLE_EXPERIMENTAL_COREPACK=1`,
 so Vercel uses the pnpm version from `package.json`.
 
-1. Once the Space exists (step 2), set the API addresses on the Vercel project, in `frontend/`:
-   ```sh
-   echo -n 'https://<hf-username>-citymind.hf.space' | npx vercel env add NEXT_PUBLIC_API_URL production
-   echo -n 'wss://<hf-username>-citymind.hf.space/ws' | npx vercel env add NEXT_PUBLIC_WS_URL production
-   ```
+1. The API addresses (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL`) are set on the Vercel project
+   by `deploy/laptop-server.sh` whenever the tunnel address changes. Nothing to do by hand.
 2. Deploy, from the repo root:
    ```sh
    deploy/vercel-deploy.sh
@@ -96,25 +93,25 @@ so Vercel uses the pnpm version from `package.json`.
 Want auto-deploy on every push instead? Vladut can import the repo in his own Vercel account
 (Root Directory `frontend`, the same env vars).
 
-## 5. Lock it down + test (Rares)
+## 5. Test from a phone (everyone)
 
-1. HF Space → secret **`CORS_ORIGINS`** = the Vercel address, e.g. `https://citymind.vercel.app`
-   (several addresses: comma-separated, no spaces) → Restart Space.
-2. On a **phone** (mobile data, not the laptop): open the Vercel site → answer with the
-   **microphone** → vote → watch `/board` update live.
-3. QR code: the organizer page generates it from the Vercel address.
+CORS is already locked to `https://citymind-iota.vercel.app` by `deploy/laptop-server.sh`.
+
+1. On a **phone on mobile data** (not the laptop's Wi-Fi): open https://citymind-iota.vercel.app
+   → answer with the **microphone** → vote → watch `/board` update live on another screen.
+2. QR code: the organizer page generates it from the Vercel address.
 
 ## Updating
 
-1. Vladut merges `dev → main`.
-2. Rares runs `deploy/vercel-deploy.sh` (with `main` checked out).
-3. HF Space → Settings → **Factory rebuild** (it re-downloads `main`).
+1. Vladut merges `dev → main`. Rares: `git checkout main && git pull`.
+2. Restart the API: stop it, then `deploy/laptop-server.sh` (backend changes).
+3. `deploy/vercel-deploy.sh` (frontend changes).
 
 ## Pitch-day checklist
 
-- [ ] `main` has everything (feature freeze at 11:00).
-- [ ] Clean data: `DATABASE_URL='…' uv run python -m app.api.demo reset --yes`, then
-      `… demo load`, then **Restart Space**.
-- [ ] `…hf.space/health/db` → ok, the board shows 2 camps.
-- [ ] Open the Space URL ~5 min before the pitch: a Space that slept takes 1–2 min to wake up.
+- [ ] Laptop plugged in, sleep **off**, stable internet (hotspot).
+- [ ] `main` checked out and pulled (feature freeze at 11:00).
+- [ ] Clean data (in `backend/`, with `DATABASE_URL="$(cat ~/.config/citymind/supabase_url)"`):
+      `uv run python -m app.api.demo reset --yes`, then `… demo load`, then restart the API.
+- [ ] `deploy/laptop-server.sh` → `ready`; the board shows 2 camps.
 - [ ] Phone test: answer → vote → board updates.
