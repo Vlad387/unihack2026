@@ -65,7 +65,7 @@ Last end-to-end test with real Gemini on my Intel Mac passed: answer → intake 
 4. **Connect the rest when Rares adds endpoints**: consultation (question is hardcoded in `mock.ts` today), moderation queue, `/kpis`.
 5. **Deploy config**: when Rares gives the HTTPS URLs, set `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_WS_URL` for production and test the mic + QR on a real phone.
 6. ~~Styling~~ done: every page on the solid Midnight brand theme (no WebGL waves: I asked to drop them).
-7. Stretch: proxy voices (labeled "simulat", different color, NEVER counted in percentages).
+7. ~~Proxy voices~~ done: `components/proxy-voices.tsx` ("Voci care lipsesc", dashed neutral + "Simulat de AI", text only) on screen 4 and the board, from `Proposal.proxies`.
 
 ---
 
