@@ -39,8 +39,6 @@ export function Hero({ question, clusters }: { question: string; clusters: Clust
           <div data-hero-fade className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
               href="/participa"
-              data-magnetic
-              data-cursor="Start"
               className="group inline-flex h-14 items-center justify-center gap-3 rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-[0_0_50px_-12px] shadow-primary transition-shadow hover:shadow-[0_0_70px_-8px] focus-visible:ring-4 focus-visible:ring-primary/40 focus-visible:outline-none"
             >
               Participă acum
@@ -71,7 +69,7 @@ export function Hero({ question, clusters }: { question: string; clusters: Clust
                 {clusters.points.length} pers.
               </span>
             </div>
-            <div className="mt-3" data-cursor="Harta">
+            <div className="mt-3">
               <OpinionMap clusters={clusters} />
             </div>
             {clusters.camps.length > 0 ? (

@@ -53,7 +53,7 @@ export function Bento({ clusters, bridges }: { clusters: ClusterResult; bridges:
           </div>
         </article>
 
-        <Link href="/board" data-cursor="Live" className={`${tile} justify-between lg:col-span-2`}>
+        <Link href="/board" className={`${tile} justify-between lg:col-span-2`}>
           <p className="eyebrow flex items-center justify-between">
             Participanți <ArrowUpRight className="size-4" aria-hidden />
           </p>
@@ -97,7 +97,7 @@ export function Bento({ clusters, bridges }: { clusters: ClusterResult; bridges:
 
         <Link
           href="/cum-functioneaza"
-          data-cursor="Citește"
+         
           className={`${tile} group sm:col-span-2 lg:col-span-6`}
         >
           <div className="flex flex-col gap-5 @3xl:flex-row @3xl:items-center @3xl:justify-between">
