@@ -69,6 +69,7 @@ Last end-to-end test with real Gemini on my Intel Mac passed: answer → intake 
 - **iCloud Desktop sync** creates `… 2.ts` duplicates in `.next/` that break typecheck – delete them (`find .next -name "* 2*" -delete`).
 - **Dev server cache:** if a CSS/layout change doesn't show, restart `pnpm dev`. If it STILL serves old CSS, stop it and `rm -rf .next` (Turbopack's cache survives restarts).
 - **GSAP + streaming:** mount `<Motion />` inside the page, never the layout: the page hydrates later (its own Suspense boundary) and GSAP touching unhydrated HTML = hydration error. Use `fromTo` with explicit end values, and never CSS-transition `opacity` on elements GSAP reveals.
+- **Never style `html`/`body` with `:has(.some-page-class)`:** with `cacheComponents` Next keeps the previous page hidden in the DOM, so the rule still matches on the next page (this painted /organizer dark behind dark text).
 - **WebGL in Strict Mode:** don't `loseContext()` in effect cleanup; the re-run gets the same dead context back.
 - **`<details>` menu:** Chrome makes `<details>` the containing block of its content, so the panel needs an explicit width (`inset-x-0` collapses to the icon width).
 - **Browser preview pane:** background/unfocused tabs throttle d3 animations and screenshots can look empty – check the DOM before assuming the map is broken. A hidden pane may draw NO frames after a navigation (`document.timeline.currentTime` stays 0), so the landing hero looks empty until a screenshot forces frames.
