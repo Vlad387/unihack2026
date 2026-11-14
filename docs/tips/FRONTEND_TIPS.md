@@ -101,6 +101,21 @@ consultation (e.g. "Părinți cu copii mici"), written by Bia's proxy agent and 
 the mediator. **Show them with the label "simulat de AI", in a different color, and never in vote
 counts or as a camp** (RULES.md section 3). The list is empty if proxy failed or found no missing group.
 
+## Chat assistant + reports (real API)
+
+| Who | Call | Request | Response |
+|---|---|---|---|
+| chat button | `POST /chat` | JSON `{participant_id, page, messages: [{role: "user"\|"assistant", text}]}`: send the whole conversation, max 20 messages, max 1000 chars each | `200 ChatReply {text, action: {type, prefill}, report}`. `422` if over the limits, `429` after 10 messages/minute from one participant |
+| "Trimite" on a report draft | `POST /reports` | JSON `{participant_id, kind: "abuse"\|"personal_data"\|"bug"\|"other", text, statement_id?}` | `201 Report {…, id, created_at}` |
+| organizer | `GET /reports` | header `X-Organizer-Token` | `Report[]`, newest first (max 200) |
+
+- **Don't send context**: the server adds the question, round, proposal and camp names itself.
+- `action.type`: `none` / `answer` / `vote` / `map` / `proposal` / `report` → show a button for it.
+  `prefill` only **pre-fills** the answer form; never submit it automatically.
+- `report` is a **draft**: show it to the person and call `POST /reports` only when they press "Trimite".
+- If the assistant is down (e.g. Gemini quota), `/chat` still returns `200` with a polite
+  "Asistentul nu este disponibil acum…" and `action.type = "none"`.
+
 ## Answers to PR #14 questions
 
 - **"After `POST /votes` no `map_updated` within 4 s":** that was a real bug. Slow Gemini intake blocked map updates. Fixed in PR #13: votes now reach the map in about 1 s, even while answers are still processing.

@@ -1,12 +1,12 @@
 """Database tables. Only api/ touches these; agents/ and clustering/ get schemas.py models."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import JSON, DateTime, ForeignKey, LargeBinary, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
-from app.schemas import Proposal, Statement
+from app.schemas import Proposal, Report, Statement
 
 
 class ResponseRow(Base):
@@ -98,3 +98,30 @@ class MapStateRow(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     camps: Mapped[list] = mapped_column(JSON)
+
+
+class ReportRow(Base):
+    """A citizen's report (abuse, personal data, bug...), sent after they confirm it."""
+
+    __tablename__ = "reports"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    participant_id: Mapped[str] = mapped_column(String, index=True)
+    kind: Mapped[str] = mapped_column(String)
+    text: Mapped[str] = mapped_column(Text)
+    statement_id: Mapped[str | None] = mapped_column(String)
+    # set in Python (microseconds): a DB now() can be second-precise, so reports sent
+    # in the same second would come back in random order
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+
+    def to_schema(self) -> Report:
+        return Report(
+            id=self.id,
+            participant_id=self.participant_id,
+            kind=self.kind,  # type: ignore[arg-type]
+            text=self.text,
+            statement_id=self.statement_id,
+            created_at=self.created_at,
+        )
