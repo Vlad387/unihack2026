@@ -10,6 +10,15 @@ cfg=~/.config/citymind
 repo=$(cd "$(dirname "$0")/.." && pwd)
 site=https://citymind-iota.vercel.app
 
+# Fallback only: the main API runs on Azure (docs/DEPLOY.md). Two APIs on one database
+# would both process new answers (duplicate statements, double Gemini calls).
+if [ -s "$cfg/azure_app" ] && [ "${1:-}" != "--fallback" ]; then
+  echo "The API runs on Azure ($(cat "$cfg/azure_app")). Use this only if Azure is down:"
+  echo "  1. stop the Azure app:  az webapp stop -g citymind-rg -n $(cat "$cfg/azure_app")"
+  echo "  2. run:                 $0 --fallback"
+  exit 1
+fi
+
 if ! curl -sf localhost:8000/health >/dev/null; then
   echo "starting API (Supabase)…"
   # redirect the whole group and exec: nothing keeps this script's stdout open
@@ -36,7 +45,8 @@ if [ "$url" != "$(cat $cfg/api_url 2>/dev/null)" ]; then
   echo "tunnel address changed: updating Vercel and redeploying the website…"
   cd "$repo/frontend"
   for pair in "NEXT_PUBLIC_API_URL|$url" "NEXT_PUBLIC_WS_URL|wss://${url#https://}/ws"; do
-    npx --yes vercel@65 env rm "${pair%%|*}" production --yes >/dev/null 2>&1 || true
+    npx --yes vercel@65 env rm "${pair%%|*}" production --confirm-name "${pair%%|*}" \
+      >/dev/null 2>&1 || true
     echo -n "${pair#*|}" | npx --yes vercel@65 env add "${pair%%|*}" production >/dev/null
   done
   "$repo/deploy/vercel-deploy.sh" >/dev/null

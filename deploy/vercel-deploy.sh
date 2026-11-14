@@ -10,4 +10,6 @@ trap 'rm -rf "$tmp"' EXIT
 git -C "$repo" archive HEAD frontend | tar -x -C "$tmp"
 cp -r "$repo/frontend/.vercel" "$tmp/frontend/"
 cd "$tmp/frontend"
-npx --yes vercel@65 deploy --prod --yes
+# no build cache: NEXT_PUBLIC_* values are baked into the build, and a cached build
+# kept serving the previous API address after it changed
+npx --yes vercel@65 deploy --prod --yes --force --build-env VERCEL_FORCE_NO_BUILD_CACHE=1

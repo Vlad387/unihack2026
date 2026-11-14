@@ -1,26 +1,28 @@
-# Deploy: Vercel + laptop API (Cloudflare Tunnel) + Supabase (all free)
+# Deploy: Vercel + Azure (for Students) + Supabase
 
 ```
-phone ─► https://citymind-iota.vercel.app      Vercel: the Next.js website (frontend/)
+phone ─► https://citymind-iota.vercel.app                 Vercel: the website (frontend/)
             │ fetch + WebSocket
             ▼
-         https://<random>.trycloudflare.com    Cloudflare quick tunnel (free, no account)
+         https://citymind-api-dkab4.azurewebsites.net    Azure App Service B1 (Italy North): the API
+            │                                             ─► Gemini (Google)
             ▼
-         API on Rares's laptop                 FastAPI + live worker (backend/)
-            │                                   ─► Gemini (Google)
-            ▼
-         Supabase Postgres                     the data + Table Editor
+         Supabase Postgres (eu-west-1)                   the data + Table Editor
 ```
 
-**Why the API runs on a laptop:** Hugging Face Docker Spaces now need a paid PRO plan,
-and our API uses ~430 MB of RAM idle (UMAP/numba), too close to the 512 MB free tiers.
-`deploy/huggingface/` still works on any Docker host if the team pays for one.
-
-**The laptop is the server:** during the test and the pitch, keep it plugged in, awake
-(no sleep), and on stable internet (a phone hotspot is safer than venue Wi-Fi).
+- **Azure for Students** (Rares, UPT account): $100 credit, no card. B1 (~$13/month) + Container
+  Registry Basic (~$5/month) in resource group `citymind-rg`. When the credit runs out, Azure
+  stops the services instead of charging.
+- The API is our Docker image (`deploy/huggingface/Dockerfile`, which clones `main`), always on, with
+  WebSockets on. Its secrets (`DATABASE_URL`, `GEMINI_API_KEY`, `ORGANIZER_TOKEN`, `CORS_ORIGINS`)
+  are Azure **app settings**, never in git.
+- The university only allows these regions: denmarkeast, germanywestcentral, swedencentral,
+  italynorth, austriaeast. B1 had quota only in **italynorth**.
+- Hugging Face is out (Docker Spaces need PRO); 512 MB free tiers are too small (API ~430 MB idle).
+- Fallback if Azure is down: the API on Rares's laptop behind a Cloudflare tunnel (section 6).
 
 **Never paste passwords or keys into chats, git or the group.** Private config lives in
-`~/.config/citymind/` on the laptop (outside the repo, readable only by its owner).
+`~/.config/citymind/` on Rares's laptop (outside the repo, readable only by its owner).
 
 ---
 
@@ -40,22 +42,24 @@ and our API uses ~430 MB of RAM idle (UMAP/numba), too close to the 512 MB free 
 You don't create tables: the API creates them on its first start, with Row Level Security
 turned on, so Supabase's public REST API can't read citizens' answers.
 
-## 2. The API on the laptop + tunnel (Rares, one command)
+## 2. The API on Azure (Rares)
 
-One-time (done): `cloudflared` in `~/.local/bin`, `npx vercel login`, and in `~/.config/citymind/`:
-`supabase_url` (step 1.4) and `organizer_token` (random; sent to Vladut privately).
+Already set up: `az login --use-device-code`, the registry (`~/.config/citymind/azure_acr`), the
+app (`~/.config/citymind/azure_app`), the app settings, AcrPull through a managed identity
+(no registry password), WebSockets + Always On.
 
-From the repo root, **after every reboot** (and whenever in doubt):
+**Deploy new backend code** (after `dev → main`), from the repo root, with Docker running:
 
 ```sh
-deploy/laptop-server.sh
+deploy/azure-deploy.sh
 ```
 
-- It starts the API (on Supabase, CORS locked to the Vercel site, organizer token set)
-  and the tunnel, but only the parts that aren't running.
-- If the tunnel got a **new random address**, it updates the Vercel env vars and
-  redeploys the website by itself (~2 min). The Vercel link and the QR code never change.
-- Logs: `~/.config/citymind/api.log`, `~/.config/citymind/tunnel.log`.
+It builds the image **locally**, because Azure for Students blocks cloud builds ("ACR Tasks not
+permitted"). It skips Docker's cache so the GitHub clone is fresh, pushes the image, and restarts.
+**A restart takes ~5 minutes** before the new version answers.
+
+Change a secret: `az webapp config appsettings set -g citymind-rg -n <app> -o none --settings NAME=value`
+(this restarts the app). Logs: `az webapp log tail -g citymind-rg -n <app>`.
 
 ## 3. Demo data into Supabase (Rares, ~1 min)
 
@@ -66,8 +70,8 @@ cd ~/unihack2026/backend
 DATABASE_URL='postgresql+psycopg://…' uv run python -m app.api.demo load
 ```
 
-Then **restart the API** (stop it, then `deploy/laptop-server.sh`), because it keeps the live
-map in memory. The map should show 2 camps (35/15) and 4 bridges. In Supabase → **Table Editor**
+Then **restart the API** (`az webapp restart -g citymind-rg -n <app>`, ~5 min), because it keeps
+the live map in memory. The map should show 2 camps (35/15) and 4 bridges. In Supabase → **Table Editor**
 you'll see `responses`, `statements`, `votes`.
 
 ## 4. Vercel: the website (Rares's laptop, ~3 min)
@@ -80,14 +84,17 @@ One-time (already done): `npx vercel login`, then in `frontend/`:
 `npx vercel link --yes --project citymind`. The project has `ENABLE_EXPERIMENTAL_COREPACK=1`,
 so Vercel uses the pnpm version from `package.json`.
 
-1. The API addresses (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL`) are set on the Vercel project
-   by `deploy/laptop-server.sh` whenever the tunnel address changes. Nothing to do by hand.
+1. The API addresses are set on the Vercel project (`NEXT_PUBLIC_API_URL` = the Azure URL,
+   `NEXT_PUBLIC_WS_URL` = `wss://…/ws`). To change one, it must be removed first:
+   `npx vercel env rm NAME production --confirm-name NAME`, then `echo -n value | npx vercel env add NAME production`.
 2. Deploy, from the repo root:
    ```sh
    deploy/vercel-deploy.sh
    ```
    It deploys the **committed** `frontend/` of the current checkout from a clean copy, so
-   `frontend/.env.local` (localhost URLs) never reaches Vercel. Check out `main` first.
+   `frontend/.env.local` (localhost URLs) never reaches Vercel, and **without build cache**:
+   `NEXT_PUBLIC_*` values are baked into the build, and a cached build kept serving an old API
+   address. Check out `main` first.
 
 `NEXT_PUBLIC_*` values are baked in at build time: after changing them, deploy again.
 Want auto-deploy on every push instead? Vladut can import the repo in his own Vercel account
@@ -95,23 +102,30 @@ Want auto-deploy on every push instead? Vladut can import the repo in his own Ve
 
 ## 5. Test from a phone (everyone)
 
-CORS is already locked to `https://citymind-iota.vercel.app` by `deploy/laptop-server.sh`.
+CORS on Azure is locked to `https://citymind-iota.vercel.app`.
 
-1. On a **phone on mobile data** (not the laptop's Wi-Fi): open https://citymind-iota.vercel.app
-   → answer with the **microphone** → vote → watch `/board` update live on another screen.
+1. On a **phone on mobile data**: open https://citymind-iota.vercel.app → answer with the
+   **microphone** → vote → watch `/board` update live on another screen.
 2. QR code: the organizer page generates it from the Vercel address.
+
+## 6. Fallback: the API on the laptop (only if Azure is down)
+
+Two APIs on one database would both process new answers, so stop Azure first:
+`az webapp stop -g citymind-rg -n <app>`, then `deploy/laptop-server.sh --fallback`. It starts the
+API + a Cloudflare quick tunnel and points Vercel at the tunnel. Back to Azure: stop the laptop
+API, `az webapp start …`, set the Vercel env vars back to the Azure URL, `deploy/vercel-deploy.sh`.
 
 ## Updating
 
 1. Vladut merges `dev → main`. Rares: `git checkout main && git pull`.
-2. Restart the API: stop it, then `deploy/laptop-server.sh` (backend changes).
-3. `deploy/vercel-deploy.sh` (frontend changes).
+2. Backend changes: `deploy/azure-deploy.sh` (~5 min until live).
+3. Frontend changes: `deploy/vercel-deploy.sh`.
 
 ## Pitch-day checklist
 
-- [ ] Laptop plugged in, sleep **off**, stable internet (hotspot).
-- [ ] `main` checked out and pulled (feature freeze at 11:00).
-- [ ] Clean data (in `backend/`, with `DATABASE_URL="$(cat ~/.config/citymind/supabase_url)"`):
-      `uv run python -m app.api.demo reset --yes`, then `… demo load`, then restart the API.
-- [ ] `deploy/laptop-server.sh` → `ready`; the board shows 2 camps.
+- [ ] `main` has everything (feature freeze at 11:00); both deploys done from `main`.
+- [ ] Clean data (in `backend/`, `DATABASE_URL="$(cat ~/.config/citymind/supabase_url)"`):
+      `uv run python -m app.api.demo reset --yes`, then `… demo load`, then
+      `az webapp restart -g citymind-rg -n <app>`, and wait ~5 min.
+- [ ] `https://<app>.azurewebsites.net/health/db` → ok; the board shows 2 camps.
 - [ ] Phone test: answer → vote → board updates.
