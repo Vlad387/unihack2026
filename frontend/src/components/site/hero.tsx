@@ -1,7 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { OpinionMap } from "@/components/opinion-map";
-import { WaveField } from "@/components/site/wave-field";
 import { campColor } from "@/lib/colors";
 import type { ClusterResult } from "@/lib/types";
 
@@ -10,10 +9,6 @@ export function Hero({ question, clusters }: { question: string; clusters: Clust
 
   return (
     <section className="relative isolate">
-      <div className="absolute inset-x-0 -top-24 bottom-0 -z-10 [mask-image:linear-gradient(to_bottom,black_65%,transparent)]">
-        <WaveField />
-      </div>
-
       <div className="mx-auto grid w-full max-w-7xl gap-14 px-4 pt-14 pb-20 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:pt-24 lg:pb-0">
         <div className="flex flex-col gap-8 lg:col-span-7">
           <p data-hero-fade className="eyebrow flex items-center gap-2.5">

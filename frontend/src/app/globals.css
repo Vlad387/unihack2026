@@ -2,14 +2,21 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* screen only: the printed report (print-to-PDF) goes back to dark text on white paper */
+@custom-variant dark {
+  @media screen {
+    &:is(.dark *) {
+      @slot;
+    }
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
   --color-brand-amber: var(--brand-amber);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-jakarta);
+  --font-mono: var(--font-jetbrains);
   --font-heading: var(--font-sans);
   --font-display: var(--font-syne), var(--font-sans);
   --color-ink-2: var(--text-2);
@@ -100,7 +107,8 @@
   --sidebar-ring: #0f5e6b;
 }
 
-/* Used by the projector board: dark so colored dots read from the back of the room */
+/* Dark base on every page (body has `dark brand`; .brand below overrides the surfaces with the brand palette).
+   Kept for the dark camp-color steps and chart/sidebar tokens. */
 .dark {
   --background: #0b1a1f;
   --foreground: #f2f5f5;
@@ -201,14 +209,36 @@
   --border: var(--cyan-line);
   --input: color-mix(in oklch, var(--signal) 16%, transparent);
   --ring: var(--cyan);
-  /* utilities read --font-geist-mono, so swapping it here re-skins every font-mono below */
-  --font-geist-mono: var(--font-jetbrains);
   font-family: var(--font-jakarta), system-ui, sans-serif;
-  /* solid on purpose; and no html/body:has(.brand) rule: Next keeps the last page hidden in the DOM,
-     so it would still match on /organizer and paint dark behind dark text */
+  /* solid on purpose, on every page (the class sits on <body>) */
   background: var(--midnight);
   color: var(--signal);
   color-scheme: dark;
+}
+/* Paper is white: the printed report gets the light civic palette back (dark: variants are screen-only too) */
+@media print {
+  .brand {
+    --signal: #1b2a2f;
+    --text-2: #1b2a2f;
+    --text-3: #5f6b6e;
+    --text-4: #5f6b6e;
+    --background: #fff;
+    --foreground: #1b2a2f;
+    --card: #fff;
+    --card-foreground: #1b2a2f;
+    --popover: #fff;
+    --popover-foreground: #1b2a2f;
+    --primary: #0f5e6b;
+    --primary-foreground: #fff;
+    --secondary: #e4eff0;
+    --secondary-foreground: #0f5e6b;
+    --muted: #f1ede6;
+    --muted-foreground: #5f6b6e;
+    --border: #e6e0d6;
+    background: #fff;
+    color: #1b2a2f;
+    color-scheme: light;
+  }
 }
 
 @layer components {

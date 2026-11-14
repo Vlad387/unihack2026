@@ -34,7 +34,7 @@ Last end-to-end test with real Gemini on my Intel Mac passed: answer → intake 
 - `src/lib/types.ts` – mirrors `backend/app/schemas.py` (synced; includes `Statement.flag`, `Camp.member_ids`, `Point.text`, `Proposal.verdict`).
 - `src/hooks/use-consultation.ts` – the one state hook.
 - `src/lib/colors.ts` – camp colors as CSS vars `--series-1..8` (validated palette, separate dark steps in `globals.css`), assigned by camp ID (hash home slot; the browser remembers slots so a new camp never steals one). Self-check: `node src/lib/colors.check.mjs`.
-- **Public site design** (`/`, `/cum-functioneaza`, `/demo` via `app/(site)/layout.tsx`): dark brand theme `.brand` in `globals.css` built on 4 colors (Cyan Pulse #00D1B2, Midnight Grid #001F3F, Pure Signal #FFFFFF, Carbon Core #2E2E2E, tints derived in oklch), fonts Syne / Plus Jakarta Sans / JetBrains Mono, fluid `text-hero|display|title|lead|meta`. Landing sections in `components/site/*`; WebGL waves `site/wave-field.tsx` (raw shader, no three.js); custom cursor `site/cursor.tsx`; GSAP motion `site/motion.tsx`, driven by `data-split|hero-fade|reveal|stagger|speed|count|step*` attributes. Citizen screens, board and organizer keep their own themes. Camp colors stay the validated `--series-*` (dataviz exception to the 4-color rule).
+- **Design system, every page**: `<body class="dark brand">` in `app/layout.tsx` → solid Midnight background everywhere (I want ALL pages solid, no gradients, no background animation/lines). `.brand` in `globals.css` is built on 4 colors (Cyan Pulse #00D1B2, Midnight Grid #001F3F, Pure Signal #FFFFFF, Carbon Core #2E2E2E, tints derived in oklch); fonts Syne / Plus Jakarta Sans / JetBrains Mono; fluid `text-hero|display|title|lead|meta`. `dark:` variants are screen-only and a `@media print` block restores the light palette, so the PDF report prints dark-on-white. Landing sections in `components/site/*`; custom cursor `site/cursor.tsx` (public site only); GSAP motion `site/motion.tsx`, driven by `data-split|hero-fade|reveal|stagger|speed|count|step*` attributes. Camp colors stay the validated `--series-*` (dataviz exception to the 4-color rule).
 - `src/app/loading.tsx` – Suspense fallback so pages reading live API data pass `next build` with `cacheComponents`.
 - `frontend/.env.local` (not in git): `NEXT_PUBLIC_API_URL=http://localhost:8000`, `NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws`. Comment them out to go back to mock data.
 
@@ -53,7 +53,7 @@ Last end-to-end test with real Gemini on my Intel Mac passed: answer → intake 
 3. **Screen 4 historical camp names**: when Rares adds `camp_name` to `proposal.tradeoffs[]`, prefer it over looking up current camps (fallback "Tabără" today).
 4. **Connect the rest when Rares adds endpoints**: consultation (question is hardcoded in `mock.ts` today), moderation queue, `/kpis`.
 5. **Deploy config**: when Rares gives the HTTPS URLs, set `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_WS_URL` for production and test the mic + QR on a real phone.
-6. **Styling**: public site done in the brand palette; decide whether the citizen screens (`/participa` … `/proposal`) should move to it too.
+6. ~~Styling~~ done: every page on the solid Midnight brand theme (no WebGL waves: I asked to drop them).
 7. Stretch: proxy voices (labeled "simulat", different color, NEVER counted in percentages).
 
 ---

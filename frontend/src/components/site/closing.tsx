@@ -1,6 +1,5 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { WaveField } from "@/components/site/wave-field";
 
 const words = "Nu căutăm cine e majoritatea. Căutăm ce ne unește pe toți.".split(" ");
 const band = ["Fără cont", "Voce sau text", "Hartă live", "Puncte comune", "Compromis votat", "AI etichetat", "Zero date personale"];
@@ -47,10 +46,7 @@ export function Statement() {
 
 export function Closing() {
   return (
-    <section className="relative isolate overflow-hidden border-t border-line">
-      <div className="absolute inset-0 -z-10">
-        <WaveField />
-      </div>
+    <section className="border-t border-line">
       <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-28 sm:px-8 lg:py-40">
         <p className="eyebrow">Pentru primării și organizatori</p>
         <h2 data-reveal className="max-w-4xl font-display text-display font-bold tracking-[-0.03em] text-balance">
