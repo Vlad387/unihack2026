@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { Wordmark } from "@/components/wordmark";
 
 const builtWith = ["Gemini", "Next.js", "FastAPI", "PostgreSQL", "pgvector", "UMAP", "HDBSCAN"];
 
@@ -9,15 +10,9 @@ export function Hero() {
   return (
     <section className="band-top -mt-[4.25rem] pt-[4.25rem]">
       <div className="mx-auto w-full max-w-7xl px-4 pt-10 sm:px-8 lg:pt-14">
-        {/* sized to the container width (cqw), so the wordmark always runs edge to edge */}
-        <div className="@container">
-          <p
-            data-hero-fade
-            aria-hidden
-            className="font-wordmark text-[17.6cqw] leading-[0.82] font-black tracking-[-0.055em] whitespace-nowrap text-[var(--wordmark)] select-none"
-          >
-            CityMind
-          </p>
+        {/* custom geometric lettering, full container width */}
+        <div data-hero-fade>
+          <Wordmark className="block h-auto w-full text-[var(--wordmark)]" />
         </div>
 
         <div className="mx-auto mt-16 flex max-w-4xl flex-col items-center gap-7 pb-20 text-center lg:mt-24 lg:pb-28">

@@ -20,7 +20,6 @@
   --font-mono: var(--font-jetbrains);
   --font-heading: var(--font-sans);
   --font-display: var(--font-inter-tight);
-  --font-wordmark: var(--font-unbounded), var(--font-sans);
   --color-ink-2: var(--text-2);
   --color-ink-3: var(--text-3);
   --color-ink-4: var(--text-4);

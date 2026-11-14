@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { Inter_Tight, JetBrains_Mono, Unbounded } from "next/font/google";
+import { Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-// Unbounded: the heavy rounded wordmark face (giant "CityMind" + logo). Inter Tight: tight grotesk for
-// headlines and body. JetBrains Mono: small uppercase labels.
-const unbounded = Unbounded({ variable: "--font-unbounded", subsets: ["latin", "latin-ext"], weight: ["700", "900"] });
+// Inter Tight: tight grotesk for headlines and body. JetBrains Mono: small uppercase labels.
+// The "citymind" wordmark is custom SVG lettering (components/wordmark.tsx), not a font.
 const interTight = Inter_Tight({ variable: "--font-inter-tight", subsets: ["latin", "latin-ext"] });
 const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin", "latin-ext"] });
 
@@ -24,7 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ro"
       // the boot script below changes classes on <html> before React hydrates
       suppressHydrationWarning
-      className={`${unbounded.variable} ${interTight.variable} ${jetbrains.variable} light h-full antialiased`}
+      className={`${interTight.variable} ${jetbrains.variable} light h-full antialiased`}
     >
       <head>
         {/* inline, so it runs before first paint: `js` lets the landing hero hide the lines GSAP is about to

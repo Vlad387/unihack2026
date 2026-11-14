@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { siteLinks } from "@/components/site-header";
+import { Wordmark } from "@/components/wordmark";
 
 const columns = [
   { title: "Platformă", links: siteLinks },
@@ -21,8 +22,8 @@ export function SiteFooter() {
       <div className="footer-card on-dark mx-auto flex max-w-7xl flex-col gap-14 rounded-3xl px-6 pt-12 pb-8 sm:px-10">
         <div className="grid gap-10 md:grid-cols-12">
           <div className="flex flex-col gap-4 md:col-span-5">
-            <Link href="/" className="w-fit font-wordmark text-[clamp(2.4rem,1.8rem+2vw,3.6rem)] leading-none font-black tracking-[-0.05em]">
-              CityMind
+            <Link href="/" className="w-fit" aria-label="CityMind, acasă">
+              <Wordmark className="h-16 w-auto sm:h-20" />
             </Link>
             <p className="max-w-sm text-sm text-ink-3">
               Consultare publică cu AI: oamenii spun ce cred, AI-ul găsește punctele comune, toți votează compromisul.
