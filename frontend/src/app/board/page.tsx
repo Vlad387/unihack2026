@@ -17,7 +17,7 @@ export default async function BoardPage() {
   ]);
 
   return (
-    <main className="flex flex-1 flex-col px-4 py-6 lg:px-8">
+    <main className="board flex flex-1 flex-col px-4 py-6 lg:px-8">
       {/* small and right-aligned: on the projector the map stays the focus, but nobody is stuck on this page */}
       <nav aria-label="Navigare principală" className="mb-4 flex flex-wrap items-center justify-end gap-1 print:hidden">
         {siteLinks.map((l) => (

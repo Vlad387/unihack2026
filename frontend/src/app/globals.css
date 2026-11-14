@@ -218,25 +218,10 @@
 /* Paper is white: the printed report gets the light civic palette back (dark: variants are screen-only too) */
 @media print {
   .brand {
-    --signal: #1b2a2f;
-    --text-2: #1b2a2f;
-    --text-3: #5f6b6e;
-    --text-4: #5f6b6e;
-    --background: #fff;
-    --foreground: #1b2a2f;
-    --card: #fff;
-    --card-foreground: #1b2a2f;
-    --popover: #fff;
-    --popover-foreground: #1b2a2f;
-    --primary: #0f5e6b;
-    --primary-foreground: #fff;
-    --secondary: #e4eff0;
-    --secondary-foreground: #0f5e6b;
-    --muted: #f1ede6;
-    --muted-foreground: #5f6b6e;
-    --border: #e6e0d6;
-    background: #fff;
-    color: #1b2a2f;
+    --signal: #1b2a2f; --text-2: #1b2a2f; --text-3: #5f6b6e; --text-4: #5f6b6e; --background: #fff;
+    --foreground: #1b2a2f; --card: #fff; --card-foreground: #1b2a2f; --popover: #fff; --popover-foreground: #1b2a2f;
+    --primary: #0f5e6b; --primary-foreground: #fff; --secondary: #e4eff0; --secondary-foreground: #0f5e6b;
+    --muted: #f1ede6; --muted-foreground: #5f6b6e; --border: #e6e0d6; background: #fff; color: #1b2a2f;
     color-scheme: light;
   }
 }
@@ -286,4 +271,19 @@
   .marquee-track, .kinetic > span { animation: none !important; }
   .scroll-progress { display: none; }
   ::view-transition-old(.site-page), ::view-transition-new(.site-page) { animation: none; }
+}
+/* Live board: the map and the side cards share one deep panel, so the right column reads as part of the map.
+   Unlayered on purpose, so it wins over the Card's bg-card / ring utilities. */
+.board [data-slot="card"] {
+  background:
+    radial-gradient(120% 60% at 0% 0%, color-mix(in oklch, var(--cyan) 9%, transparent), transparent 60%),
+    linear-gradient(165deg, oklch(28% 0.075 250), oklch(18.5% 0.06 256));
+  box-shadow: inset 0 0 0 1px var(--cyan-line), 0 30px 80px -40px rgb(0 0 0 / 0.7);
+}
+/* the map adds a faint dot grid ("Midnight Grid") and a cyan bloom where the camps live */
+.board [data-slot="card"].board-map {
+  background:
+    radial-gradient(circle, rgb(255 255 255 / 0.09) 1px, transparent 1.6px) 0 0 / 26px 26px,
+    radial-gradient(60% 55% at 50% 45%, color-mix(in oklch, var(--cyan) 12%, transparent), transparent 70%),
+    linear-gradient(165deg, oklch(28% 0.075 250), oklch(18.5% 0.06 256));
 }

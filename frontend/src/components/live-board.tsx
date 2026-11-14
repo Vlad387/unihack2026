@@ -47,7 +47,7 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
             </div>
           </div>
         </header>
-        <Card className="flex-1">
+        <Card className="board-map flex-1">
           <CardContent>
             <OpinionMap clusters={clusters} />
           </CardContent>
@@ -84,7 +84,7 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
           <CardContent className="flex flex-col gap-2">
             {bridges.length === 0 && <p className="text-sm text-muted-foreground">Încă le căutăm…</p>}
             {bridges.map((b) => (
-              <p key={b.id} className="rounded-lg bg-emerald-50 p-3 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
+              <p key={b.id} className="rounded-lg bg-primary/10 p-3 text-ink-2 ring-1 ring-primary/25">
                 „{b.text}”
               </p>
             ))}
@@ -125,7 +125,7 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
                     </span>
                   </div>
                   <div className="h-3 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full bg-emerald-600 transition-all duration-700" style={{ width: `${pct}%` }} />
+                    <div className="h-full bg-primary transition-all duration-700" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );
