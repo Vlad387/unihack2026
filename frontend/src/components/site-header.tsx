@@ -10,7 +10,6 @@ export const siteLinks = [
   { href: "/board", label: "Rundele" },
   { href: "/simulare", label: "Simulare" },
   { href: "/organizer", label: "Admin" },
-  { href: "/demo", label: "Admin Demo" },
 ];
 
 const link = "rounded-lg px-3 py-2 text-sm whitespace-nowrap font-medium text-ink-2 transition-colors hover:bg-foreground/5 hover:text-foreground";
