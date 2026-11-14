@@ -16,10 +16,11 @@
   --color-background: var(--background);
   --color-brand-amber: var(--brand-amber);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-jakarta);
+  --font-sans: var(--font-inter-tight);
   --font-mono: var(--font-jetbrains);
   --font-heading: var(--font-sans);
-  --font-display: var(--font-syne), var(--font-sans);
+  --font-display: var(--font-inter-tight);
+  --font-wordmark: var(--font-unbounded), var(--font-sans);
   --color-ink-2: var(--text-2);
   --color-ink-3: var(--text-3);
   --color-ink-4: var(--text-4);
@@ -170,6 +171,8 @@
   --text-3: color-mix(in oklch, var(--signal) 65%, transparent); /* 7.4:1 */
   --text-4: color-mix(in oklch, var(--signal) 50%, transparent); /* 5.0:1, smallest still AA */
   --glass: color-mix(in oklch, var(--carbon) 55%, transparent);
+  --violet: oklch(34% 0.14 283); --wash: oklch(27% 0.08 250); /* page gradient bands */
+  --wordmark: color-mix(in oklch, var(--cyan) 85%, white);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   /* shadcn tokens, so Button/Card/Badge pick up the brand without per-component overrides */
   --background: var(--midnight);
@@ -190,37 +193,43 @@
   --border: var(--cyan-line);
   --input: color-mix(in oklch, var(--signal) 16%, transparent);
   --ring: var(--cyan);
-  font-family: var(--font-jakarta), system-ui, sans-serif;
+  font-family: var(--font-inter-tight), system-ui, sans-serif;
   /* solid on purpose, on every page (the class sits on <body>) */
   background: var(--midnight);
   color: var(--signal);
   color-scheme: dark;
 }
-/* Light theme ("mod luminos", opt-in toggle): pale ice paper, violet-black ink, one violet accent.
-   Same token names, so every component follows; page stays solid, gradients only inside panels. */
+/* Light theme = the default template look (html.light): ice page, near-black ink and black buttons, violet
+   accent, and violet -> ice gradient bands at the top and bottom of the public pages. Same token names. */
 html.light .brand {
-  --cyan: oklch(52% 0.24 293); /* accent: violet, 6.2:1 on ice */
-  --midnight: oklch(97.4% 0.02 205); /* page: ice */
-  --signal: oklch(20% 0.035 285); /* ink */
-  --carbon: oklch(99.6% 0.004 240); /* card surface */
-  --cyan-line: oklch(52% 0.24 293 / 0.16);
-  --glass: color-mix(in oklch, var(--carbon) 78%, transparent);
+  --cyan: oklch(50% 0.25 297); /* accent: violet, 6.4:1 on ice */
+  --midnight: oklch(96.4% 0.035 203); /* page: ice */
+  --signal: oklch(17% 0.015 285); /* ink */
+  --carbon: oklch(99.4% 0.006 210); /* card surface */
+  --violet: oklch(58% 0.26 302); --wash: oklch(90.5% 0.075 203); --wordmark: oklch(93% 0.065 200);
+  --cyan-line: oklch(17% 0.015 285 / 0.1);
+  --glass: color-mix(in oklch, var(--carbon) 72%, transparent);
   --text-2: color-mix(in oklch, var(--signal) 88%, transparent); --text-3: color-mix(in oklch, var(--signal) 72%, transparent);
-  --text-4: color-mix(in oklch, var(--signal) 62%, transparent); /* 5.1:1, smallest still AA */
-  --primary-foreground: oklch(99.6% 0.004 240); --destructive: oklch(0.577 0.245 27.325);
+  --text-4: color-mix(in oklch, var(--signal) 62%, transparent); /* 5.3:1, smallest still AA */
+  --primary: var(--signal); --primary-foreground: oklch(99% 0.003 250); --destructive: oklch(0.577 0.245 27.325);
   --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
   --series-5: #e87ba4; --series-6: #008300; --series-7: #6250d6; --series-8: #e34948;
   color-scheme: light;
 }
+/* Text on the purple CTA panel and the dark footer card: light ink, white primary buttons, ice accent */
+.on-dark {
+  --signal: oklch(99% 0.003 250); --foreground: var(--signal); --cyan: oklch(90% 0.08 200);
+  --text-2: color-mix(in oklch, var(--signal) 90%, transparent); --text-3: color-mix(in oklch, var(--signal) 76%, transparent);
+  --text-4: color-mix(in oklch, var(--signal) 66%, transparent); --cyan-line: oklch(100% 0 0 / 0.2);
+  --glass: oklch(100% 0 0 / 0.08); --primary: var(--signal); --primary-foreground: oklch(17% 0.015 285); color: var(--signal);
+}
 /* Paper is white: the printed report gets the light civic palette back (dark: variants are screen-only too) */
 @media print {
-  .brand {
+  .brand, html.light .brand {
     --signal: #1b2a2f; --text-2: #1b2a2f; --text-3: #5f6b6e; --text-4: #5f6b6e; --background: #fff;
     --foreground: #1b2a2f; --card: #fff; --card-foreground: #1b2a2f; --popover: #fff; --popover-foreground: #1b2a2f;
     --primary: #0f5e6b; --primary-foreground: #fff; --secondary: #e4eff0; --secondary-foreground: #0f5e6b;
-    --muted: #f1ede6; --muted-foreground: #5f6b6e; --border: #e6e0d6; background: #fff; color: #1b2a2f;
-    color-scheme: light;
-  }
+    --muted: #f1ede6; --muted-foreground: #5f6b6e; --border: #e6e0d6; background: #fff; color: #1b2a2f; color-scheme: light; }
 }
 
 @layer components {
@@ -235,15 +244,11 @@ html.light .brand {
   @media (hover: hover) {
     .tile:hover { border-color: color-mix(in oklch, var(--cyan) 55%, transparent); box-shadow: 0 24px 70px -30px color-mix(in oklch, var(--cyan) 45%, transparent); }
     .tile:hover::before { opacity: 1; }
-    .bento:has(.tile:hover) .tile:not(:hover) { filter: brightness(0.7) saturate(0.6); }
   }
-  .marquee-track { display: flex; width: max-content; animation: marquee 48s linear infinite; }
-  .marquee:hover .marquee-track { animation-play-state: paused; }
   /* hero lines wait for the split reveal; the delayed fallback shows them even if JS fails */
   .js [data-split], .js [data-hero-fade] { visibility: hidden; animation: show-late 0s 3.5s forwards; }
 }
 
-@keyframes marquee { to { transform: translateX(-50%); } }
 @keyframes show-late { to { visibility: visible; } }
 @keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .scroll-progress { display: none; }
@@ -262,24 +267,20 @@ html.light .brand {
 
 @media (prefers-reduced-motion: reduce) {
   .js [data-split], .js [data-hero-fade] { visibility: visible; }
-  .marquee-track, .kinetic > span { animation: none !important; }
+  .kinetic > span { animation: none !important; }
   .scroll-progress { display: none; }
   ::view-transition-old(.site-page), ::view-transition-new(.site-page) { animation: none; }
 }
 /* Live board: the map and the side cards share one deep panel, so the right column reads as part of the map.
    Unlayered on purpose, so it wins over the Card's bg-card / ring utilities. */
 .board [data-slot="card"] {
-  background:
-    radial-gradient(120% 60% at 0% 0%, color-mix(in oklch, var(--cyan) 9%, transparent), transparent 60%),
-    linear-gradient(165deg, oklch(28% 0.075 250), oklch(18.5% 0.06 256));
+  background: radial-gradient(120% 60% at 0% 0%, color-mix(in oklch, var(--cyan) 9%, transparent), transparent 60%), linear-gradient(165deg, oklch(28% 0.075 250), oklch(18.5% 0.06 256));
   box-shadow: inset 0 0 0 1px var(--cyan-line), 0 30px 80px -40px rgb(0 0 0 / 0.7);
 }
-/* the map adds a faint dot grid ("Midnight Grid") and a cyan bloom where the camps live */
+/* the map adds a faint dot grid and a bloom where the camps live */
 .board [data-slot="card"].board-map {
-  background:
-    radial-gradient(circle, rgb(255 255 255 / 0.09) 1px, transparent 1.6px) 0 0 / 26px 26px,
-    radial-gradient(60% 55% at 50% 45%, color-mix(in oklch, var(--cyan) 12%, transparent), transparent 70%),
-    linear-gradient(165deg, oklch(28% 0.075 250), oklch(18.5% 0.06 256));
+  background: radial-gradient(circle, rgb(255 255 255 / 0.09) 1px, transparent 1.6px) 0 0 / 26px 26px,
+    radial-gradient(60% 55% at 50% 45%, color-mix(in oklch, var(--cyan) 12%, transparent), transparent 70%), linear-gradient(165deg, oklch(28% 0.075 250), oklch(18.5% 0.06 256));
 }
 html.light .board [data-slot="card"] {
   background: radial-gradient(120% 60% at 0% 0%, oklch(52% 0.24 293 / 0.07), transparent 60%), linear-gradient(165deg, oklch(99.5% 0.006 240), oklch(95% 0.03 215));
@@ -289,10 +290,10 @@ html.light .board [data-slot="card"].board-map {
   background: radial-gradient(circle, oklch(20% 0.035 285 / 0.1) 1px, transparent 1.6px) 0 0 / 26px 26px,
     radial-gradient(60% 55% at 50% 45%, oklch(52% 0.24 293 / 0.08), transparent 70%), linear-gradient(165deg, oklch(99.5% 0.006 240), oklch(95% 0.03 215));
 }
-/* Closing call-to-action: the one big gradient panel on the landing (gradients live inside panels only) */
-.cta-panel {
-  background: radial-gradient(70% 90% at 100% 0%, color-mix(in oklch, var(--cyan) 26%, transparent), transparent 65%),
-    linear-gradient(150deg, oklch(30% 0.08 250), oklch(20% 0.065 256));
-  box-shadow: inset 0 0 0 1px var(--cyan-line);
-}
-html.light .cta-panel { background: radial-gradient(70% 90% at 100% 0%, oklch(80% 0.12 300 / 0.75), transparent 65%), linear-gradient(150deg, oklch(93% 0.05 295), oklch(95.5% 0.035 205)); }
+/* Template bands: the page itself fades violet -> ice at the top and ice -> violet at the bottom */
+.band-top { background: linear-gradient(180deg, var(--violet), color-mix(in oklch, var(--violet) 50%, var(--wash)) 38%, var(--wash) 72%, var(--midnight)); }
+.band-bottom { background: linear-gradient(180deg, var(--midnight), var(--wash) 35%, color-mix(in oklch, var(--violet) 55%, var(--wash)) 75%, var(--violet)); }
+.footer-wrap { background: var(--violet); box-shadow: 0 -1px 0 var(--violet); }
+.footer-card { background: oklch(19% 0.012 285); }
+.cta-panel { background: radial-gradient(80% 120% at 85% 15%, oklch(76% 0.16 305 / 0.55), transparent 60%), linear-gradient(135deg, oklch(41% 0.23 290), oklch(56% 0.26 303)); }
+html:not(.light) .cta-panel { background: radial-gradient(70% 90% at 100% 0%, oklch(76.9% 0.143 176.8 / 0.26), transparent 65%), linear-gradient(150deg, oklch(30% 0.08 250), oklch(20% 0.065 256)); }

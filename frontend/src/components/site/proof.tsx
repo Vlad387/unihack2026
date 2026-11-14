@@ -1,3 +1,7 @@
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { outlineBtn, sectionTitle } from "@/components/site/styles";
+
 // Big-number cards. Benchmark numbers come from seed/PITCH_SLIDE.md and must stay labeled as synthetic.
 const stats = [
   {
@@ -24,22 +28,29 @@ const stats = [
 
 export function Proof() {
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 pb-28 sm:px-8 lg:pb-40">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <h2 data-reveal className="max-w-2xl font-display text-display font-bold tracking-[-0.03em] text-balance">
-          Măsurat, nu promis.
-        </h2>
-        <p data-reveal className="max-w-sm text-ink-3">
-          Cifrele de performanță vin din date sintetice (50 de participanți fictivi). Pe o consultare reală încă nu sunt
-          dovedite.
-        </p>
+    <section className="mx-auto w-full max-w-7xl px-4 pb-28 sm:px-8 lg:pb-36">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex max-w-2xl flex-col gap-3">
+          <h2 data-reveal className={sectionTitle}>
+            Măsurat, nu promis.
+          </h2>
+          <p data-reveal className="text-ink-3">
+            Cifrele de performanță vin din date sintetice (50 de participanți fictivi). Pe o consultare reală încă nu sunt
+            dovedite.
+          </p>
+        </div>
+        <Link href="/cum-functioneaza" className={outlineBtn}>
+          Metodologia <ArrowRight className="size-4" aria-hidden />
+        </Link>
       </div>
       <ul data-stagger className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
-          <li key={s.value} className="glass tile flex min-h-72 flex-col gap-4 rounded-[1.75rem] p-6">
-            <p className="text-ink-2">{s.text}</p>
-            <p className="mt-auto font-display text-[clamp(2.4rem,1.5rem+2.4vw,3.75rem)] leading-none font-bold tracking-[-0.04em] whitespace-nowrap">{s.value}</p>
-            <p className="border-t border-line pt-3 font-mono text-meta tracking-[0.1em] text-ink-4 uppercase">{s.note}</p>
+          <li key={s.value} className="glass tile flex min-h-80 flex-col gap-4 rounded-2xl p-6">
+            <p className="text-lg leading-snug font-medium tracking-[-0.01em] text-ink-2">{s.text}</p>
+            <p className="mt-auto font-display text-[clamp(2.6rem,1.6rem+2.4vw,4rem)] leading-none font-extrabold tracking-[-0.05em] whitespace-nowrap">
+              {s.value}
+            </p>
+            <p className="font-mono text-meta tracking-[0.1em] text-ink-4 uppercase">{s.note}</p>
           </li>
         ))}
       </ul>

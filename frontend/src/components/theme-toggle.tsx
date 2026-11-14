@@ -4,7 +4,7 @@ import { Moon, Sun } from "lucide-react";
 
 const KEY = "citymind-theme";
 
-// Dark (Midnight) stays the default; the light theme is opt-in and remembered per browser.
+// Light (template look) is the default; dark Midnight is opt-in and remembered per browser.
 // Both icons render and CSS picks one, so server and client HTML always match.
 export function ThemeToggle({ className = "" }: { className?: string }) {
   function toggle() {

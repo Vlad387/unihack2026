@@ -11,9 +11,9 @@ export const siteLinks = [
   { href: "/demo", label: "Demo" },
 ];
 
-const link = "rounded-full px-3.5 py-2 text-sm text-ink-3 transition-colors hover:bg-foreground/5 hover:text-foreground";
+const link = "rounded-lg px-3 py-2 text-sm font-medium text-ink-2 transition-colors hover:bg-foreground/5 hover:text-foreground";
 const cta =
-  "inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground transition-shadow hover:shadow-[0_0_30px_-6px] hover:shadow-primary";
+  "inline-flex h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5";
 
 export function SiteHeader() {
   return (
