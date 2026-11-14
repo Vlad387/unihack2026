@@ -7,6 +7,7 @@ export const siteLinks = [
   { href: "/", label: "Acasă" },
   { href: "/cum-functioneaza", label: "Cum funcționează" },
   { href: "/board", label: "Ecran live" },
+  { href: "/simulare", label: "Simulare" },
   { href: "/organizer", label: "Organizatori" },
   { href: "/demo", label: "Demo" },
 ];

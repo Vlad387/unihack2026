@@ -19,9 +19,11 @@ interface Props {
   me?: Point | null;
   // phones shrink the 800px viewBox ~2.3x, so dots and labels need scaling up
   scale?: number;
+  // common points shared by every camp: when > 0, dashed links join the camps (simulation dashboard)
+  bridges?: number;
 }
 
-export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
+export function OpinionMap({ clusters, me = null, scale = 1, bridges = 0 }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   // first paint draws everything in place: animations only for later changes, so slow phones never show an empty map
   const first = useRef(true);
@@ -98,6 +100,37 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
     }
     const labelY = (d: (typeof labels)[number]) => Math.max(d.cy - 18 * scale, 20 * scale);
 
+    // a bridge is accepted by every camp, so it links each pair of camp centers
+    const centers = camps.map((c) => {
+      const mine = points.filter((p) => p.camp_id === c.id);
+      return { id: c.id, x: d3.mean(mine, px) ?? W / 2, y: d3.mean(mine, py) ?? H / 2 };
+    });
+    const links = bridges > 0 ? d3.pairs(centers).map(([a, b]) => ({ id: `${a.id}~${b.id}`, a, b })) : [];
+    const link = svg
+      .select<SVGGElement>("g.links")
+      .selectAll<SVGGElement, (typeof links)[number]>("g")
+      .data(links, (d) => d.id)
+      .join((enter) => {
+        const g = enter.append("g").attr("opacity", 0);
+        g.append("line").attr("stroke-dasharray", "6 8").attr("class", "stroke-foreground/40");
+        g.append("text").attr("text-anchor", "middle").attr("class", "fill-foreground font-semibold");
+        return g;
+      });
+    link.transition(t).attr("opacity", 1);
+    link
+      .select("line")
+      .attr("stroke-width", 3 * scale)
+      .attr("x1", (d) => d.a.x)
+      .attr("y1", (d) => d.a.y)
+      .attr("x2", (d) => d.b.x)
+      .attr("y2", (d) => d.b.y);
+    link
+      .select("text")
+      .text(`${bridges} puncte comune`)
+      .attr("font-size", 14 * scale)
+      .attr("x", (d) => (d.a.x + d.b.x) / 2)
+      .attr("y", (d) => (d.a.y + d.b.y) / 2 - 6 * scale);
+
     svg
       .select<SVGGElement>("g.labels")
       .selectAll<SVGTextElement, (typeof labels)[number]>("text")
@@ -140,7 +173,7 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
       .attr("dy", 34 * scale);
     marker.transition(t).attr("transform", (d) => `translate(${px(d)},${py(d)})`);
     first.current = false;
-  }, [clusters, me, scale]);
+  }, [clusters, me, scale, bridges]);
 
   const camp = hover && clusters.camps.find((c) => c.id === hover.point.camp_id);
   const color = campColor(clusters.camps);
@@ -154,6 +187,7 @@ export function OpinionMap({ clusters, me = null, scale = 1 }: Props) {
         aria-label={`Harta opiniilor: ${clusters.points.length} participanți în ${clusters.camps.length} tabere`}
         className="h-auto w-full"
       >
+        <g className="links pointer-events-none [paint-order:stroke] [&_text]:stroke-background [&_text]:stroke-[5px]" />
         <g className="points" />
         <g className="labels pointer-events-none fill-foreground font-semibold [paint-order:stroke] [&_text]:stroke-background" />
         <g className="me pointer-events-none [paint-order:stroke] [&_text]:stroke-background [&_text]:stroke-[6px]" />
