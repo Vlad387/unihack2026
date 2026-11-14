@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { campColor } from "@/lib/colors";
 import { type ConsultationState, useConsultation } from "@/hooks/use-consultation";
+import type { SupportRound } from "@/lib/types";
 
 // Romanian plural: 0 voturi, 1 vot, 2–19 voturi, 20+ "de voturi" (except when the last two digits are 01–19)
 const votes = (n: number) => (n === 1 ? "1 vot" : n === 0 || (n % 100 >= 1 && n % 100 <= 19) ? `${n} voturi` : `${n} de voturi`);
@@ -36,6 +37,50 @@ function ProposalText({ text }: { text: string }) {
   );
 }
 
+const pct = (r: SupportRound) => (r.total ? Math.round((r.agree / r.total) * 100) : 0);
+const BAR = "bg-[linear-gradient(90deg,oklch(58%_0.25_300),oklch(68%_0.15_235))]";
+
+// The round's outcome is what the room waits for: the current round is one big number, earlier rounds stay small.
+function SupportCard({ support }: { support: SupportRound[] }) {
+  const now = support.at(-1);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Sprijin pe runde</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3" aria-live="polite">
+        {!now && <p className="text-sm text-muted-foreground">Încă nu s-a votat nicio propunere.</p>}
+        {now && (
+          <div className="flex flex-col gap-2">
+            <p className="flex items-baseline justify-between gap-3">
+              <span className="bg-[linear-gradient(90deg,var(--cyan),oklch(55%_0.17_245))] bg-clip-text text-5xl font-extrabold tracking-tight text-transparent tabular-nums">
+                {pct(now)}%
+              </span>
+              <span className="text-right text-sm text-muted-foreground">
+                susțin runda {now.round}
+                <br />
+                {votes(now.total)} reale
+              </span>
+            </p>
+            <div className="h-4 overflow-hidden rounded-full bg-muted">
+              <div className={`h-full ${BAR} transition-all duration-700`} style={{ width: `${pct(now)}%` }} />
+            </div>
+          </div>
+        )}
+        {support.slice(0, -1).reverse().map((r) => (
+          <div key={r.round} className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="w-16 shrink-0">Runda {r.round}</span>
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+              <div className={`h-full ${BAR} opacity-60`} style={{ width: `${pct(r)}%` }} />
+            </div>
+            <span className="w-10 text-right tabular-nums">{pct(r)}%</span>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 function AiBadge() {
   return (
     <Badge variant="secondary" className="font-normal">
@@ -54,7 +99,10 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
     <div className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
       <Card className="board-map lg:sticky lg:top-6">
         <CardContent>
-          <OpinionMap clusters={clusters} />
+          {/* capped to the screen height (map is 800x560), so it never fills the whole projector */}
+          <div className="mx-auto w-full max-w-[calc((100dvh-9rem)*1.43)]">
+            <OpinionMap clusters={clusters} />
+          </div>
         </CardContent>
       </Card>
 
@@ -77,6 +125,8 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
             </div>
           </CardContent>
         </Card>
+
+        <SupportCard support={support} />
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -138,30 +188,6 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
           </section>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sprijin pe runde</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {support.length === 0 && <p className="text-sm text-muted-foreground">Încă nu s-a votat nicio propunere.</p>}
-            {support.map((r) => {
-              const pct = r.total ? Math.round((r.agree / r.total) * 100) : 0;
-              return (
-                <div key={r.round} className="flex flex-col gap-1">
-                  <div className="flex justify-between text-sm">
-                    <span>Runda {r.round}</span>
-                    <span className="tabular-nums">
-                      <strong>{pct}%</strong> · {votes(r.total)}
-                    </span>
-                  </div>
-                  <div className="h-3 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full bg-[linear-gradient(90deg,oklch(58%_0.25_300),oklch(68%_0.15_235))] transition-all duration-700" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
       </aside>
     </div>
   );

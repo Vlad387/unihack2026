@@ -1,4 +1,5 @@
 import { PagePreview } from "@/components/page-preview";
+import { citizenPages } from "@/components/site/citizen-journey";
 import { PageHero } from "@/components/site/page-hero";
 
 const groups = [
@@ -19,12 +20,7 @@ const groups = [
     title: "Parcursul cetățeanului",
     text: "Pe telefon, după scanarea codului QR. Patru pași.",
     device: "phone" as const,
-    pages: [
-      { href: "/participa", title: "1. Răspunde", text: "Cu vocea sau în scris." },
-      { href: "/vote", title: "2. Votează afirmațiile", text: "De acord, nu sunt de acord, nu știu." },
-      { href: "/me", title: "3. Unde te afli", text: "Locul tău pe harta opiniilor." },
-      { href: "/proposal", title: "4. Votează compromisul", text: "Propunerea AI și ce câștigă fiecare tabără." },
-    ],
+    pages: citizenPages,
   },
   {
     title: "Rundele",

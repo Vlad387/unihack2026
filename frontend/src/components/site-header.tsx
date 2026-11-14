@@ -1,6 +1,7 @@
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { Brand } from "@/components/brand";
+import { NavLink } from "@/components/nav-link";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const siteLinks = [
@@ -25,9 +26,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-1">
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Navigare principală">
             {siteLinks.map((l) => (
-              <Link key={l.href} href={l.href} className={link}>
-                {l.label}
-              </Link>
+              <NavLink key={l.href} href={l.href} label={l.label} className={link} />
             ))}
             <Link href="/participa" className={`${cta} ml-2`}>
               Participă
@@ -49,9 +48,7 @@ export function SiteHeader() {
               aria-label="Navigare principală"
             >
               {siteLinks.map((l) => (
-                <Link key={l.href} href={l.href} className={`${link} py-3 text-base`}>
-                  {l.label}
-                </Link>
+                <NavLink key={l.href} href={l.href} label={l.label} className={`${link} py-3 text-base`} />
               ))}
               <Link href="/participa" className={`${cta} mt-1 h-12 text-base`}>
                 Participă

@@ -1,6 +1,7 @@
 import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { CitizenJourney } from "@/components/site/citizen-journey";
 import { PageHero } from "@/components/site/page-hero";
 
 const pipeline = [
@@ -75,6 +76,7 @@ export default function HowItWorksPage() {
           </ol>
         </div>
       </div>
+      <CitizenJourney />
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-12 px-4 py-16">
         <section className="flex flex-col gap-4 rounded-2xl border border-[var(--cyan-line)] bg-[linear-gradient(135deg,color-mix(in_oklch,var(--violet)_20%,var(--carbon)),color-mix(in_oklch,var(--wash)_75%,var(--carbon)))] p-6 shadow-sm sm:p-8">
           <h2 className="text-2xl font-bold tracking-tight">Regulile noastre</h2>
