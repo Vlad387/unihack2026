@@ -21,6 +21,7 @@ Contract rules (the API guarantees these before calling agents/ or clustering/):
 - Seed/demo participants (ids starting with "seed-") are never counted as real citizens.
 """
 
+from datetime import datetime
 from typing import Literal, Self
 
 from pydantic import BaseModel, Field, FiniteFloat, model_validator
@@ -164,6 +165,72 @@ class Consultation(BaseModel):
 class ModerationItem(BaseModel):
     statement: Statement
     reason: ModerationReason
+
+
+# Chat assistant: agent assist(messages, context) -> ChatReply (Bordos);
+# POST /chat, POST /reports, GET /reports (Rares).
+ChatRole = Literal["user", "assistant"]
+ChatActionType = Literal["none", "answer", "vote", "map", "proposal", "report"]
+ReportKind = Literal["abuse", "personal_data", "bug", "other"]
+# bounds what one request can send to Gemini (quota + cost)
+MAX_CHAT_MESSAGES = 20
+
+
+class ChatMessage(BaseModel):
+    role: ChatRole
+    text: str = Field(min_length=1, max_length=1000)
+
+
+class ChatContext(BaseModel):
+    """Built by the API from the current state, never sent by the client."""
+
+    question: str
+    page: str
+    round: int | None = None
+    proposal_text: str | None = None
+    camp_names: list[str] = Field(default_factory=list)
+
+
+class ChatAction(BaseModel):
+    type: ChatActionType
+    # a draft for the UI to show; never sent or submitted automatically
+    prefill: str | None = None
+
+
+class ReportDraft(BaseModel):
+    kind: ReportKind
+    text: str = Field(max_length=1000)
+    statement_id: str | None = None
+
+
+class ChatReply(BaseModel):
+    text: str
+    action: ChatAction
+    report: ReportDraft | None = None
+
+
+class ChatRequest(BaseModel):
+    """POST /chat body."""
+
+    participant_id: str = Field(min_length=1)
+    page: str = Field(max_length=100)
+    messages: list[ChatMessage] = Field(min_length=1, max_length=MAX_CHAT_MESSAGES)
+
+
+class ReportIn(BaseModel):
+    """POST /reports body (-> 201). The user confirms a ReportDraft before sending."""
+
+    participant_id: str = Field(min_length=1)
+    kind: ReportKind
+    text: str = Field(min_length=1, max_length=1000)
+    statement_id: str | None = None
+
+
+class Report(ReportIn):
+    """GET /reports item (organizer only)."""
+
+    id: str
+    created_at: datetime
 
 
 # WebSocket events, sent as JSON {"type": ..., "data": ...}
