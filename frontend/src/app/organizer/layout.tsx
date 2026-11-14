@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Brand } from "@/components/brand";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 
 const links = [
@@ -23,6 +24,7 @@ export default function OrganizerLayout({ children }: LayoutProps<"/organizer">)
             {l.label}
           </Link>
         ))}
+        <ThemeToggle className="ml-auto" />
       </nav>
       {children}
     </div>

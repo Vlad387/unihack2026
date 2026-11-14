@@ -46,7 +46,7 @@ export function Hero({ question, clusters }: { question: string; clusters: Clust
             </Link>
             <Link
               href="/cum-functioneaza"
-              className="glass inline-flex h-14 items-center justify-center rounded-full px-8 font-semibold text-ink-2 transition-colors hover:border-primary/60 hover:text-white"
+              className="glass inline-flex h-14 items-center justify-center rounded-full px-8 font-semibold text-ink-2 transition-colors hover:border-primary/60 hover:text-foreground"
             >
               Cum funcționează
             </Link>
@@ -75,7 +75,7 @@ export function Hero({ question, clusters }: { question: string; clusters: Clust
             {clusters.camps.length > 0 ? (
               <ul className="mt-3 flex flex-wrap gap-2" aria-label="Tabere">
                 {clusters.camps.map((c) => (
-                  <li key={c.id} className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-sm text-ink-2">
+                  <li key={c.id} className="flex items-center gap-2 rounded-full bg-foreground/5 px-3 py-1 text-sm text-ink-2">
                     <span className="size-2 rounded-full" style={{ background: color(c.id) }} aria-hidden />
                     {c.name}
                   </li>

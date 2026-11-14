@@ -2,10 +2,11 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* screen only: the printed report (print-to-PDF) goes back to dark text on white paper */
+/* screen only: the printed report (print-to-PDF) goes back to dark text on white paper;
+   off while the light theme is on (html.light, set by the theme toggle) */
 @custom-variant dark {
   @media screen {
-    &:is(.dark *) {
+    &:is(html:not(.light) .dark *) {
       @slot;
     }
   }
@@ -79,23 +80,13 @@
   --accent-foreground: #8a5300;
   --brand-amber: #f2a541;
   /* camp colors: validated categorical palette (dataviz), fixed order, never cycled */
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --series-4: #eda100;
-  --series-5: #e87ba4;
-  --series-6: #008300;
-  --series-7: #6250d6;
-  --series-8: #e34948;
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --series-5: #e87ba4; --series-6: #008300; --series-7: #6250d6; --series-8: #e34948;
   --destructive: oklch(0.577 0.245 27.325);
   --border: #e6e0d6;
   --input: #d9d2c6;
   --ring: #0f5e6b;
-  --chart-1: #0f5e6b;
-  --chart-2: #f2a541;
-  --chart-3: #4e79a7;
-  --chart-4: #e15759;
-  --chart-5: #59a14f;
+  --chart-1: #0f5e6b; --chart-2: #f2a541; --chart-3: #4e79a7; --chart-4: #e15759; --chart-5: #59a14f;
   --radius: 1rem;
   --sidebar: #faf8f5;
   --sidebar-foreground: #1b2a2f;
@@ -125,23 +116,13 @@
   --accent: #3a2a10;
   --accent-foreground: #f2a541;
   --brand-amber: #f2a541;
-  --series-1: #3987e5;
-  --series-2: #d95926;
-  --series-3: #199e70;
-  --series-4: #c98500;
-  --series-5: #d55181;
-  --series-6: #008300;
-  --series-7: #9085e9;
-  --series-8: #e66767;
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+  --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
   --destructive: oklch(0.704 0.191 22.216);
   --border: rgb(255 255 255 / 10%);
   --input: rgb(255 255 255 / 15%);
   --ring: #3fb8c8;
-  --chart-1: #3fb8c8;
-  --chart-2: #f2a541;
-  --chart-3: #4e79a7;
-  --chart-4: #e15759;
-  --chart-5: #59a14f;
+  --chart-1: #3fb8c8; --chart-2: #f2a541; --chart-3: #4e79a7; --chart-4: #e15759; --chart-5: #59a14f;
   --sidebar: #12262c;
   --sidebar-foreground: #f2f5f5;
   --sidebar-primary: #3fb8c8;
@@ -215,6 +196,22 @@
   color: var(--signal);
   color-scheme: dark;
 }
+/* Light theme ("mod luminos", opt-in toggle): pale ice paper, violet-black ink, one violet accent.
+   Same token names, so every component follows; page stays solid, gradients only inside panels. */
+html.light .brand {
+  --cyan: oklch(52% 0.24 293); /* accent: violet, 6.2:1 on ice */
+  --midnight: oklch(97.4% 0.02 205); /* page: ice */
+  --signal: oklch(20% 0.035 285); /* ink */
+  --carbon: oklch(99.6% 0.004 240); /* card surface */
+  --cyan-line: oklch(52% 0.24 293 / 0.16);
+  --glass: color-mix(in oklch, var(--carbon) 78%, transparent);
+  --text-2: color-mix(in oklch, var(--signal) 88%, transparent); --text-3: color-mix(in oklch, var(--signal) 72%, transparent);
+  --text-4: color-mix(in oklch, var(--signal) 62%, transparent); /* 5.1:1, smallest still AA */
+  --primary-foreground: oklch(99.6% 0.004 240); --destructive: oklch(0.577 0.245 27.325);
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --series-5: #e87ba4; --series-6: #008300; --series-7: #6250d6; --series-8: #e34948;
+  color-scheme: light;
+}
 /* Paper is white: the printed report gets the light civic palette back (dark: variants are screen-only too) */
 @media print {
   .brand {
@@ -284,3 +281,18 @@
     radial-gradient(60% 55% at 50% 45%, color-mix(in oklch, var(--cyan) 12%, transparent), transparent 70%),
     linear-gradient(165deg, oklch(28% 0.075 250), oklch(18.5% 0.06 256));
 }
+html.light .board [data-slot="card"] {
+  background: radial-gradient(120% 60% at 0% 0%, oklch(52% 0.24 293 / 0.07), transparent 60%), linear-gradient(165deg, oklch(99.5% 0.006 240), oklch(95% 0.03 215));
+  box-shadow: inset 0 0 0 1px var(--cyan-line), 0 30px 80px -40px oklch(52% 0.24 293 / 0.35);
+}
+html.light .board [data-slot="card"].board-map {
+  background: radial-gradient(circle, oklch(20% 0.035 285 / 0.1) 1px, transparent 1.6px) 0 0 / 26px 26px,
+    radial-gradient(60% 55% at 50% 45%, oklch(52% 0.24 293 / 0.08), transparent 70%), linear-gradient(165deg, oklch(99.5% 0.006 240), oklch(95% 0.03 215));
+}
+/* Closing call-to-action: the one big gradient panel on the landing (gradients live inside panels only) */
+.cta-panel {
+  background: radial-gradient(70% 90% at 100% 0%, color-mix(in oklch, var(--cyan) 26%, transparent), transparent 65%),
+    linear-gradient(150deg, oklch(30% 0.08 250), oklch(20% 0.065 256));
+  box-shadow: inset 0 0 0 1px var(--cyan-line);
+}
+html.light .cta-panel { background: radial-gradient(70% 90% at 100% 0%, oklch(80% 0.12 300 / 0.75), transparent 65%), linear-gradient(150deg, oklch(93% 0.05 295), oklch(95.5% 0.035 205)); }

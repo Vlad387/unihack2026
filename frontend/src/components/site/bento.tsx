@@ -43,7 +43,7 @@ export function Bento({ clusters, bridges }: { clusters: ClusterResult; bridges:
                     <span className="font-medium text-ink-2">{c.name}</span>
                     <span className="font-mono text-meta text-ink-3">{c.size}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-white/[0.06]">
+                  <div className="h-2 rounded-full bg-foreground/[0.06]">
                     <div className="h-full rounded-full" style={{ width: `${(c.size / max) * 100}%`, background: color(c.id) }} />
                   </div>
                 </li>
@@ -79,7 +79,7 @@ export function Bento({ clusters, bridges }: { clusters: ClusterResult; bridges:
               <span className="w-28 text-right">voturi reale</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="h-2 flex-1 rounded-full border border-dashed border-white/40" />
+              <span className="h-2 flex-1 rounded-full border border-dashed border-foreground/40" />
               <span className="w-28 text-right">simulat · 0%</span>
             </div>
           </div>
@@ -89,8 +89,8 @@ export function Bento({ clusters, bridges }: { clusters: ClusterResult; bridges:
         <article className={`${tile} lg:col-span-3`}>
           <h3 className={h3}>Fără date personale</h3>
           <p className="font-mono text-sm leading-relaxed text-ink-3" aria-hidden>
-            „Mă numesc <span className="inline-block h-[1em] w-16 rounded bg-white/15 align-middle" /> și stau pe strada{" "}
-            <span className="inline-block h-[1em] w-20 rounded bg-white/15 align-middle" />…”
+            „Mă numesc <span className="inline-block h-[1em] w-16 rounded bg-foreground/15 align-middle" /> și stau pe strada{" "}
+            <span className="inline-block h-[1em] w-20 rounded bg-foreground/15 align-middle" />…”
           </p>
           <p className="text-sm text-ink-3">Nu cerem nume, telefon sau email. Mesajele cu date personale sunt filtrate.</p>
         </article>

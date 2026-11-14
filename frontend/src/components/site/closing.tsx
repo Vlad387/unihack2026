@@ -13,7 +13,7 @@ export function Marquee() {
     </span>
   ));
   return (
-    <div className="marquee overflow-hidden border-y border-line bg-white/[0.02] py-5 font-display text-title font-semibold text-ink-3">
+    <div className="marquee overflow-hidden border-y border-line bg-foreground/[0.02] py-5 font-display text-title font-semibold text-ink-3">
       <div className="marquee-track">
         {row}
         <span aria-hidden className="flex">
@@ -44,10 +44,12 @@ export function Statement() {
   );
 }
 
+// Closing call-to-action as one rounded panel (gradient inside the panel only, see .cta-panel).
 export function Closing() {
   return (
-    <section className="border-t border-line">
-      <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-28 sm:px-8 lg:py-40">
+    <section className="mx-auto w-full max-w-7xl px-4 pb-24 sm:px-8 lg:pb-32">
+      <div className="cta-panel relative isolate flex flex-col items-start gap-8 overflow-hidden rounded-[2.5rem] px-6 py-16 sm:px-12 lg:py-24">
+        <PanelDots />
         <p className="eyebrow">Pentru primării și organizatori</p>
         <h2 data-reveal className="max-w-4xl font-display text-display font-bold tracking-[-0.03em] text-balance">
           Organizezi o consultare? <span className="text-primary">Pune întrebarea.</span> Restul e live.
@@ -66,12 +68,28 @@ export function Closing() {
           </Link>
           <Link
             href="/board"
-            className="glass inline-flex h-14 items-center justify-center rounded-full px-8 font-semibold text-ink-2 transition-colors hover:border-primary/60 hover:text-white"
+            className="glass inline-flex h-14 items-center justify-center rounded-full px-8 font-semibold text-ink-2 transition-colors hover:border-primary/60 hover:text-foreground"
           >
             Deschide ecranul live
           </Link>
         </div>
       </div>
     </section>
+  );
+}
+
+// A loose "opinion map" of dots on the right side of the panel: decoration only.
+function PanelDots() {
+  const dots = Array.from({ length: 34 }, (_, i) => {
+    const a = i * 2.39996;
+    const r = 18 * Math.sqrt(i + 1);
+    return [200 + r * Math.cos(a), 170 + r * Math.sin(a), i % 4 === 0 ? 7 : 4.5] as const;
+  });
+  return (
+    <svg viewBox="0 0 400 340" className="pointer-events-none absolute -right-16 bottom-0 -z-10 hidden w-[34rem] opacity-70 lg:block" aria-hidden>
+      {dots.map(([x, y, r], i) => (
+        <circle key={i} cx={x} cy={y} r={r} fill="var(--cyan)" opacity={0.25 + (i % 5) * 0.12} />
+      ))}
+    </svg>
   );
 }
