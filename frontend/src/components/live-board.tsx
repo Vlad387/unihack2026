@@ -1,6 +1,7 @@
 "use client";
 
 import { Brand } from "@/components/brand";
+import { ProxyVoices } from "@/components/proxy-voices";
 import { VerdictView } from "@/components/verdict";
 import { JoinQr } from "@/components/join-qr";
 import { OpinionMap } from "@/components/opinion-map";
@@ -102,6 +103,11 @@ export function LiveBoard({ question, initial }: { question: string; initial: Co
               {proposal.verdict && (
                 <div className="mt-3">
                   <VerdictView verdict={proposal.verdict} />
+                </div>
+              )}
+              {!!proposal.proxies?.length && (
+                <div className="mt-3">
+                  <ProxyVoices proxies={proposal.proxies} compact />
                 </div>
               )}
             </CardContent>

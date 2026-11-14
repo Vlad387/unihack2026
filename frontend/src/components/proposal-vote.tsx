@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { type ConsultationState, useConsultation } from "@/hooks/use-consultation";
+import { ProxyVoices } from "@/components/proxy-voices";
 import { VerdictView } from "@/components/verdict";
 import { ApiError, getMyPosition, submitProposalVote } from "@/lib/api";
 
@@ -92,6 +93,8 @@ export function ProposalVote({ initial }: { initial: ConsultationState }) {
           </div>
         ))}
       </section>
+
+      <ProxyVoices proxies={proposal.proxies} />
 
       {votedRound === proposal.round ? (
         <div className="flex flex-col items-center gap-2 text-center" aria-live="polite">
