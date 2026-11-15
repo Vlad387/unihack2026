@@ -18,6 +18,9 @@ export type ThemeColors = {
   disagree: string;
   // site's .band-top: violet -> wash -> page, behind the top of every screen
   band: readonly [string, string, string, string];
+  // the site's full .band-top behind the home hero (stops at 0 / 38% / 72% / 100%) and the wordmark on it
+  heroBand: readonly [string, string, string, string];
+  wordmark: string;
   // site's .cta-panel
   cta: readonly [string, string];
   shadow: string;
@@ -41,6 +44,8 @@ export const light: ThemeColors = {
   disagree: '#e11d48',
   // the midpoint keeps accent eyebrows at 4.9:1 where text starts
   band: ['#9a38f6', '#c8dafa', '#a3eff6', '#d9fbfe'],
+  heroBand: ['#9a38f6', '#53afff', '#a3eff6', '#d9fbfe'],
+  wordmark: '#b5f6f9',
   cta: ['#5303ba', '#962eed'],
   shadow: '#5303ba',
 };
@@ -62,6 +67,8 @@ export const dark: ThemeColors = {
   agree: '#10b981',
   disagree: '#f43f5e',
   band: ['#32257c', '#192663', '#00274b', '#001f3f'],
+  heroBand: ['#32257c', '#152965', '#00274b', '#001f3f'],
+  wordmark: '#26d8be',
   cta: ['#1b3a5c', '#0a1f38'],
   shadow: '#000000',
 };
