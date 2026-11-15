@@ -1,7 +1,7 @@
 // The ONLY place the app calls the CityMind API (same endpoints as frontend/src/lib/api.ts).
 // Native fetch has no CORS, so the app can talk to the Azure API directly.
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { ClusterResult, Proposal, ResponseStats, RoundStatus, Statement, SupportRound, VoteValue } from './types';
+import type { ChatMessage, ChatReply, ClusterResult, Proposal, ReportDraft, ResponseStats, RoundStatus, Statement, SupportRound, VoteValue } from './types';
 
 // EXPO_PUBLIC_API_URL in mobile/.env overrides it, e.g. http://<your Mac's IP>:8000 for the local backend.
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://citymind-api-dkab4.azurewebsites.net';
@@ -82,7 +82,27 @@ export async function submitProposalVote(proposalId: string, support: boolean, c
   });
 }
 
-const tokenHeader = (token: string | null): Record<string, string> => (token ? { 'X-Organizer-Token': token } : {});
+// Help chat (Bingus): the whole conversation, capped like the server (20 messages, 1000 chars each). The server
+// adds the context (question, round, proposal, camps) itself. Throws ApiError 429 after 10 messages/minute.
+export async function sendChat(messages: ChatMessage[], page: string): Promise<ChatReply> {
+  const capped = messages.slice(-20).map(m => ({ ...m, text: m.text.slice(0, 1000) }));
+  return http('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ participant_id: await getParticipantId(), page: page.slice(0, 100), messages: capped }),
+  });
+}
+
+// Sends a report draft the citizen confirmed ("Trimite raportul"); never called automatically.
+export async function sendReport(draft: ReportDraft): Promise<void> {
+  await http('/reports', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ participant_id: await getParticipantId(), kind: draft.kind, text: draft.text.slice(0, 1000), statement_id: draft.statement_id ?? null }),
+  });
+}
+
+const tokenHeader =(token: string | null): Record<string, string> => (token ? { 'X-Organizer-Token': token } : {});
 
 // Is a compromise round running on the server right now? Public.
 export const getRoundStatus = (): Promise<RoundStatus> => http('/proposals/status');

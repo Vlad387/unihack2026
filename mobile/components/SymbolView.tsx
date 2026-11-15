@@ -160,6 +160,7 @@ const ANDROID_SYMBOLS = {
   'hand.thumbsup.fill': 'thumb_up',
   'person.3.fill': 'groups',
   'play.circle.fill': 'play_circle',
+  'arrow.up': 'arrow_upward',
   'bubble.left.and.bubble.right.fill': 'forum',
 } as const satisfies Record<string, AndroidSymbol>;
 
