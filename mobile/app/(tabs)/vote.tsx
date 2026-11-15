@@ -85,9 +85,9 @@ export default function Vote() {
     return (
       <Screen>
         <Eyebrow>Pasul 2 din 4 · gata</Eyebrow>
-        <Title>Ai votat tot! 🎉</Title>
+        <Title size={44} gradient>Ai votat tot!</Title>
         <Body>Mulțumim. Vezi acum taberele care se formează și propunerea de compromis.</Body>
-        <Button title="Vezi rundele" onPress={() => router.navigate('/board')} />
+        <Button title="Vezi rundele" arrow onPress={() => router.navigate('/board')} />
       </Screen>
     );
   }
@@ -99,7 +99,7 @@ export default function Vote() {
         <View style={[styles.progressFill, { backgroundColor: colors.accent, width: `${(index / statements.length) * 100}%` }]} />
       </View>
       <Card style={styles.card}>
-        <Text style={[styles.quote, { color: colors.text }]}>„{statements[index].text}”</Text>
+        <Text style={[styles.quote, { color: colors.text }]}>{statements[index].text}</Text>
       </Card>
       <Button title="De acord" color={colors.agree} onPress={() => vote('agree')} disabled={sending} />
       <Button title="Nu sunt de acord" color={colors.disagree} onPress={() => vote('disagree')} disabled={sending} />
@@ -112,6 +112,6 @@ export default function Vote() {
 const styles = StyleSheet.create({
   progress: { height: 4, borderRadius: 2, overflow: 'hidden' },
   progressFill: { height: 4 },
-  card: { paddingVertical: 32, minHeight: 180, justifyContent: 'center' },
-  quote: { fontFamily: FONTS.semibold, fontSize: 22, lineHeight: 29, letterSpacing: -0.4 },
+  card: { paddingVertical: 32, minHeight: 220, justifyContent: 'center' },
+  quote: { fontFamily: FONTS.bold, fontSize: 25, lineHeight: 31, letterSpacing: -0.7 },
 });

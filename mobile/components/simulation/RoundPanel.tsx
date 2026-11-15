@@ -2,7 +2,7 @@
 // map, what each camp gains and gives up, the vote on the compromise, where it started, simulated voices, AI checks.
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { AiBadge, Body, Button, Card, Eyebrow } from '../ui';
+import { AiBadge, Body, Button, Card, Eyebrow, GradientText } from '../ui';
 import { useAppContext } from '../../context/AppContext';
 import { campColors } from '../../lib/colors';
 import type { Camp, Proposal, SupportRound, Verdict } from '../../lib/types';
@@ -116,7 +116,7 @@ export function RoundDetails({ proposal, council, camps, support, onVote }: Deta
       <Card>
         <Eyebrow>Votul pe compromis</Eyebrow>
         <View style={styles.pctRow}>
-          <Text style={[styles.pct, { color: colors.text }]}>{pct}%</Text>
+          <GradientText style={styles.pct}>{pct}%</GradientText>
           <Body subtle style={styles.small}>
             susțin · {now?.total ?? 0} {now?.total === 1 ? 'vot' : 'voturi'} {council === undefined ? '(doar voturi reale)' : '(fictive)'}
           </Body>
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   small: { fontSize: 14, lineHeight: 20 },
   tiny: { fontSize: 12, lineHeight: 17 },
   pctRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' },
-  pct: { fontFamily: FONTS.extrabold, fontSize: 40, letterSpacing: -1.5 },
+  pct: { fontFamily: FONTS.extrabold, fontSize: 48, lineHeight: 52, letterSpacing: -2 },
   bar: { height: 10, borderRadius: 5, overflow: 'hidden' },
   barFill: { height: 10, borderRadius: 5 },
   voteRow: { flexDirection: 'row', gap: 10 },
