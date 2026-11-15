@@ -1,6 +1,6 @@
 """AI agents (owner: Bordos, role A). Pure functions: no DB, no FastAPI, no imports from clustering/.
 
-intake, mediate, critic, name_camps, proxy and assist are real (Gemini); docs in the repo root README.md.
+intake, mediate, critic, name_camps, proxy and assist are real (Gemini); docs in README.md next to this file.
 Every agent raises app.agents.gemini.AgentError when Gemini fails.
 """
 
