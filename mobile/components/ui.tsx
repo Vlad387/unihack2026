@@ -19,16 +19,19 @@ import { FONTS, GRADIENT } from '../theme';
 const MaskedView = MaskedViewClass as unknown as ComponentType<ViewProps & { maskElement: ReactElement }>;
 
 const BAND = 340;
+const HERO_BAND = 720;
 // the band reaches this far above the top, so pulling the page down shows violet, not a seam
 const OVERSCROLL = 400;
 
 // `header`: the screen has a navigation header above it, so it gets neither the status-bar inset nor the band.
-export function Screen({ children, onRefresh, refreshing = false, header = false }: { children: ReactNode; onRefresh?: () => void; refreshing?: boolean; header?: boolean }) {
+// `hero`: the home page's tall band, like the site's hero (violet behind the wordmark, ice under the buttons).
+export function Screen({ children, onRefresh, refreshing = false, header = false, hero = false }: { children: ReactNode; onRefresh?: () => void; refreshing?: boolean; header?: boolean; hero?: boolean }) {
   const { colors } = useAppContext();
   const insets = useSafeAreaInsets();
-  const height = OVERSCROLL + insets.top + BAND;
+  const height = OVERSCROLL + insets.top + (hero ? HERO_BAND : BAND);
   // violet only behind the status bar, so eyebrows and titles land on the light wash and stay readable
   const statusEnd = (OVERSCROLL + insets.top) / height;
+  const at = (share: number) => statusEnd + (1 - statusEnd) * share;
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.background }}
@@ -43,8 +46,8 @@ export function Screen({ children, onRefresh, refreshing = false, header = false
           <StatusBar style="light" />
           <LinearGradient
             pointerEvents="none"
-            colors={colors.band}
-            locations={[0, statusEnd, statusEnd + (1 - statusEnd) * 0.45, 1]}
+            colors={hero ? colors.heroBand : colors.band}
+            locations={hero ? [statusEnd, at(0.38), at(0.72), 1] : [0, statusEnd, at(0.45), 1]}
             style={{ position: 'absolute', top: -OVERSCROLL, left: 0, right: 0, height }}
           />
         </>
