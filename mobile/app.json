@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "CityMind",
+    "slug": "citymind",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "citymind",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#D9FBFE",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "CityMind folosește microfonul doar când îți înregistrezi răspunsul."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "backgroundColor": "#D9FBFE",
+          "dark": { "backgroundColor": "#001F3F" }
+        }
+      ],
+      "expo-status-bar",
+      "expo-font",
+      "expo-asset"
+    ]
+  }
+}
