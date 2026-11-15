@@ -1,14 +1,15 @@
 // Participă: same form as the site (components/answer-form.tsx + mic-button.tsx): voice or text, optional
 // neighborhood and age, sent to POST /responses.
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from 'expo-audio';
 import { Body, Button, Card, Eyebrow, Screen, Title } from '../../components/ui';
 import { SymbolView } from '../../components/SymbolView';
 import { useAppContext } from '../../context/AppContext';
 import { QUESTION, errorText, submitResponse } from '../../lib/api';
+import { takeDraft } from '../../lib/draft';
 import { FONTS, GRADIENT, alpha } from '../../theme';
 
 // The backend refuses audio over 10 MB; 2 minutes of HIGH_QUALITY m4a stays well under it.
@@ -28,6 +29,11 @@ export default function Participa() {
   const [error, setError] = useState('');
   // state updates are async, so a fast double tap could slip through: this guard blocks it instantly
   const inFlight = useRef(false);
+  // a draft the chat prepared starts the text field; the citizen edits and sends it themselves
+  useFocusEffect(useCallback(() => {
+    const draft = takeDraft();
+    if (draft) { setText(draft); setStatus('idle'); inFlight.current = false; }
+  }, []));
   const seconds = Math.floor((recorderState.durationMillis ?? 0) / 1000);
 
   async function startRecording() {

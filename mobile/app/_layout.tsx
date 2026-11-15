@@ -1,14 +1,16 @@
 import { StyleSheet, View } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts, InterTight_400Regular, InterTight_500Medium, InterTight_600SemiBold, InterTight_700Bold, InterTight_800ExtraBold } from '@expo-google-fonts/inter-tight';
 import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 import { AppProvider, useAppContext } from '../context/AppContext';
 import LaunchScreen from '../components/LaunchScreen';
+import ChatButton from '../components/ChatButton';
 
 function RootLayoutNav({ fontsReady }: { fontsReady: boolean }) {
   const { isDark, colors, themeLoaded } = useAppContext();
+  const pathname = usePathname();
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
@@ -28,8 +30,11 @@ function RootLayoutNav({ fontsReady }: { fontsReady: boolean }) {
               headerShadowVisible: false,
             }}
           />
+          <Stack.Screen name="chat" options={{ presentation: 'modal', contentStyle: { backgroundColor: colors.background } }} />
         </Stack>
       ) : null}
+      {/* Bingus floats over the tabs, not over the chat itself or Setări */}
+      {fontsReady && pathname !== '/chat' && pathname !== '/settings' ? <ChatButton /> : null}
       <LaunchScreen colors={colors} ready={themeLoaded && fontsReady} />
     </View>
   );
