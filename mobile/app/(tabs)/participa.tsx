@@ -9,7 +9,7 @@ import { Body, Button, Card, Eyebrow, Screen, Title } from '../../components/ui'
 import { SymbolView } from '../../components/SymbolView';
 import { useAppContext } from '../../context/AppContext';
 import { QUESTION, errorText, submitResponse } from '../../lib/api';
-import { FONTS, GRADIENT } from '../../theme';
+import { FONTS, GRADIENT, alpha } from '../../theme';
 
 // The backend refuses audio over 10 MB; 2 minutes of HIGH_QUALITY m4a stays well under it.
 const MAX_SECONDS = 120;
@@ -78,9 +78,9 @@ export default function Participa() {
     return (
       <Screen>
         <Eyebrow>Pasul 1 din 4 · gata</Eyebrow>
-        <Title>Mulțumim! 🙌</Title>
+        <Title size={44} gradient>Mulțumim!</Title>
         <Body>Răspunsul tău a fost trimis. Acum vezi ce cred ceilalți.</Body>
-        <Button title="Votează afirmațiile celorlalți" onPress={() => router.navigate('/vote')} />
+        <Button title="Votează afirmațiile celorlalți" arrow onPress={() => router.navigate('/vote')} />
       </Screen>
     );
   }
@@ -100,6 +100,7 @@ export default function Participa() {
           onPress={recording ? stopRecording : startRecording}
           accessibilityRole="button"
           accessibilityLabel={recording ? 'Oprește înregistrarea' : 'Înregistrează răspunsul'}
+          style={[styles.halo, { backgroundColor: alpha(recording ? '#e11d48' : colors.accent, recording ? 0.18 : 0.12) }]}
         >
           <LinearGradient colors={recording ? ['#e11d48', '#be123c'] : GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.mic}>
             <SymbolView name={recording ? 'stop.fill' : 'mic.fill'} size={44} tintColor="#ffffff" />
@@ -140,14 +141,15 @@ export default function Participa() {
       </Card>
 
       {status === 'error' ? <Text style={{ color: colors.destructive, fontFamily: FONTS.medium }}>{error}</Text> : null}
-      <Button title={status === 'sending' ? 'Se trimite…' : 'Trimite răspunsul'} onPress={send} disabled={!canSend} loading={status === 'sending'} />
+      <Button title={status === 'sending' ? 'Se trimite…' : 'Trimite răspunsul'} arrow onPress={send} disabled={!canSend} loading={status === 'sending'} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   micWrap: { alignItems: 'center', gap: 12, marginVertical: 8 },
-  mic: { width: 112, height: 112, borderRadius: 56, alignItems: 'center', justifyContent: 'center' },
+  halo: { padding: 14, borderRadius: 80 },
+  mic: { width: 116, height: 116, borderRadius: 58, alignItems: 'center', justifyContent: 'center' },
   micLabel: { fontFamily: FONTS.medium, fontSize: 14, textAlign: 'center' },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   line: { flex: 1, height: StyleSheet.hairlineWidth },
