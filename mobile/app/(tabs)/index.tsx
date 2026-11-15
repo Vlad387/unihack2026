@@ -1,11 +1,11 @@
-// Acasă: the site's landing page (components/site/hero, features, steps, closing), as one phone column.
+// Acasă: the site's landing page (components/site/hero, features, steps, closing), rethought for one phone column.
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SymbolView } from '../../components/SymbolView';
-import { Body, Button, Card, Eyebrow, GradientBar, Screen, Title } from '../../components/ui';
+import { Body, Button, Card, Eyebrow, GradientText, Screen, Title, titleStyle } from '../../components/ui';
 import { useAppContext } from '../../context/AppContext';
-import { FONTS, GRADIENT, VIOLET } from '../../theme';
+import { FONTS, GRADIENT } from '../../theme';
 
 const PRINCIPLES = [
   { title: 'Puncte comune, nu majorități', text: 'Căutăm ce acceptă fiecare tabără, oricât de mică, nu doar ce vrea cea mai mare.' },
@@ -21,6 +21,8 @@ const STEPS = [
   { title: 'Votează compromisul', text: 'AI-ul propune o soluție pornind de la punctele comune. Dacă nu trece pragul, o rescrie.' },
 ];
 
+const BUILT_WITH = ['Gemini', 'FastAPI', 'PostgreSQL', 'pgvector', 'UMAP', 'HDBSCAN'];
+
 export default function Home() {
   const { colors } = useAppContext();
   const router = useRouter();
@@ -28,69 +30,112 @@ export default function Home() {
   return (
     <Screen>
       <View style={styles.brand}>
-        <Image source={require('../../assets/icon.png')} style={styles.logo} />
+        <Image source={require('../../assets/icon.png')} style={styles.logo} accessibilityIgnoresInvertColors />
         <Text style={[styles.wordmark, { color: colors.text }]}>citymind</Text>
-        <Pressable onPress={() => router.push('/settings')} hitSlop={12} accessibilityRole="button" accessibilityLabel="Setări" style={styles.gear}>
-          <SymbolView name="gearshape.fill" size={24} tintColor={colors.subtle} />
+        <Pressable onPress={() => router.push('/settings')} hitSlop={12} accessibilityRole="button" accessibilityLabel="Setări" style={[styles.gear, { backgroundColor: colors.card, borderColor: colors.line }]}>
+          <SymbolView name="gearshape.fill" size={20} tintColor={colors.text} />
         </Pressable>
       </View>
-      <GradientBar />
 
       <View style={styles.hero}>
-        <Title size={42}>Orașul tău. Vocea ta.</Title>
-        <Title size={42} style={{ color: colors.accent }}>Un compromis votat de toți.</Title>
-        <Body>
+        <Eyebrow>Consultare publică · live</Eyebrow>
+        <Title size={46}>Orașul tău. Vocea ta.</Title>
+        <Title size={46} gradient>Un compromis votat de toți.</Title>
+        <Body style={styles.lead}>
           CityMind adună părerile oamenilor despre o problemă a orașului, găsește ce îi unește și propune un compromis pe care îl
           votează toată lumea, live.
         </Body>
-        <Button title="Participă acum" onPress={() => router.navigate('/participa')} />
-        <Button title="Vezi rundele live" variant="outline" onPress={() => router.navigate('/board')} />
-        <Body subtle style={styles.center}>Fără cont · voce sau text · sub un minut</Body>
+        <View style={styles.actions}>
+          <Button title="Participă acum" arrow onPress={() => router.navigate('/participa')} />
+          <Button title="Vezi rundele live" variant="outline" onPress={() => router.navigate('/board')} />
+        </View>
+        <Text style={[styles.meta, { color: colors.faint }]}>Fără cont · voce sau text · sub un minut</Text>
       </View>
 
-      <Eyebrow>Principiile noastre</Eyebrow>
-      {PRINCIPLES.map(p => (
-        <Card key={p.title}>
-          <Text style={[styles.cardTitle, { color: colors.text }]}>{p.title}</Text>
-          <Body subtle>{p.text}</Body>
-        </Card>
-      ))}
+      <View style={[styles.strip, { borderColor: colors.line }]}>
+        {BUILT_WITH.map(name => (
+          <Text key={name} style={[styles.stripItem, { color: colors.faint }]}>{name}</Text>
+        ))}
+      </View>
 
-      <Eyebrow>Cum participi</Eyebrow>
-      <Title size={30}>Patru pași, un singur oraș.</Title>
-      {STEPS.map((s, i) => (
-        <Card key={s.title} style={styles.step}>
-          <LinearGradient colors={GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.stepNumber}>
-            <Text style={styles.stepNumberText}>{i + 1}</Text>
-          </LinearGradient>
-          <View style={{ flex: 1, gap: 4 }}>
-            <Text style={[styles.cardTitle, { color: colors.text }]}>{s.title}</Text>
-            <Body subtle>{s.text}</Body>
+      <View style={styles.section}>
+        <Eyebrow>Principiile noastre</Eyebrow>
+        <Title size={32}>Construit ca să fie corect.</Title>
+      </View>
+      {PRINCIPLES.map((p, i) => (
+        <Card key={p.title} style={styles.principle}>
+          <GradientText style={styles.principleNumber}>{String(i + 1).padStart(2, '0')}</GradientText>
+          <View style={{ flex: 1, gap: 6 }}>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>{p.title}</Text>
+            <Body subtle style={styles.small}>{p.text}</Body>
           </View>
         </Card>
       ))}
 
-      {/* the site's purple CTA panel */}
-      <View style={[styles.cta, { backgroundColor: VIOLET }]}>
-        <Text style={styles.ctaTitle}>Nu căutăm cine e majoritatea. Căutăm ce ne unește pe toți.</Text>
-        <Button title="Spune-ți părerea" color="#ffffff" labelColor="#0f0f16" onPress={() => router.navigate('/participa')} style={styles.ctaButton} />
+      <View style={styles.statement}>
+        <Text style={[titleStyle(34), { color: colors.text }]}>
+          Nu căutăm cine e majoritatea.{' '}
+          <Text style={{ color: colors.accent }}>Căutăm ce ne unește pe toți.</Text>
+        </Text>
       </View>
+
+      <View style={styles.section}>
+        <Eyebrow>Cum participi</Eyebrow>
+        <Title size={32}>Patru pași, un singur oraș.</Title>
+      </View>
+      <View>
+        {STEPS.map((s, i) => (
+          <View key={s.title} style={styles.step}>
+            <View style={styles.rail}>
+              <LinearGradient colors={GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.stepNumber}>
+                <Text style={styles.stepNumberText}>{i + 1}</Text>
+              </LinearGradient>
+              {i < STEPS.length - 1 ? <View style={[styles.railLine, { backgroundColor: colors.line }]} /> : null}
+            </View>
+            <View style={styles.stepBody}>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>{s.title}</Text>
+              <Body subtle style={styles.small}>{s.text}</Body>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* the site's purple CTA panel */}
+      <LinearGradient colors={colors.cta} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.cta}>
+        <LinearGradient colors={['rgba(196,148,255,0.5)', 'rgba(196,148,255,0)']} start={{ x: 1, y: 0 }} end={{ x: 0.3, y: 0.7 }} style={StyleSheet.absoluteFill} />
+        <Eyebrow color="#d9fbfe">Pentru cetățeni</Eyebrow>
+        <Text style={[titleStyle(34), styles.ctaTitle]}>Spui ce crezi în mai puțin de un minut.</Text>
+        <Text style={styles.ctaText}>Vorbești sau scrii, apoi votezi ideile celorlalți. Fără cont.</Text>
+        <Button title="Spune-ți părerea" arrow color="#fcfdff" labelColor="#0f0f16" onPress={() => router.navigate('/participa')} />
+      </LinearGradient>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   brand: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  logo: { width: 40, height: 40, borderRadius: 10 },
-  wordmark: { fontFamily: FONTS.extrabold, fontSize: 26, letterSpacing: -1, flex: 1 },
-  gear: { padding: 4 },
-  hero: { gap: 14, marginBottom: 12 },
-  center: { textAlign: 'center', fontSize: 14 },
-  cardTitle: { fontFamily: FONTS.bold, fontSize: 18, letterSpacing: -0.3 },
-  step: { flexDirection: 'row', gap: 14, alignItems: 'flex-start' },
-  stepNumber: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  stepNumberText: { color: '#fff', fontFamily: FONTS.bold, fontSize: 16 },
-  cta: { borderRadius: 24, padding: 24, gap: 20, marginTop: 8 },
-  ctaTitle: { color: '#fcfdff', fontFamily: FONTS.extrabold, fontSize: 28, lineHeight: 30, letterSpacing: -1 },
-  ctaButton: { alignSelf: 'stretch' },
+  logo: { width: 40, height: 40, borderRadius: 12 },
+  wordmark: { fontFamily: FONTS.extrabold, fontSize: 26, letterSpacing: -1.1, flex: 1 },
+  gear: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  hero: { gap: 14, paddingTop: 28, paddingBottom: 8 },
+  lead: { fontSize: 18, lineHeight: 27, marginTop: 4 },
+  actions: { gap: 10, marginTop: 8 },
+  meta: { fontFamily: FONTS.mono, fontSize: 11.5, letterSpacing: 0.6, textAlign: 'center', marginTop: 2 },
+  strip: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 18, rowGap: 6, borderTopWidth: 1, borderBottomWidth: 1, paddingVertical: 14 },
+  stripItem: { fontFamily: FONTS.semibold, fontSize: 14, letterSpacing: -0.2 },
+  section: { gap: 10, marginTop: 28 },
+  principle: { flexDirection: 'row', gap: 16, alignItems: 'flex-start' },
+  principleNumber: { fontFamily: FONTS.mono, fontSize: 15, paddingTop: 3 },
+  cardTitle: { fontFamily: FONTS.bold, fontSize: 19, letterSpacing: -0.4, lineHeight: 24 },
+  small: { fontSize: 15.5, lineHeight: 22 },
+  statement: { paddingVertical: 36 },
+  step: { flexDirection: 'row', gap: 16 },
+  rail: { alignItems: 'center' },
+  stepNumber: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  stepNumberText: { color: '#fff', fontFamily: FONTS.bold, fontSize: 17 },
+  railLine: { width: 2, flex: 1, marginVertical: 6 },
+  stepBody: { flex: 1, gap: 4, paddingTop: 8, paddingBottom: 28 },
+  cta: { borderRadius: 28, padding: 26, gap: 16, marginTop: 20, overflow: 'hidden' },
+  ctaTitle: { color: '#fcfdff' },
+  ctaText: { color: 'rgba(252,253,255,0.9)', fontFamily: FONTS.regular, fontSize: 17, lineHeight: 25, marginBottom: 6 },
 });

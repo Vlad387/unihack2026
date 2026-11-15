@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import OpinionMap from '../../components/OpinionMap';
-import { AiBadge, Body, Button, Card, Eyebrow, Screen, Title } from '../../components/ui';
+import { AiBadge, Body, Button, Card, Eyebrow, GradientText, Screen, Title } from '../../components/ui';
 import { useAppContext } from '../../context/AppContext';
 import { ApiError, QUESTION, errorText, getBridges, getClusters, getParticipantId, getProposal, getSupport, submitProposalVote } from '../../lib/api';
 import { campColors } from '../../lib/colors';
@@ -94,7 +94,7 @@ export default function Board() {
         <Eyebrow>Sprijin pe runde</Eyebrow>
         {current ? (
           <>
-            <Text style={[styles.bigNumber, { color: colors.accent }]}>{percent ?? 0}%</Text>
+            <GradientText style={styles.bigNumber}>{percent ?? 0}%</GradientText>
             <Body subtle>Runda {current.round}: {current.agree} din {current.total} voturi reale „de acord”.</Body>
           </>
         ) : (
@@ -193,7 +193,7 @@ export default function Board() {
 }
 
 const styles = StyleSheet.create({
-  bigNumber: { fontFamily: FONTS.extrabold, fontSize: 56, letterSpacing: -2 },
+  bigNumber: { fontFamily: FONTS.extrabold, fontSize: 72, lineHeight: 76, letterSpacing: -3 },
   center: { textAlign: 'center', fontSize: 14 },
   campHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   dot: { width: 12, height: 12, borderRadius: 6 },
